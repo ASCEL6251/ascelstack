@@ -345,11 +345,7 @@ const menu: { label: string; href: string; sub?: Sub[]; all?: string }[] = [
     .nav-links { display: none; }
     .nav-dots { display: block; }
     .nav-pill { height: 54px; padding: 5px 5px 5px 16px; gap: 6px; }
-    .nav-cta { height: 44px; padding: 0 1rem; font-size: 0.8rem; }
-    .nav-cta-text { display: inline; }
-    .nav-cta-icon { display: none; }
-  }
-  @media (max-width: 359px) {
+    /* "Start a project" lives inside the menu on phones. */
     .nav-cta { display: none; }
   }
 
