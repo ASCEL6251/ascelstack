@@ -1,0 +1,148 @@
+/* Workflow canvas — shared by every visualisation on /automation.
+   Light by default; wrap in .wf--dark for the ink panel. */
+
+.wf {
+  --wf-bg: var(--paper-raised);
+  --wf-dot: rgba(29, 45, 61, 0.16);
+  --wf-tile: #ffffff;
+  --wf-tile-line: rgba(29, 45, 61, 0.16);
+  --wf-icon: var(--ink);
+  --wf-text: var(--ink);
+  --wf-muted: #6b7783;
+  --wf-edge: rgba(29, 45, 61, 0.34);
+  --wf-packet: var(--accent);
+  --wf-ring: var(--tint);
+  --wf-done: var(--accent);
+  --wf-strata: rgba(29, 45, 61, 0.14);
+
+  position: relative;
+  background-color: var(--wf-bg);
+  background-image: radial-gradient(var(--wf-dot) 1px, transparent 1.4px);
+  background-size: 18px 18px;
+  border-radius: var(--radius-l);
+}
+
+.wf--dark {
+  --wf-bg: #182634;
+  --wf-dot: rgba(148, 188, 227, 0.16);
+  --wf-tile: #22364a;
+  --wf-tile-line: rgba(148, 188, 227, 0.2);
+  --wf-icon: var(--paper);
+  --wf-text: var(--paper);
+  --wf-muted: #8ea2b6;
+  --wf-edge: rgba(148, 188, 227, 0.4);
+  --wf-packet: var(--tint);
+  --wf-ring: var(--accent);
+  --wf-done: var(--tint);
+  --wf-strata: rgba(242, 242, 243, 0.16);
+}
+
+.wf-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  border-radius: inherit;
+}
+.wf-scroll::-webkit-scrollbar { display: none; }
+.wf-host { width: 100%; }
+.wf-svg { width: 100%; height: auto; display: block; overflow: visible; }
+
+@media (max-width: 760px) {
+  .wf-host { width: 820px; }
+}
+
+/* Connectors */
+.wf-edge {
+  fill: none;
+  stroke: var(--wf-edge);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+.wf-edge--tool { stroke-width: 1.2; }
+.wf-edge-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  fill: var(--wf-muted);
+  paint-order: stroke;
+  stroke: var(--wf-bg);
+  stroke-width: 4px;
+}
+.wf-packet { fill: var(--wf-packet); }
+
+/* Nodes */
+.wf-tile {
+  fill: var(--wf-tile);
+  stroke: var(--wf-tile-line);
+  stroke-width: 1;
+  transition: stroke 0.3s;
+}
+.wf-node--trigger .wf-tile { stroke: color-mix(in srgb, var(--wf-packet) 55%, transparent); }
+.wf-node--agent .wf-tile { stroke: color-mix(in srgb, var(--wf-packet) 45%, transparent); }
+.wf-node--if .wf-tile { stroke-dasharray: 4 3; }
+.wf-node--tool .wf-tile { stroke-dasharray: 3 3; }
+
+.wf-ring {
+  fill: none;
+  stroke: var(--wf-ring);
+  stroke-width: 2;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.wf-node.is-active .wf-ring { opacity: 0.9; }
+.wf-node.is-active .wf-tile { stroke: var(--wf-packet); }
+
+.wf-icon path {
+  fill: none;
+  stroke: var(--wf-icon);
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.wf-node--agent .wf-icon path,
+.wf-node--trigger .wf-icon path { stroke: var(--wf-packet); }
+
+.wf-label {
+  font-family: var(--font-body);
+  font-size: 14.5px;
+  font-weight: 500;
+  fill: var(--wf-text);
+}
+.wf-label--tool { font-size: 12.5px; font-weight: 400; fill: var(--wf-muted); }
+.wf-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  fill: var(--wf-muted);
+}
+.wf-kicker {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  fill: var(--wf-packet);
+}
+.wf-agent-label {
+  font-family: var(--font-display);
+  font-size: 20px;
+  fill: var(--wf-text);
+}
+.wf-port {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.1em;
+  fill: var(--wf-muted);
+  text-transform: uppercase;
+}
+
+.wf-strata { fill: var(--wf-strata); }
+.wf-strata.on.build { fill: var(--tint); }
+.wf-strata.on.grow { fill: var(--accent); }
+.wf-strata.on.run { fill: var(--wf-text); }
+
+.wf-done circle { fill: var(--wf-done); }
+.wf-done path {
+  fill: none;
+  stroke: var(--wf-bg);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

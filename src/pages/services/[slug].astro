@@ -1,0 +1,162 @@
+---
+import Base from '../../layouts/Base.astro';
+import ServiceCard from '../../components/ServiceCard.astro';
+import { categories, LAYERS, sharedServiceNames, type Category } from '../../data/catalog';
+
+export function getStaticPaths() {
+  return categories.map((c, i) => ({
+    params: { slug: c.slug },
+    props: { cat: c, prev: categories[i - 1] ?? null, next: categories[i + 1] ?? null },
+  }));
+}
+
+interface Props {
+  cat: Category;
+  prev: Category | null;
+  next: Category | null;
+}
+const { cat, prev, next } = Astro.props;
+const layer = LAYERS[cat.layer];
+---
+
+<Base title={cat.name} description={`${cat.blurb} ${cat.services.length} services from Ascelstack.`} navTone={cat.layer === 'build' ? 'light' : 'dark'}>
+  <section class:list={['hero', `hero--${cat.layer}`]}>
+    <div class="wrap hero-inner">
+      <a href="/services" class="mono hero-back" data-reveal>← All services</a>
+      <p class="eyebrow" data-reveal>
+        {cat.priority === 'future' ? 'Coming soon' : layer.label}
+      </p>
+      <h1 class="display h1" data-reveal>{cat.name}</h1>
+      <div class="hero-foot" data-reveal>
+        <p class="lead">{cat.blurb}</p>
+        <div class="hero-count">
+          <span class="display">{cat.services.length}</span>
+          <span class="mono">services</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap body">
+    {
+      cat.subgroups.map((g) => (
+        <section class="sub">
+          {g.name && (
+            <header class="sub-head" data-reveal>
+              <h2 class="display h3">{g.name}</h2>
+              <span class="mono">{g.services.length}</span>
+            </header>
+          )}
+          <div class="cards">
+            {g.services.map((s) => (
+              <ServiceCard service={s} layer={cat.layer} shared={sharedServiceNames.has(s.name)} />
+            ))}
+          </div>
+        </section>
+      ))
+    }
+
+    {cat.services[0]?.notes && <p class="note">Note: {cat.services[0].notes}</p>}
+
+    <aside class="bundle on-ink">
+      <div>
+        <p class="eyebrow">Need more than one?</p>
+        <h2 class="display h3">Most clients combine services from all three layers.</h2>
+      </div>
+      <a href={`/contact?category=${cat.slug}`} class="btn">Plan a project <span class="arrow">→</span></a>
+    </aside>
+
+    <nav class="pager" aria-label="Other disciplines">
+      {prev ? (
+        <a href={`/services/${prev.slug}`} class="pager-link">
+          <span class="mono">← Previous</span>
+          <span class="display">{prev.short}</span>
+        </a>
+      ) : <span />}
+      {next && (
+        <a href={`/services/${next.slug}`} class="pager-link pager-link--next">
+          <span class="mono">Next →</span>
+          <span class="display">{next.short}</span>
+        </a>
+      )}
+    </nav>
+  </div>
+</Base>
+
+<style>
+  .hero {
+    padding-top: calc(var(--nav-h) + clamp(3rem, 8vw, 6rem));
+    padding-bottom: clamp(3rem, 6vw, 5rem);
+    --fg: var(--ink);
+    --muted: rgba(29, 45, 61, 0.72);
+    background: var(--bg);
+    color: var(--fg);
+  }
+  .hero--build { --bg: var(--tint); }
+  .hero--grow { --bg: var(--accent); --fg: var(--paper); --muted: rgba(242, 242, 243, 0.8); }
+  .hero--run { --bg: var(--ink); --fg: var(--paper); --muted: var(--text-on-ink-muted); }
+  .hero .eyebrow { color: var(--fg); }
+  .hero .lead { color: var(--muted); }
+  .hero-inner { display: grid; gap: 1.5rem; }
+  .hero-back { color: var(--muted); width: fit-content; }
+  .hero-back:hover { color: var(--fg); }
+  .hero h1 { max-width: 16ch; font-size: clamp(2.5rem, 1.5rem + 4.5vw, 6rem); }
+  .hero-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 2rem;
+    flex-wrap: wrap;
+    padding-top: 1.5rem;
+    border-top: 1px solid color-mix(in srgb, var(--fg) 20%, transparent);
+  }
+  .hero-count { display: flex; align-items: baseline; gap: 0.6rem; }
+  .hero-count .display { font-size: clamp(3rem, 2rem + 3vw, 5rem); line-height: 1; }
+  .hero-count .mono { color: var(--muted); text-transform: uppercase; }
+
+  .body { padding-block: clamp(3rem, 6vw, 5rem) 6rem; display: grid; gap: 3.5rem; }
+  .sub-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-bottom: 1rem;
+    margin-bottom: 1.25rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .sub-head .mono { color: var(--text-muted); }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .note {
+    padding: 1rem 1.25rem;
+    border-left: 2px solid var(--accent);
+    background: var(--paper-sunk);
+    font-size: 0.875rem;
+    color: var(--text-muted);
+  }
+  .bundle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    padding: clamp(1.75rem, 4vw, 3rem);
+    border-radius: var(--radius-l);
+  }
+  .bundle > div { display: grid; gap: 0.75rem; max-width: 36ch; }
+
+  .pager {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--line);
+  }
+  .pager-link { display: grid; gap: 0.35rem; }
+  .pager-link .mono { color: var(--text-muted); }
+  .pager-link .display { font-size: clamp(1.5rem, 1rem + 2vw, 2.5rem); transition: color 0.3s; }
+  .pager-link:hover .display { color: var(--accent); }
+  .pager-link--next { text-align: right; }
+</style>

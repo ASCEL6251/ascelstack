@@ -1,0 +1,363 @@
+---
+import { LAYERS, coreCategories, counts, type Layer } from '../../data/catalog';
+
+const order: Layer[] = ['build', 'grow', 'run'];
+const byLayer = (l: Layer) => coreCategories.filter((c) => c.layer === l);
+---
+
+<section class="stack" data-stack aria-label="Introduction">
+  <div class="stack-sticky">
+    <div class="stack-bg" aria-hidden="true"></div>
+    <canvas class="stack-canvas" data-stack-canvas aria-hidden="true"></canvas>
+    <img class="stack-fallback" src="/brand/mark.svg" alt="" aria-hidden="true" data-stack-fallback />
+
+    <div class="stack-copy wrap">
+      <div class="panel panel--intro" data-panel="0">
+        <p class="eyebrow">Software · Growth · Operations</p>
+        <h1 class="display h1">
+          Every layer of your business, <em>built to run itself.</em>
+        </h1>
+        <p class="lead">
+          Ascelstack designs the software, drives the growth and automates the operations, so the work keeps moving
+          when nobody is at the desk.
+        </p>
+        <div class="panel-ctas">
+          <a href="/contact" class="btn">Start a project <span class="arrow">→</span></a>
+          <a href="/services" class="btn btn-ghost">Explore {counts.core} services</a>
+        </div>
+      </div>
+
+      {
+        order.map((l, i) => (
+          <div class="panel panel--layer" data-panel={i + 1}>
+            <p class="eyebrow">{LAYERS[l].label}</p>
+            <h2 class="display h2">{LAYERS[l].title}</h2>
+            <p class="lead">{LAYERS[l].summary}</p>
+            <ul class="panel-cats">
+              {byLayer(l).map((c) => (
+                <li>
+                  <a href={`/services/${c.slug}`}>
+                    <span>{c.short}</span>
+                    <span class="mono">{String(c.services.length).padStart(2, '0')}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+
+      <div class="panel panel--outro" data-panel="4">
+        <p class="eyebrow">The Layered A</p>
+        <h2 class="display h2">Three layers.<br /><em>One stack.</em></h2>
+        <p class="lead">Each layer holds up the next. We build all three, so nothing falls between vendors.</p>
+      </div>
+    </div>
+
+    <div class="stack-rail" aria-hidden="true">
+      <span data-rail="1">Build</span>
+      <span data-rail="2">Grow</span>
+      <span data-rail="3">Run</span>
+    </div>
+
+    <div class="stack-hint mono" data-hint aria-hidden="true">
+      <span class="hint-line"></span> Scroll to unstack
+    </div>
+  </div>
+</section>
+
+<style>
+  .stack {
+    position: relative;
+    height: 520vh;
+  }
+  .stack-sticky {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100svh;
+    overflow: hidden;
+  }
+  .stack-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(60% 55% at 70% 45%, rgba(148, 188, 227, 0.35), transparent 70%),
+      radial-gradient(40% 40% at 20% 90%, rgba(89, 128, 166, 0.12), transparent 70%),
+      var(--paper);
+  }
+  .stack-bg::after {
+    /* fine engineering grid */
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(70% 60% at 65% 45%, #000 10%, transparent 75%);
+    opacity: 0.5;
+  }
+  .stack-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .stack-fallback {
+    display: none;
+    position: absolute;
+    right: 8vw;
+    top: 50%;
+    width: min(38vw, 440px);
+    transform: translateY(-50%);
+  }
+  .no-webgl .stack-fallback { display: block; }
+  .no-webgl .stack-canvas { display: none; }
+
+  .stack-copy {
+    position: relative;
+    height: 100%;
+    pointer-events: none;
+  }
+  .panel {
+    position: absolute;
+    left: var(--gutter);
+    top: 50%;
+    transform: translateY(-50%);
+    width: min(560px, 46vw);
+    display: grid;
+    gap: 1.5rem;
+    opacity: 0;
+    visibility: hidden;
+  }
+  .panel--intro {
+    opacity: 1;
+    visibility: visible;
+    width: min(660px, 52vw);
+  }
+  .panel :is(a, button) { pointer-events: auto; }
+  .panel-ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+  .panel--layer .h2 { font-size: clamp(3.5rem, 2rem + 6vw, 8rem); line-height: 0.9; }
+  .panel-cats { border-top: 1px solid var(--line); }
+  .panel-cats a {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 1.05rem;
+    transition: padding 0.4s var(--ease-out), color 0.3s;
+  }
+  .panel-cats a:hover { padding-left: 0.6rem; color: var(--accent); }
+  .panel-cats .mono { color: var(--text-muted); }
+
+  .stack-rail {
+    position: absolute;
+    right: var(--gutter);
+    top: 50%;
+    transform: translateY(-50%);
+    display: grid;
+    gap: 1.25rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .stack-rail span {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    justify-content: flex-end;
+    opacity: 0.35;
+    transition: opacity 0.4s, color 0.4s;
+  }
+  .stack-rail span::after {
+    content: '';
+    width: 18px;
+    height: 2px;
+    background: currentColor;
+    transition: width 0.5s var(--ease-out);
+  }
+  .stack-rail span.on { opacity: 1; color: var(--ink); }
+  .stack-rail span.on::after { width: 36px; background: var(--accent); }
+
+  .stack-hint {
+    position: absolute;
+    left: var(--gutter);
+    bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+  .hint-line {
+    width: 1px;
+    height: 36px;
+    background: linear-gradient(var(--accent), transparent);
+    animation: hint 2s var(--ease-out) infinite;
+    transform-origin: top;
+  }
+  @keyframes hint {
+    0% { transform: scaleY(0); }
+    60% { transform: scaleY(1); opacity: 1; }
+    100% { transform: scaleY(1); opacity: 0; }
+  }
+
+  @media (max-width: 900px) {
+    .panel,
+    .panel--intro {
+      width: auto;
+      right: var(--gutter);
+      top: auto;
+      bottom: 4.5rem;
+      transform: none;
+      gap: 1rem;
+    }
+    .panel--intro .h1 { font-size: clamp(2.4rem, 1.5rem + 5vw, 3.5rem); }
+    .panel-cats a { padding: 0.55rem 0; font-size: 0.95rem; }
+    .stack-rail { display: none; }
+    .panel--intro .lead { font-size: 1rem; }
+    .panel-ctas .btn { padding: 0.8rem 1.15rem; font-size: 0.875rem; }
+    .panel--layer .h2 { font-size: 3.25rem; }
+    .panel .lead { font-size: 1rem; }
+    .stack-fallback { right: 50%; top: 28%; width: 44vw; transform: translate(50%, -50%); }
+    .stack-hint { display: none; }
+  }
+</style>
+
+<script>
+  import { gsap, reducedMotion } from '../../scripts/motion';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  const section = document.querySelector<HTMLElement>('[data-stack]')!;
+  const canvas = section.querySelector<HTMLCanvasElement>('[data-stack-canvas]')!;
+  const panels = gsap.utils.toArray<HTMLElement>('[data-panel]', section);
+  const rail = gsap.utils.toArray<HTMLElement>('[data-rail]', section);
+  const hint = section.querySelector('[data-hint]');
+
+  const supportsWebGL = (() => {
+    try {
+      const c = document.createElement('canvas');
+      return !!(c.getContext('webgl2') || c.getContext('webgl'));
+    } catch {
+      return false;
+    }
+  })();
+
+  async function init() {
+    let stack: import('../../scripts/stack-scene').Stack | null = null;
+    if (supportsWebGL && !reducedMotion) {
+      const { createStack } = await import('../../scripts/stack-scene');
+      stack = createStack(canvas);
+    }
+    if (!stack) section.classList.add('no-webgl');
+
+    const narrow = () => window.innerWidth < 900;
+
+    const tl = gsap.timeline({
+      defaults: { ease: 'power2.inOut' },
+      scrollTrigger: {
+        trigger: section,
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: reducedMotion ? true : 0.8,
+        invalidateOnRefresh: true,
+        onUpdate(self) {
+          const p = self.progress;
+          const active = p < 0.2 ? 0 : p < 0.41 ? 1 : p < 0.62 ? 2 : p < 0.86 ? 3 : 0;
+          rail.forEach((r, i) => r.classList.toggle('on', i + 1 === active));
+          hint && gsap.set(hint, { autoAlpha: p > 0.03 ? 0 : 1 });
+        },
+      },
+    });
+
+    // ---- DOM panels (each step is reversible because the timeline is scrubbed)
+    const show = (el: HTMLElement, at: number) =>
+      tl.fromTo(el, { autoAlpha: 0, y: 40 }, { autoAlpha: 1, y: 0, duration: 0.05, ease: 'power3.out' }, at);
+    const hide = (el: HTMLElement, at: number) =>
+      tl.to(el, { autoAlpha: 0, y: -40, duration: 0.05, ease: 'power3.in' }, at);
+
+    tl.set({}, {}, 1); // timeline length = 1 so positions read as progress
+    hide(panels[0], 0.12);
+    show(panels[1], 0.19);
+    hide(panels[1], 0.37);
+    show(panels[2], 0.41);
+    hide(panels[2], 0.58);
+    show(panels[3], 0.62);
+    hide(panels[3], 0.8);
+    show(panels[4], 0.88);
+
+    if (!stack) return;
+    const { group, layers, materials, edges, state } = stack;
+
+    // ---- Placement: mark sits to the right on desktop, top on mobile
+    const place = () => {
+      state.offsetX = narrow() ? 0 : 2.3;
+      // On phones the mark sits in the top third, clear of the copy.
+      const vis = Math.tan((14 * Math.PI) / 180) * 21; // half-height in world units at camera z=21
+      state.offsetY = narrow() ? vis * (1 - (210 / window.innerHeight) * 2) : 0;
+      state.scale = narrow() ? 0.62 : 1;
+    };
+    place();
+    window.addEventListener('resize', place);
+
+    group.rotation.set(0.05, -0.35, 0);
+
+    // Positions for the "unstacked" state: layers fan out in depth and height.
+    const spread = [
+      { y: 1.3, z: 1.6, rx: 0.12 },
+      { y: 0, z: 0, rx: 0 },
+      { y: -1.3, z: -1.6, rx: -0.12 },
+    ];
+
+    // 0 → 0.17 : unstack and turn to a three-quarter view
+    tl.to(group.rotation, { x: -0.42, y: -0.75, duration: 0.17 }, 0);
+    layers.forEach((l, i) => {
+      tl.to(l.position, { y: spread[i].y, z: spread[i].z, duration: 0.17 }, 0);
+      tl.to(l.rotation, { x: spread[i].rx, duration: 0.17 }, 0);
+    });
+
+    // Focus each layer in turn: pull it forward, dim the others.
+    const focus = (idx: number, at: number) => {
+      // Re-centre the group on the active layer so it stays in frame.
+      const lift = spread[idx].y + (spread[idx].z + 0.8) * 0.41;
+      tl.to(group.position, { y: -lift * 0.9, duration: 0.06 }, at);
+      layers.forEach((l, i) => {
+        const on = i === idx;
+        tl.to(l.position, { x: on ? -0.35 : 0, z: spread[i].z + (on ? 0.8 : 0), duration: 0.06 }, at);
+        tl.to(l.scale, { x: on ? 1.08 : 1, y: on ? 1.08 : 1, z: on ? 1.08 : 1, duration: 0.06 }, at);
+        tl.to(materials[i], { opacity: on ? 1 : 0.28, duration: 0.06 }, at);
+        tl.to(edges[i], { opacity: on ? 0.35 : 0.06, duration: 0.06 }, at);
+      });
+    };
+    focus(0, 0.19);
+    tl.to(group.rotation, { y: -0.25, duration: 0.2 }, 0.2);
+    focus(1, 0.41);
+    tl.to(group.rotation, { y: 0.25, duration: 0.2 }, 0.41);
+    focus(2, 0.62);
+    tl.to(group.rotation, { y: 0.55, x: -0.25, duration: 0.2 }, 0.62);
+
+    // 0.82 → 0.95 : restack into the mark, face forward
+    tl.to(group.rotation, { x: 0, y: Math.PI * 2 - 0.2, duration: 0.13 }, 0.82);
+    tl.to(group.position, { y: 0, duration: 0.13 }, 0.82);
+    layers.forEach((l, i) => {
+      tl.to(l.position, { x: 0, y: 0, z: 0, duration: 0.13 }, 0.82);
+      tl.to(l.rotation, { x: 0, duration: 0.13 }, 0.82);
+      tl.to(l.scale, { x: 1, y: 1, z: 1, duration: 0.13 }, 0.82);
+      tl.to(materials[i], { opacity: 1, duration: 0.08 }, 0.82);
+      tl.to(edges[i], { opacity: 0.18, duration: 0.08 }, 0.82);
+    });
+
+    ScrollTrigger.refresh();
+  }
+
+  init();
+</script>

@@ -1,0 +1,265 @@
+---
+import { showcase } from '../../data/workflows';
+---
+
+<section class="sc on-ink section" id="examples" aria-labelledby="sc-title" data-sc>
+  <div class="wrap">
+    <header class="sc-head">
+      <p class="eyebrow" data-reveal>Real workflows</p>
+      <h2 id="sc-title" class="display h2" data-reveal>Four businesses. <em>Four flows</em> we'd build.</h2>
+    </header>
+
+    <div class="sc-panel" data-reveal>
+      <div class="sc-tabs" role="tablist" aria-label="Example workflows" data-lenis-prevent>
+        {
+          showcase.map((w, i) => (
+            <button class="sc-tab" role="tab" aria-selected={i === 0 ? 'true' : 'false'} data-sc-tab={i}>
+              <span class="mono">{w.tab}</span>
+              <span class="sc-tab-bar" aria-hidden="true"><i /></span>
+            </button>
+          ))
+        }
+      </div>
+
+      <div class="sc-body">
+        <div class="sc-copies">
+          {
+            showcase.map((w, i) => (
+              <article class:list={['sc-copy', { on: i === 0 }]} data-sc-copy={i} role="tabpanel">
+                <p class="mono sc-sector">{w.sector}<span class="temp" /></p>
+                <h3 class="display sc-title">{w.title}</h3>
+                <p class="sc-text">{w.body}</p>
+                <dl class="sc-stats">
+                  {w.stats.map((s) => (
+                    <div>
+                      <dt class="display">{s.v}</dt>
+                      <dd class="mono">{s.k}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <a href={w.link.href} class="sc-link">
+                  {w.link.label} <span class="arrow">→</span>
+                </a>
+              </article>
+            ))
+          }
+        </div>
+
+        <div class="sc-stage">
+          <div class="wf wf--dark sc-wf">
+            <div class="wf-scroll" data-sc-scroll data-lenis-prevent>
+              <div class="wf-host" data-sc-host></div>
+            </div>
+          </div>
+          <div class="sc-log" aria-live="off">
+            <div class="sc-log-head mono">
+              <span>Execution log</span>
+              <span data-sc-run>run #1</span>
+            </div>
+            <ol class="sc-log-list mono" data-sc-log></ol>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="mono sc-note">Businesses and figures are illustrative examples of what we build.</p>
+  </div>
+</section>
+
+<style>
+  .sc-head { display: grid; gap: 1.25rem; margin-bottom: clamp(2rem, 5vw, 3.5rem); max-width: 52rem; }
+
+  .sc-panel {
+    border: 1px solid var(--line-on-ink);
+    border-radius: calc(var(--radius-l) + 6px);
+    background: var(--ink-deep);
+    padding: clamp(0.75rem, 1.5vw, 1.25rem);
+  }
+  .sc-tabs {
+    display: flex;
+    gap: 0.4rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 0.75rem;
+  }
+  .sc-tabs::-webkit-scrollbar { display: none; }
+  .sc-tab {
+    position: relative;
+    flex: none;
+    display: grid;
+    gap: 0.45rem;
+    min-width: 132px;
+    padding: 0.7rem 1rem 0.6rem;
+    border: 1px solid var(--line-on-ink);
+    border-radius: 12px;
+    background: transparent;
+    color: var(--text-on-ink-muted);
+    text-align: left;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background 0.3s, color 0.3s, border-color 0.3s;
+  }
+  .sc-tab:hover { color: var(--paper); }
+  .sc-tab[aria-selected='true'] {
+    background: var(--ink-raised);
+    color: var(--paper);
+    border-color: rgba(148, 188, 227, 0.35);
+  }
+  .sc-tab-bar { height: 2px; background: var(--line-on-ink); border-radius: 2px; overflow: hidden; }
+  .sc-tab-bar i { display: block; height: 100%; width: 100%; background: var(--tint); transform: scaleX(0); transform-origin: left; }
+
+  .sc-body {
+    display: grid;
+    grid-template-columns: minmax(260px, 4fr) 8fr;
+    gap: clamp(1.25rem, 3vw, 2.5rem);
+    padding: clamp(0.75rem, 2vw, 1.75rem);
+    padding-right: 0;
+  }
+  .sc-copies { display: grid; }
+  .sc-copy {
+    grid-area: 1 / 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(16px);
+    transition: opacity 0.5s var(--ease-out), transform 0.6s var(--ease-out), visibility 0.5s;
+  }
+  .sc-copy.on { opacity: 1; visibility: visible; transform: none; }
+  .sc-sector { color: var(--tint); text-transform: uppercase; }
+  .sc-title { font-size: clamp(1.75rem, 1.2rem + 1.6vw, 2.6rem); line-height: 1.05; }
+  .sc-text { color: var(--text-on-ink-muted); }
+  .sc-stats { display: flex; gap: 2rem; margin: 0.5rem 0 0; }
+  .sc-stats div { display: grid; gap: 0.15rem; }
+  .sc-stats dt { font-size: 2rem; line-height: 1; }
+  .sc-stats dd { margin: 0; color: var(--text-on-ink-muted); text-transform: uppercase; }
+  .sc-link {
+    margin-top: auto;
+    width: fit-content;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid var(--line-on-ink);
+    font-weight: 500;
+    transition: border-color 0.3s, color 0.3s;
+  }
+  .sc-link:hover { color: var(--tint); border-color: var(--tint); }
+
+  .sc-stage { display: grid; gap: 0.75rem; min-width: 0; }
+  .sc-wf { border: 1px solid var(--line-on-ink); overflow: hidden; }
+  .sc-wf :global(.wf-host) { padding: 0.75rem; }
+
+  .sc-log {
+    border: 1px solid var(--line-on-ink);
+    border-radius: var(--radius);
+    background: rgba(0, 0, 0, 0.18);
+    overflow: hidden;
+  }
+  .sc-log-head {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.55rem 0.9rem;
+    border-bottom: 1px solid var(--line-on-ink);
+    color: var(--text-on-ink-muted);
+    text-transform: uppercase;
+  }
+  .sc-log-list {
+    height: 7.2rem;
+    padding: 0.5rem 0.9rem;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 0.2rem;
+    font-size: 0.72rem;
+    color: var(--text-on-ink-muted);
+  }
+  .sc-log-list :global(li) { display: flex; gap: 0.75rem; white-space: nowrap; }
+  .sc-log-list :global(.ok) { color: var(--tint); }
+  .sc-log-list :global(.name) { color: var(--paper); overflow: hidden; text-overflow: ellipsis; }
+  .sc-log-list :global(.ms) { margin-left: auto; }
+
+  .sc-note { margin-top: 1.25rem; color: var(--text-on-ink-muted); opacity: 0.7; }
+
+  @media (max-width: 960px) {
+    .sc-body { grid-template-columns: 1fr; padding-right: clamp(0.75rem, 2vw, 1.75rem); }
+    .sc-copy { gap: 0.75rem; }
+  }
+</style>
+
+<script>
+  import '../../styles/workflow.css';
+  import { gsap, ScrollTrigger } from '../../scripts/motion';
+  import { renderWorkflow, buildTimeline, runTimeline } from '../../scripts/workflow';
+  import { showcase } from '../../data/workflows';
+
+  const root = document.querySelector<HTMLElement>('[data-sc]')!;
+  const tabs = [...root.querySelectorAll<HTMLButtonElement>('[data-sc-tab]')];
+  const copies = [...root.querySelectorAll<HTMLElement>('[data-sc-copy]')];
+  const host = root.querySelector<HTMLElement>('[data-sc-host]')!;
+  const scroller = root.querySelector<HTMLElement>('[data-sc-scroll]')!;
+  const log = root.querySelector<HTMLElement>('[data-sc-log]')!;
+  const runLabel = root.querySelector<HTMLElement>('[data-sc-run]')!;
+
+  const HOLD = 1.2;
+  let index = 0;
+  let master: gsap.core.Timeline | null = null;
+  let runCount = 0;
+  let inView = false;
+
+  const stamp = () => {
+    const d = new Date();
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`;
+  };
+  const addLog = (name: string) => {
+    const li = document.createElement('li');
+    const ms = 8 + Math.round(Math.random() * 140);
+    li.innerHTML = `<span class="ok">✓</span><span>${stamp()}</span><span class="name"></span><span class="ms">${ms} ms</span>`;
+    li.querySelector('.name')!.textContent = name;
+    log.appendChild(li);
+    gsap.from(li, { autoAlpha: 0, y: 6, duration: 0.4, ease: 'power3.out' });
+    while (log.children.length > 6) log.firstElementChild?.remove();
+  };
+
+  function show(i: number) {
+    master?.kill();
+    index = i;
+    tabs.forEach((t, k) => t.setAttribute('aria-selected', String(k === i)));
+    copies.forEach((c, k) => c.classList.toggle('on', k === i));
+    tabs.forEach((t) => gsap.set(t.querySelector('.sc-tab-bar i'), { scaleX: 0 }));
+    log.innerHTML = '';
+    runLabel.textContent = `run #${++runCount}`;
+
+    const spec = showcase[i];
+    const r = renderWorkflow(host, spec);
+    const build = buildTimeline(r, {
+      onNodeDone: (n) => addLog(n.label),
+      follow: window.innerWidth <= 760 ? scroller : null,
+    });
+    const run = runTimeline(r);
+
+    master = gsap.timeline({ onComplete: () => show((index + 1) % showcase.length) });
+    master.add(build.paused(false), 0);
+    const runAt = build.duration() + 0.4;
+    master.add(() => {
+      runLabel.textContent = `run #${++runCount}`;
+      addLog(`${spec.nodes[0].label} → triggered again`);
+    }, runAt);
+    master.add(run.paused(false), runAt);
+    const total = runAt + run.duration() + HOLD;
+    master.to(tabs[i].querySelector('.sc-tab-bar i'), { scaleX: 1, duration: total, ease: 'none' }, 0);
+    if (!inView) master.pause();
+  }
+
+  tabs.forEach((t, i) => t.addEventListener('click', () => show(i)));
+
+  ScrollTrigger.create({
+    trigger: root.querySelector('.sc-panel'),
+    start: 'top 75%',
+    end: 'bottom top',
+    onToggle(self) {
+      inView = self.isActive;
+      if (!master) show(0);
+      if (inView) master?.play();
+      else master?.pause();
+    },
+  });
+</script>

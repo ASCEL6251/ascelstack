@@ -1,0 +1,2090 @@
+[
+  {
+    "id": "ASC-0001",
+    "category": "Technology & Software Development",
+    "subcategory": "",
+    "name": "Website Development",
+    "description": "Business, portfolio, corporate and e-commerce websites",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0002",
+    "category": "Technology & Software Development",
+    "subcategory": "",
+    "name": "Web Application Development",
+    "description": "Custom business web applications",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0003",
+    "category": "Technology & Software Development",
+    "subcategory": "",
+    "name": "Mobile App Development",
+    "description": "Android and iOS applications",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0004",
+    "category": "Technology & Software Development",
+    "subcategory": "",
+    "name": "E-commerce Development",
+    "description": "Online shopping platforms",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0005",
+    "category": "Technology & Software Development",
+    "subcategory": "",
+    "name": "SaaS Development",
+    "description": "Subscription-based software",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0006",
+    "category": "Technology & Software Development",
+    "subcategory": "",
+    "name": "UI/UX Design",
+    "description": "Website and app interface design",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0007",
+    "category": "Technology & Software Development",
+    "subcategory": "",
+    "name": "Custom Software Development",
+    "description": "Tailored software solutions",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0008",
+    "category": "Technology & Software Development",
+    "subcategory": "",
+    "name": "API Development & Integration",
+    "description": "Third-party API integration",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0009",
+    "category": "Technology & Software Development",
+    "subcategory": "",
+    "name": "CRM Development",
+    "description": "Customer relationship management systems",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0010",
+    "category": "Technology & Software Development",
+    "subcategory": "",
+    "name": "ERP Development",
+    "description": "Enterprise resource planning systems",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0011",
+    "category": "Technology & Software Development",
+    "subcategory": "",
+    "name": "AI Integration",
+    "description": "AI-powered business solutions",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0012",
+    "category": "Technology & Software Development",
+    "subcategory": "",
+    "name": "Chatbot Development",
+    "description": "Website and WhatsApp chatbots",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0013",
+    "category": "Technology & Software Development",
+    "subcategory": "",
+    "name": "Website Audit",
+    "description": "Technical, SEO, security and performance audits",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0014",
+    "category": "Technology & Software Development",
+    "subcategory": "",
+    "name": "Website Maintenance",
+    "description": "Regular updates and technical support",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0015",
+    "category": "Technology & Software Development",
+    "subcategory": "",
+    "name": "Domain & Hosting",
+    "description": "Domain registration and hosting management",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0016",
+    "category": "Technology & Software Development",
+    "subcategory": "",
+    "name": "Cloud Deployment",
+    "description": "Application deployment and cloud infrastructure",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0017",
+    "category": "Technology & Software Development",
+    "subcategory": "",
+    "name": "Payment Gateway Integration",
+    "description": "Online payment integration",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0018",
+    "category": "Technology & Software Development",
+    "subcategory": "",
+    "name": "Database Management",
+    "description": "Database design, maintenance and optimization",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0019",
+    "category": "Technology & Software Development",
+    "subcategory": "",
+    "name": "Software Testing & QA",
+    "description": "Functional, performance and quality testing",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0020",
+    "category": "Technology & Software Development",
+    "subcategory": "",
+    "name": "Website Security",
+    "description": "SSL, security hardening and vulnerability assessment",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0021",
+    "category": "Digital Marketing & Online Growth",
+    "subcategory": "",
+    "name": "SEO",
+    "description": "Search Engine Optimization",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0022",
+    "category": "Digital Marketing & Online Growth",
+    "subcategory": "",
+    "name": "GEO",
+    "description": "Generative Engine Optimization",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0023",
+    "category": "Digital Marketing & Online Growth",
+    "subcategory": "",
+    "name": "AEO",
+    "description": "Answer Engine Optimization",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0024",
+    "category": "Digital Marketing & Online Growth",
+    "subcategory": "",
+    "name": "Google Ads",
+    "description": "Search, display and YouTube advertising",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0025",
+    "category": "Digital Marketing & Online Growth",
+    "subcategory": "",
+    "name": "Meta Ads",
+    "description": "Facebook and Instagram advertising",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0026",
+    "category": "Digital Marketing & Online Growth",
+    "subcategory": "",
+    "name": "YouTube Marketing",
+    "description": "Video promotions and campaigns",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0027",
+    "category": "Digital Marketing & Online Growth",
+    "subcategory": "",
+    "name": "Social Media Marketing",
+    "description": "Organic growth strategies",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0028",
+    "category": "Digital Marketing & Online Growth",
+    "subcategory": "",
+    "name": "Influencer Marketing",
+    "description": "Influencer collaborations",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0029",
+    "category": "Digital Marketing & Online Growth",
+    "subcategory": "",
+    "name": "Lead Generation",
+    "description": "Business leads and customer acquisition",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0030",
+    "category": "Digital Marketing & Online Growth",
+    "subcategory": "",
+    "name": "Email Marketing",
+    "description": "Promotional and automated emails",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0031",
+    "category": "Digital Marketing & Online Growth",
+    "subcategory": "",
+    "name": "WhatsApp Marketing",
+    "description": "Customer engagement campaigns",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0032",
+    "category": "Digital Marketing & Online Growth",
+    "subcategory": "",
+    "name": "Affiliate Marketing",
+    "description": "Affiliate partnership management",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0033",
+    "category": "Digital Marketing & Online Growth",
+    "subcategory": "",
+    "name": "Online Reputation Management",
+    "description": "Reviews and brand reputation",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0034",
+    "category": "Digital Marketing & Online Growth",
+    "subcategory": "",
+    "name": "Conversion Rate Optimization",
+    "description": "Improving website conversions",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0035",
+    "category": "Digital Marketing & Online Growth",
+    "subcategory": "",
+    "name": "Local SEO",
+    "description": "Google Maps and local search visibility",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0036",
+    "category": "Digital Marketing & Online Growth",
+    "subcategory": "",
+    "name": "Competitor Analysis",
+    "description": "Competitor research and market positioning",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0037",
+    "category": "Digital Marketing & Online Growth",
+    "subcategory": "",
+    "name": "Marketing Analytics",
+    "description": "Campaign tracking and performance reports",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0038",
+    "category": "Digital Marketing & Online Growth",
+    "subcategory": "",
+    "name": "Remarketing & Retargeting",
+    "description": "Re-engaging potential customers",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0039",
+    "category": "Branding, Graphics & Creative Studio",
+    "subcategory": "",
+    "name": "Logo Designing",
+    "description": "Professional logo creation",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0040",
+    "category": "Branding, Graphics & Creative Studio",
+    "subcategory": "",
+    "name": "Brand Identity",
+    "description": "Complete visual brand identity",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0041",
+    "category": "Branding, Graphics & Creative Studio",
+    "subcategory": "",
+    "name": "Brand Guidelines",
+    "description": "Brand usage and design standards",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0042",
+    "category": "Branding, Graphics & Creative Studio",
+    "subcategory": "",
+    "name": "Business Card Designing",
+    "description": "Professional visiting cards",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0043",
+    "category": "Branding, Graphics & Creative Studio",
+    "subcategory": "",
+    "name": "Brochure & Catalogue Design",
+    "description": "Marketing brochures and product catalogues",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0044",
+    "category": "Branding, Graphics & Creative Studio",
+    "subcategory": "",
+    "name": "Packaging Design",
+    "description": "Product packaging and labels",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0045",
+    "category": "Branding, Graphics & Creative Studio",
+    "subcategory": "",
+    "name": "Promotional Video Production",
+    "description": "Business and product promotional videos",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0046",
+    "category": "Branding, Graphics & Creative Studio",
+    "subcategory": "",
+    "name": "Reels & Short Video Editing",
+    "description": "Instagram, YouTube and Facebook videos",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0047",
+    "category": "Branding, Graphics & Creative Studio",
+    "subcategory": "",
+    "name": "Motion Graphics",
+    "description": "Animated promotional graphics",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0048",
+    "category": "Branding, Graphics & Creative Studio",
+    "subcategory": "",
+    "name": "Animation & Explainer Videos",
+    "description": "Product and service explainers",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0049",
+    "category": "Branding, Graphics & Creative Studio",
+    "subcategory": "",
+    "name": "Advertisement Creatives",
+    "description": "Digital advertising designs",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0050",
+    "category": "Branding, Graphics & Creative Studio",
+    "subcategory": "",
+    "name": "Menu Card Designing",
+    "description": "Restaurant and cafe menus",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0051",
+    "category": "Branding, Graphics & Creative Studio",
+    "subcategory": "",
+    "name": "Thumbnail Designing",
+    "description": "YouTube and video thumbnails",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0052",
+    "category": "Branding, Graphics & Creative Studio",
+    "subcategory": "",
+    "name": "Corporate Presentation Design",
+    "description": "Company profiles and pitch decks",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0053",
+    "category": "Branding, Graphics & Creative Studio",
+    "subcategory": "",
+    "name": "Product Photography",
+    "description": "Commercial product photography",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0054",
+    "category": "Branding, Graphics & Creative Studio",
+    "subcategory": "",
+    "name": "Social Media Creatives",
+    "description": "Posts, banners and story designs",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0055",
+    "category": "Business Management & Digital Operations",
+    "subcategory": "",
+    "name": "Business Process Management",
+    "description": "Business workflow management",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0056",
+    "category": "Business Management & Digital Operations",
+    "subcategory": "",
+    "name": "Business Automation",
+    "description": "Automated business operations",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0057",
+    "category": "Business Management & Digital Operations",
+    "subcategory": "",
+    "name": "Inventory Management",
+    "description": "Stock and inventory tracking",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0058",
+    "category": "Business Management & Digital Operations",
+    "subcategory": "",
+    "name": "Billing & Invoicing",
+    "description": "Digital billing systems",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0059",
+    "category": "Business Management & Digital Operations",
+    "subcategory": "",
+    "name": "POS System Setup",
+    "description": "Point-of-sale solutions",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0060",
+    "category": "Business Management & Digital Operations",
+    "subcategory": "",
+    "name": "CRM Setup & Management",
+    "description": "Customer relationship management",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0061",
+    "category": "Business Management & Digital Operations",
+    "subcategory": "",
+    "name": "ERP Implementation",
+    "description": "Business resource management",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0062",
+    "category": "Business Management & Digital Operations",
+    "subcategory": "",
+    "name": "Employee Management",
+    "description": "Employee information systems",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0063",
+    "category": "Business Management & Digital Operations",
+    "subcategory": "",
+    "name": "Attendance Management",
+    "description": "Employee attendance tracking",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0064",
+    "category": "Business Management & Digital Operations",
+    "subcategory": "",
+    "name": "Payroll Software Setup",
+    "description": "Salary and payroll management",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0065",
+    "category": "Business Management & Digital Operations",
+    "subcategory": "",
+    "name": "Customer Database Management",
+    "description": "Customer records and segmentation",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0066",
+    "category": "Business Management & Digital Operations",
+    "subcategory": "",
+    "name": "Sales Management",
+    "description": "Sales tracking and reporting",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0067",
+    "category": "Business Management & Digital Operations",
+    "subcategory": "",
+    "name": "Vendor Management",
+    "description": "Supplier and vendor management",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0068",
+    "category": "Business Management & Digital Operations",
+    "subcategory": "",
+    "name": "Business Analytics",
+    "description": "Business performance analysis",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0069",
+    "category": "Business Management & Digital Operations",
+    "subcategory": "",
+    "name": "Reporting & Dashboards",
+    "description": "Customized reporting systems",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0070",
+    "category": "Business Management & Digital Operations",
+    "subcategory": "",
+    "name": "Workflow Automation",
+    "description": "Automated task management",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0071",
+    "category": "Business Management & Digital Operations",
+    "subcategory": "",
+    "name": "WhatsApp Business Automation",
+    "description": "Automated business communication",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0072",
+    "category": "Business Management & Digital Operations",
+    "subcategory": "",
+    "name": "Appointment Management",
+    "description": "Booking and scheduling systems",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0073",
+    "category": "Business Management & Digital Operations",
+    "subcategory": "",
+    "name": "Loyalty Management",
+    "description": "Customer retention and rewards",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0074",
+    "category": "E-commerce & Marketplace Management",
+    "subcategory": "",
+    "name": "E-commerce Store Development",
+    "description": "Online shopping website development",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0075",
+    "category": "E-commerce & Marketplace Management",
+    "subcategory": "",
+    "name": "Amazon Seller Onboarding",
+    "description": "Seller account setup assistance",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0076",
+    "category": "E-commerce & Marketplace Management",
+    "subcategory": "",
+    "name": "Flipkart Seller Onboarding",
+    "description": "Marketplace registration assistance",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0077",
+    "category": "E-commerce & Marketplace Management",
+    "subcategory": "",
+    "name": "Meesho Seller Onboarding",
+    "description": "Seller account setup",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0078",
+    "category": "E-commerce & Marketplace Management",
+    "subcategory": "",
+    "name": "Shopify Store Setup",
+    "description": "Shopify e-commerce store",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0079",
+    "category": "E-commerce & Marketplace Management",
+    "subcategory": "",
+    "name": "WooCommerce Setup",
+    "description": "WordPress-based online store",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0080",
+    "category": "E-commerce & Marketplace Management",
+    "subcategory": "",
+    "name": "Product Listing",
+    "description": "Product uploading and cataloguing",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0081",
+    "category": "E-commerce & Marketplace Management",
+    "subcategory": "",
+    "name": "Product SEO",
+    "description": "Marketplace product optimization",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0082",
+    "category": "E-commerce & Marketplace Management",
+    "subcategory": "",
+    "name": "Marketplace Account Management",
+    "description": "Seller account management",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0083",
+    "category": "E-commerce & Marketplace Management",
+    "subcategory": "",
+    "name": "Order Management",
+    "description": "Order processing and tracking",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0084",
+    "category": "E-commerce & Marketplace Management",
+    "subcategory": "",
+    "name": "Inventory Synchronization",
+    "description": "Stock synchronization",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0085",
+    "category": "E-commerce & Marketplace Management",
+    "subcategory": "",
+    "name": "Marketplace Advertising",
+    "description": "Marketplace promotional campaigns",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0086",
+    "category": "E-commerce & Marketplace Management",
+    "subcategory": "",
+    "name": "Customer Support Management",
+    "description": "Customer queries and support",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0087",
+    "category": "E-commerce & Marketplace Management",
+    "subcategory": "",
+    "name": "Product Photography",
+    "description": "Product images and editing",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0088",
+    "category": "E-commerce & Marketplace Management",
+    "subcategory": "",
+    "name": "Sales Analytics",
+    "description": "Marketplace sales reporting",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0089",
+    "category": "E-commerce & Marketplace Management",
+    "subcategory": "",
+    "name": "Returns & Refund Management",
+    "description": "Return and refund workflow assistance",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0090",
+    "category": "Restaurant, Cafe & Food Business Solutions",
+    "subcategory": "",
+    "name": "Swiggy Onboarding",
+    "description": "Restaurant registration assistance",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0091",
+    "category": "Restaurant, Cafe & Food Business Solutions",
+    "subcategory": "",
+    "name": "Zomato Onboarding",
+    "description": "Restaurant registration assistance",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0092",
+    "category": "Restaurant, Cafe & Food Business Solutions",
+    "subcategory": "",
+    "name": "Google Business Profile",
+    "description": "Restaurant listing and optimization",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0093",
+    "category": "Restaurant, Cafe & Food Business Solutions",
+    "subcategory": "",
+    "name": "Restaurant Website",
+    "description": "Website development",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0094",
+    "category": "Restaurant, Cafe & Food Business Solutions",
+    "subcategory": "",
+    "name": "Digital Menu Card",
+    "description": "Digital food menus",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0095",
+    "category": "Restaurant, Cafe & Food Business Solutions",
+    "subcategory": "",
+    "name": "QR Code Menu",
+    "description": "Scan-and-view menus",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0096",
+    "category": "Restaurant, Cafe & Food Business Solutions",
+    "subcategory": "",
+    "name": "Online Ordering System",
+    "description": "Direct restaurant ordering",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0097",
+    "category": "Restaurant, Cafe & Food Business Solutions",
+    "subcategory": "",
+    "name": "Restaurant POS Setup",
+    "description": "Restaurant billing systems",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0098",
+    "category": "Restaurant, Cafe & Food Business Solutions",
+    "subcategory": "",
+    "name": "Food Photography",
+    "description": "Professional food photography",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0099",
+    "category": "Restaurant, Cafe & Food Business Solutions",
+    "subcategory": "",
+    "name": "Restaurant Branding",
+    "description": "Brand identity and positioning",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0100",
+    "category": "Restaurant, Cafe & Food Business Solutions",
+    "subcategory": "",
+    "name": "Food Packaging Design",
+    "description": "Food packaging and labels",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0101",
+    "category": "Restaurant, Cafe & Food Business Solutions",
+    "subcategory": "",
+    "name": "Social Media Management",
+    "description": "Restaurant social media handling",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0102",
+    "category": "Restaurant, Cafe & Food Business Solutions",
+    "subcategory": "",
+    "name": "Restaurant Advertisement",
+    "description": "Google and Meta campaigns",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0103",
+    "category": "Restaurant, Cafe & Food Business Solutions",
+    "subcategory": "",
+    "name": "Customer Review Management",
+    "description": "Online reputation management",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0104",
+    "category": "Restaurant, Cafe & Food Business Solutions",
+    "subcategory": "",
+    "name": "Table Reservation System",
+    "description": "Online table booking",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0105",
+    "category": "Restaurant, Cafe & Food Business Solutions",
+    "subcategory": "",
+    "name": "Loyalty & Membership Programs",
+    "description": "Customer rewards",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0106",
+    "category": "Restaurant, Cafe & Food Business Solutions",
+    "subcategory": "",
+    "name": "Restaurant Inventory",
+    "description": "Raw material and stock management",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0107",
+    "category": "Restaurant, Cafe & Food Business Solutions",
+    "subcategory": "",
+    "name": "Kitchen Display System",
+    "description": "Digital kitchen order management",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0108",
+    "category": "Restaurant, Cafe & Food Business Solutions",
+    "subcategory": "",
+    "name": "Food Cost Management",
+    "description": "Recipe costing and profitability tracking",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0109",
+    "category": "Restaurant, Cafe & Food Business Solutions",
+    "subcategory": "",
+    "name": "Delivery Management",
+    "description": "Delivery workflow solutions",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0110",
+    "category": "AI, Automation & Emerging Technologies",
+    "subcategory": "",
+    "name": "AI Chatbot Integration",
+    "description": "AI-powered chatbots",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0111",
+    "category": "AI, Automation & Emerging Technologies",
+    "subcategory": "",
+    "name": "AI Customer Support Agents",
+    "description": "Automated customer assistance",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0112",
+    "category": "AI, Automation & Emerging Technologies",
+    "subcategory": "",
+    "name": "AI Lead Generation",
+    "description": "AI-assisted prospect identification",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0113",
+    "category": "AI, Automation & Emerging Technologies",
+    "subcategory": "",
+    "name": "AI Content Generation",
+    "description": "Content creation workflows",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0114",
+    "category": "AI, Automation & Emerging Technologies",
+    "subcategory": "",
+    "name": "AI Business Analytics",
+    "description": "Intelligent business insights",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0115",
+    "category": "AI, Automation & Emerging Technologies",
+    "subcategory": "",
+    "name": "WhatsApp AI Automation",
+    "description": "AI-based WhatsApp communication",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0116",
+    "category": "AI, Automation & Emerging Technologies",
+    "subcategory": "",
+    "name": "Appointment Automation",
+    "description": "Automated appointment booking",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0117",
+    "category": "AI, Automation & Emerging Technologies",
+    "subcategory": "",
+    "name": "Email Automation",
+    "description": "Automated email workflows",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0118",
+    "category": "AI, Automation & Emerging Technologies",
+    "subcategory": "",
+    "name": "Invoice Automation",
+    "description": "Automated billing processes",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0119",
+    "category": "AI, Automation & Emerging Technologies",
+    "subcategory": "",
+    "name": "CRM Automation",
+    "description": "Automated customer management",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0120",
+    "category": "AI, Automation & Emerging Technologies",
+    "subcategory": "",
+    "name": "No-Code & Low-Code Development",
+    "description": "Faster application development",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0121",
+    "category": "AI, Automation & Emerging Technologies",
+    "subcategory": "",
+    "name": "AI Voice Agents",
+    "description": "Automated voice-based assistance",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0122",
+    "category": "AI, Automation & Emerging Technologies",
+    "subcategory": "",
+    "name": "Document Processing",
+    "description": "AI-powered document extraction",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0123",
+    "category": "AI, Automation & Emerging Technologies",
+    "subcategory": "",
+    "name": "Custom AI Tool Development",
+    "description": "Customized AI applications",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0124",
+    "category": "AI, Automation & Emerging Technologies",
+    "subcategory": "",
+    "name": "AI Workflow Integration",
+    "description": "AI integration into existing business systems",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0125",
+    "category": "AI, Automation & Emerging Technologies",
+    "subcategory": "",
+    "name": "AI Knowledge Base",
+    "description": "Internal business knowledge assistants",
+    "priority": "core",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0126",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Business Registration & Startup Establishment",
+    "name": "Udyam Registration",
+    "description": "MSME registration",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0127",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Business Registration & Startup Establishment",
+    "name": "Proprietorship Setup",
+    "description": "Sole proprietorship documentation assistance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0128",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Business Registration & Startup Establishment",
+    "name": "Partnership Firm Registration",
+    "description": "Partnership deed and registration support",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0129",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Business Registration & Startup Establishment",
+    "name": "LLP Registration",
+    "description": "Limited Liability Partnership incorporation assistance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0130",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Business Registration & Startup Establishment",
+    "name": "Private Limited Company",
+    "description": "Company incorporation assistance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0131",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Business Registration & Startup Establishment",
+    "name": "OPC Registration",
+    "description": "One Person Company incorporation assistance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0132",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Business Registration & Startup Establishment",
+    "name": "Startup India Registration",
+    "description": "DPIIT recognition assistance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0133",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Business Registration & Startup Establishment",
+    "name": "Digital Signature Certificate (DSC)",
+    "description": "DSC application assistance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0134",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Business Registration & Startup Establishment",
+    "name": "Director Identification Number (DIN)",
+    "description": "DIN application support",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0135",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Business Registration & Startup Establishment",
+    "name": "PAN Assistance",
+    "description": "Business PAN application",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0136",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Business Registration & Startup Establishment",
+    "name": "TAN Assistance",
+    "description": "Tax deduction account application",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0137",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Taxation & Financial Registrations",
+    "name": "GST Registration",
+    "description": "New GST registration",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0138",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Taxation & Financial Registrations",
+    "name": "GST Amendment",
+    "description": "Changes to GST details",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0139",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Taxation & Financial Registrations",
+    "name": "GST Return Filing",
+    "description": "GSTR-1, GSTR-3B and applicable returns",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0140",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Taxation & Financial Registrations",
+    "name": "ITR Filing",
+    "description": "Individual and business income tax returns",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0141",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Taxation & Financial Registrations",
+    "name": "TAN Registration",
+    "description": "Tax deduction and collection account number",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0142",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Taxation & Financial Registrations",
+    "name": "TDS Return Filing",
+    "description": "Applicable TDS compliance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0143",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Taxation & Financial Registrations",
+    "name": "Professional Tax Registration",
+    "description": "State-specific registration",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0144",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Taxation & Financial Registrations",
+    "name": "LUT Application",
+    "description": "Letter of Undertaking for eligible exporters",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0145",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Taxation & Financial Registrations",
+    "name": "E-Way Bill Assistance",
+    "description": "E-way bill setup",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0146",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Taxation & Financial Registrations",
+    "name": "Accounting & Bookkeeping",
+    "description": "Financial record maintenance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0147",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Taxation & Financial Registrations",
+    "name": "GST Cancellation",
+    "description": "GST cancellation assistance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0148",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Taxation & Financial Registrations",
+    "name": "GST Reconciliation",
+    "description": "Purchase, sales and tax reconciliation",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0149",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Trade Licenses & Local Business Permissions",
+    "name": "Trade License",
+    "description": "Municipal trade license",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0150",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Trade Licenses & Local Business Permissions",
+    "name": "Shop & Establishment Registration",
+    "description": "State-specific registration",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0151",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Trade Licenses & Local Business Permissions",
+    "name": "Fire NOC",
+    "description": "Fire safety approval assistance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0152",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Trade Licenses & Local Business Permissions",
+    "name": "Pollution Control NOC",
+    "description": "Applicable pollution consent",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0153",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Trade Licenses & Local Business Permissions",
+    "name": "Factory License",
+    "description": "Factory licensing assistance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0154",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Trade Licenses & Local Business Permissions",
+    "name": "Signage Permission",
+    "description": "Local signage approval assistance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0155",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Trade Licenses & Local Business Permissions",
+    "name": "Health Trade License",
+    "description": "Applicable local health permissions",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0156",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Trade Licenses & Local Business Permissions",
+    "name": "Commercial Utility Assistance",
+    "description": "Commercial electricity and related applications",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0157",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Intellectual Property & Brand Protection",
+    "name": "Trademark Search",
+    "description": "Brand name availability search",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0158",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Intellectual Property & Brand Protection",
+    "name": "Trademark Registration",
+    "description": "Trademark application assistance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0159",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Intellectual Property & Brand Protection",
+    "name": "Trademark Objection",
+    "description": "Objection response assistance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0160",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Intellectual Property & Brand Protection",
+    "name": "Trademark Renewal",
+    "description": "Renewal application assistance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0161",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Intellectual Property & Brand Protection",
+    "name": "Copyright Registration",
+    "description": "Copyright application assistance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0162",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Intellectual Property & Brand Protection",
+    "name": "Patent Application",
+    "description": "Patent filing coordination",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0163",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Intellectual Property & Brand Protection",
+    "name": "Design Registration",
+    "description": "Industrial design protection",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0164",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Intellectual Property & Brand Protection",
+    "name": "Trademark Assignment",
+    "description": "Ownership transfer assistance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0165",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Intellectual Property & Brand Protection",
+    "name": "Brand Protection",
+    "description": "Intellectual property support",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0166",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Food Business & FSSAI Compliance",
+    "name": "Basic FSSAI Registration",
+    "description": "Basic food business registration",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0167",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Food Business & FSSAI Compliance",
+    "name": "State FSSAI License",
+    "description": "State-level food license",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0168",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Food Business & FSSAI Compliance",
+    "name": "Central FSSAI License",
+    "description": "Central food license",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0169",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Food Business & FSSAI Compliance",
+    "name": "FSSAI Renewal",
+    "description": "License renewal assistance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0170",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Food Business & FSSAI Compliance",
+    "name": "FSSAI Modification",
+    "description": "License detail modification",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0171",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Food Business & FSSAI Compliance",
+    "name": "FSSAI Annual Return",
+    "description": "Applicable annual return assistance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0172",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Food Business & FSSAI Compliance",
+    "name": "Food Business Category Assessment",
+    "description": "Correct license category identification",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0173",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Food Business & FSSAI Compliance",
+    "name": "FoSTaC Training Coordination",
+    "description": "Food safety training coordination",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0174",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Food Business & FSSAI Compliance",
+    "name": "Food Lab Testing Coordination",
+    "description": "Food testing coordination",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0175",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Food Business & FSSAI Compliance",
+    "name": "Food Labelling Compliance",
+    "description": "Packaging and label compliance assistance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0176",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Food Business & FSSAI Compliance",
+    "name": "Nutritional Information Coordination",
+    "description": "Nutritional information coordination",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0177",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Food Business & FSSAI Compliance",
+    "name": "Swiggy & Zomato Documentation",
+    "description": "Food platform documentation support",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0178",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Import & Export Registrations",
+    "name": "Import Export Code (IEC)",
+    "description": "IEC application assistance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0179",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Import & Export Registrations",
+    "name": "APEDA Registration",
+    "description": "Agricultural export registration assistance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0180",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Import & Export Registrations",
+    "name": "RCMC",
+    "description": "Registration-cum-membership certificate assistance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0181",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Import & Export Registrations",
+    "name": "AD Code Registration",
+    "description": "Bank AD code registration support",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0182",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Import & Export Registrations",
+    "name": "Export Documentation",
+    "description": "Export documentation assistance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0183",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Import & Export Registrations",
+    "name": "Import Documentation",
+    "description": "Import documentation assistance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0184",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Labour & Employee Compliance",
+    "name": "EPFO Registration",
+    "description": "Employee provident fund registration",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0185",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Labour & Employee Compliance",
+    "name": "ESIC Registration",
+    "description": "Employee state insurance registration",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0186",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Labour & Employee Compliance",
+    "name": "Labour License",
+    "description": "Applicable labour licensing assistance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0187",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Labour & Employee Compliance",
+    "name": "Contract Labour Registration",
+    "description": "Applicable contract labour compliance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0188",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Labour & Employee Compliance",
+    "name": "Payroll Compliance",
+    "description": "Payroll documentation and compliance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0189",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Labour & Employee Compliance",
+    "name": "POSH Compliance",
+    "description": "Workplace compliance support",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0190",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Labour & Employee Compliance",
+    "name": "Employee Documentation",
+    "description": "Employment records and documentation",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0191",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Other Business Certifications & Registrations",
+    "name": "GeM Seller Registration",
+    "description": "Government e-Marketplace seller registration assistance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0192",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Other Business Certifications & Registrations",
+    "name": "NSIC Registration",
+    "description": "NSIC registration assistance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0193",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Other Business Certifications & Registrations",
+    "name": "ISO Certification Coordination",
+    "description": "ISO certification coordination",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0194",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Other Business Certifications & Registrations",
+    "name": "BIS Certification Assistance",
+    "description": "BIS certification assistance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0195",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Other Business Certifications & Registrations",
+    "name": "Legal Metrology Registration",
+    "description": "Legal Metrology registration assistance",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0196",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Other Business Certifications & Registrations",
+    "name": "MSME Scheme Application Assistance",
+    "description": "Assistance with eligible MSME scheme applications",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0197",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Other Business Certifications & Registrations",
+    "name": "Startup India Scheme Assistance",
+    "description": "Assistance with eligible Startup India schemes",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0198",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Other Business Certifications & Registrations",
+    "name": "RERA Registration Assistance",
+    "description": "RERA registration assistance where applicable",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0199",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Other Business Certifications & Registrations",
+    "name": "Drug License Assistance",
+    "description": "Drug license assistance where applicable",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0200",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Other Business Certifications & Registrations",
+    "name": "Clinical Establishment Registration Assistance",
+    "description": "Registration assistance where applicable",
+    "priority": "core",
+    "notes": "Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+  },
+  {
+    "id": "ASC-0201",
+    "category": "IT Infrastructure & Technical Support",
+    "subcategory": "",
+    "name": "Cloud Migration",
+    "description": "Migration of applications and data to cloud platforms",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0202",
+    "category": "IT Infrastructure & Technical Support",
+    "subcategory": "",
+    "name": "Server Management",
+    "description": "Server setup, monitoring and maintenance",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0203",
+    "category": "IT Infrastructure & Technical Support",
+    "subcategory": "",
+    "name": "Backup & Recovery",
+    "description": "Data backup and recovery planning",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0204",
+    "category": "IT Infrastructure & Technical Support",
+    "subcategory": "",
+    "name": "Cybersecurity Support",
+    "description": "Security assessment and implementation support",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0205",
+    "category": "IT Infrastructure & Technical Support",
+    "subcategory": "",
+    "name": "Business Email Setup",
+    "description": "Professional business email configuration",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0206",
+    "category": "IT Infrastructure & Technical Support",
+    "subcategory": "",
+    "name": "Google Workspace Implementation",
+    "description": "Google Workspace setup and administration",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0207",
+    "category": "IT Infrastructure & Technical Support",
+    "subcategory": "",
+    "name": "Microsoft 365 Implementation",
+    "description": "Microsoft 365 setup and administration",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0208",
+    "category": "IT Infrastructure & Technical Support",
+    "subcategory": "",
+    "name": "Network Setup",
+    "description": "Business network setup and troubleshooting",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0209",
+    "category": "IT Infrastructure & Technical Support",
+    "subcategory": "",
+    "name": "IT Support Contracts",
+    "description": "Ongoing technical support and maintenance",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0210",
+    "category": "HR & Recruitment Solutions",
+    "subcategory": "",
+    "name": "Recruitment Assistance",
+    "description": "Candidate sourcing and recruitment coordination",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0211",
+    "category": "HR & Recruitment Solutions",
+    "subcategory": "",
+    "name": "Job Portal Management",
+    "description": "Job posting and applicant tracking support",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0212",
+    "category": "HR & Recruitment Solutions",
+    "subcategory": "",
+    "name": "Resume Screening",
+    "description": "Initial resume screening support",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0213",
+    "category": "HR & Recruitment Solutions",
+    "subcategory": "",
+    "name": "LinkedIn Recruitment Campaigns",
+    "description": "Recruitment campaigns on LinkedIn",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0214",
+    "category": "HR & Recruitment Solutions",
+    "subcategory": "",
+    "name": "Employee Onboarding",
+    "description": "Employee onboarding workflows",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0215",
+    "category": "HR & Recruitment Solutions",
+    "subcategory": "",
+    "name": "HRMS Implementation",
+    "description": "Human resource management system setup",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0216",
+    "category": "HR & Recruitment Solutions",
+    "subcategory": "",
+    "name": "Corporate Training Coordination",
+    "description": "Employee training coordination",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0217",
+    "category": "Education & Training",
+    "subcategory": "",
+    "name": "Programming Workshops",
+    "description": "Practical programming workshops",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0218",
+    "category": "Education & Training",
+    "subcategory": "",
+    "name": "Digital Marketing Training",
+    "description": "SEO, advertising and social media training",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0219",
+    "category": "Education & Training",
+    "subcategory": "",
+    "name": "AI Tools Workshops",
+    "description": "Training on AI tools and workflows",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0220",
+    "category": "Education & Training",
+    "subcategory": "",
+    "name": "Corporate Digital Training",
+    "description": "Digital skills training for teams",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0221",
+    "category": "Education & Training",
+    "subcategory": "",
+    "name": "Technical Workshops",
+    "description": "Technology workshops and seminars",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0222",
+    "category": "Startup & Business Consulting",
+    "subcategory": "",
+    "name": "Business Plan Preparation",
+    "description": "Business plan development support",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0223",
+    "category": "Startup & Business Consulting",
+    "subcategory": "",
+    "name": "Market Research",
+    "description": "Market and customer research",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0224",
+    "category": "Startup & Business Consulting",
+    "subcategory": "",
+    "name": "Competitor Research",
+    "description": "Competitor and industry analysis",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0225",
+    "category": "Startup & Business Consulting",
+    "subcategory": "",
+    "name": "Go-to-Market Strategy",
+    "description": "Product and service launch planning",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0226",
+    "category": "Startup & Business Consulting",
+    "subcategory": "",
+    "name": "Pitch Deck Preparation",
+    "description": "Investor and business presentation preparation",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0227",
+    "category": "Startup & Business Consulting",
+    "subcategory": "",
+    "name": "Digital Transformation Consulting",
+    "description": "Technology adoption and process improvement",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0228",
+    "category": "Startup & Business Consulting",
+    "subcategory": "",
+    "name": "Business Expansion Planning",
+    "description": "Business growth and expansion planning",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0229",
+    "category": "Corporate Solutions",
+    "subcategory": "",
+    "name": "Enterprise Software Solutions",
+    "description": "Custom enterprise software solutions",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0230",
+    "category": "Corporate Solutions",
+    "subcategory": "",
+    "name": "Corporate Website Development",
+    "description": "Corporate website design and development",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0231",
+    "category": "Corporate Solutions",
+    "subcategory": "",
+    "name": "IT Support for Businesses",
+    "description": "Ongoing business IT support",
+    "priority": "future",
+    "notes": ""
+  },
+  {
+    "id": "ASC-0232",
+    "category": "Corporate Solutions",
+    "subcategory": "",
+    "name": "Digital Transformation Projects",
+    "description": "End-to-end digital transformation support",
+    "priority": "future",
+    "notes": ""
+  }
+]

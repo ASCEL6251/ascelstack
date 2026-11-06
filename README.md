@@ -24,4 +24,3 @@ Tokens live in `src/styles/global.css`.
 ## Notes
 - The CSV's `category_id` column is off by one on the last row of each category; the site groups by category name instead.
 - Anything marked with a dashed `TEMP` tag (email, hours, stats, timelines) is placeholder copy.
-# Ascelstack

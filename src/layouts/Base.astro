@@ -1,0 +1,59 @@
+---
+import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Nav starts transparent over a light hero. */
+  navTone?: 'light' | 'dark';
+}
+
+const {
+  title,
+  description = 'Ascelstack builds, grows and runs businesses: software, web and apps, marketing and brand, operations, AI automation and compliance — under one roof.',
+  navTone = 'light',
+} = Astro.props;
+
+const fullTitle = title ? `${title} · Ascelstack` : 'Ascelstack — Build, grow and run your business on one stack';
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#1D2D3D" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Ascelstack" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bacasime+Antique&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <Nav tone={navTone} />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+
+    <script>
+      import { initMotion } from '../scripts/motion';
+      initMotion();
+    </script>
+  </body>
+</html>

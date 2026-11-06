@@ -1,0 +1,149 @@
+---
+import Base from '../layouts/Base.astro';
+import ScrubHero from '../components/automation/ScrubHero.astro';
+import Showcase from '../components/automation/Showcase.astro';
+import Anatomy from '../components/automation/Anatomy.astro';
+
+// Systems we commonly connect. Names only; no endorsement implied.
+const systems = [
+  'WhatsApp Business', 'Gmail', 'Google Sheets', 'Google Calendar', 'Shopify', 'WooCommerce', 'Amazon Seller',
+  'Flipkart Seller', 'Meesho', 'Swiggy', 'Zomato', 'Razorpay', 'Tally', 'Zoho', 'HubSpot', 'Slack', 'Notion',
+  'Microsoft 365', 'Shiprocket', 'Custom APIs',
+];
+
+const guardrails = [
+  {
+    t: 'Every run is logged',
+    d: 'Each step records what it saw, what it did and how long it took. Nothing happens off the record.',
+  },
+  {
+    t: 'People approve what matters',
+    d: 'Refunds, large orders and anything unusual pause for a human yes before they continue.',
+  },
+  {
+    t: 'Regulated work stays with professionals',
+    d: 'Automation prepares tax and compliance paperwork. Qualified professionals review and file it.',
+  },
+];
+---
+
+<Base
+  title="Automation"
+  description="See how Ascelstack automates a business end to end: triggers, AI agents, tools and actions, built into workflows you can read."
+>
+  <ScrubHero />
+  <Showcase />
+  <Anatomy />
+
+  <section class="sys" aria-labelledby="sys-title">
+    <div class="wrap sys-head">
+      <p class="eyebrow">What we connect</p>
+      <h2 id="sys-title" class="mono sys-sub">The tools you already use, wired together</h2>
+    </div>
+    <div class="sys-rows" aria-hidden="true">
+      {
+        [0, 1].map((row) => (
+          <div class:list={['sys-track', { rev: row === 1 }]}>
+            {[...systems.slice(row * 7), ...systems.slice(0, row * 7), ...systems.slice(row * 7), ...systems.slice(0, row * 7)].map((s) => (
+              <span class="sys-chip">{s}</span>
+            ))}
+          </div>
+        ))
+      }
+    </div>
+    <p class="wrap sr">{systems.join(', ')}</p>
+  </section>
+
+  <section class="gr section on-ink" aria-labelledby="gr-title">
+    <div class="wrap gr-grid">
+      <header class="gr-head">
+        <p class="eyebrow">Guardrails</p>
+        <h2 id="gr-title" class="display h2">Automated, <em>not unattended.</em></h2>
+      </header>
+      <ol class="gr-list">
+        {
+          guardrails.map((g, i) => (
+            <li data-reveal data-reveal-delay={i * 0.08}>
+              <span class="mono">0{i + 1}</span>
+              <h3 class="display h3">{g.t}</h3>
+              <p>{g.d}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <section class="ac section">
+    <div class="wrap ac-inner">
+      <h2 class="display h2" data-reveal>Which workflow would <em>you</em> switch off first?</h2>
+      <p class="lead" data-reveal>Tell us the task you're tired of doing by hand. We'll sketch the flow on a call.</p>
+      <div class="ac-actions" data-reveal>
+        <a href="/contact?category=ai-automation" class="btn">Map my workflow <span class="arrow">→</span></a>
+        <a href="/services/ai-automation" class="btn btn-ghost">Automation services</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .sys { padding-block: clamp(4rem, 8vw, 6rem); overflow: hidden; }
+  .sys-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  .sys-sub { font-weight: 400; color: var(--text-muted); text-transform: uppercase; }
+  .sys-rows {
+    display: grid;
+    gap: 0.75rem;
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+  .sys-track {
+    display: flex;
+    gap: 0.75rem;
+    width: max-content;
+    animation: sys 50s linear infinite;
+  }
+  .sys-track.rev { animation-direction: reverse; animation-duration: 60s; }
+  .sys-chip {
+    padding: 0.7rem 1.2rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--paper-raised);
+    font-size: 0.95rem;
+    white-space: nowrap;
+  }
+  @keyframes sys { to { transform: translateX(-50%); } }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+  .gr-grid {
+    display: grid;
+    grid-template-columns: 5fr 7fr;
+    gap: clamp(2rem, 6vw, 6rem);
+    align-items: start;
+  }
+  .gr-head { display: grid; gap: 1.25rem; position: sticky; top: calc(var(--nav-h) + 2rem); }
+  .gr-list li {
+    display: grid;
+    gap: 0.6rem;
+    padding: 2rem 0;
+    border-bottom: 1px solid var(--line-on-ink);
+  }
+  .gr-list li:first-child { padding-top: 0; }
+  .gr-list .mono { color: var(--tint); }
+  .gr-list p { color: var(--text-on-ink-muted); max-width: 48ch; }
+
+  .ac-inner { display: grid; justify-items: center; text-align: center; gap: 1.5rem; }
+  .ac-inner .h2 { max-width: 18ch; }
+  .ac-inner .lead { margin-inline: auto; }
+  .ac-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; }
+
+  @media (max-width: 900px) {
+    .gr-grid { grid-template-columns: 1fr; }
+    .gr-head { position: static; }
+  }
+</style>

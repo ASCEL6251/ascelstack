@@ -1,0 +1,228 @@
+---
+import Base from '../../layouts/Base.astro';
+import ServiceCard from '../../components/ServiceCard.astro';
+import { categories, counts, sharedServiceNames } from '../../data/catalog';
+---
+
+<Base title="Services" description={`The full Ascelstack catalogue: ${counts.services} services across ${counts.categories} disciplines.`}>
+  <section class="cat-hero">
+    <div class="wrap">
+      <p class="eyebrow" data-reveal>Service catalogue</p>
+      <h1 class="display h1" data-reveal>Everything <em>on the stack.</em></h1>
+      <div class="cat-stats" data-reveal>
+        <div><span class="display">{counts.core}</span><span class="mono">Live services</span></div>
+        <div><span class="display">{counts.future}</span><span class="mono">Coming soon</span></div>
+        <div><span class="display">{counts.categories}</span><span class="mono">Disciplines</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="cat-tools" data-tools>
+    <div class="wrap cat-tools-inner">
+      <label class="cat-search">
+        <span class="sr">Search services</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+        <input type="search" placeholder="Search 232 services — try “GST” or “chatbot”" data-search-input autocomplete="off" />
+        <span class="mono cat-count" data-count aria-live="polite"></span>
+      </label>
+      <nav class="cat-tabs" aria-label="Filter by discipline" data-lenis-prevent>
+        <button class="tab is-on" data-filter="all">All</button>
+        {categories.map((c) => <button class="tab" data-filter={c.slug}>{c.short}</button>)}
+      </nav>
+    </div>
+  </div>
+
+  <div class="wrap cat-body">
+    {
+      categories.map((c) => (
+        <section class="cat-group" id={c.slug} data-group={c.slug}>
+          <header class="cat-group-head">
+            <div>
+              <p class="mono cat-group-meta">
+                {c.priority === 'future' ? 'Coming soon' : `${c.layer} layer`} · {c.services.length} services
+              </p>
+              <h2 class="display h3">{c.name}</h2>
+            </div>
+            <a href={`/services/${c.slug}`} class="cat-group-link">
+              Overview <span class="arrow">→</span>
+            </a>
+          </header>
+
+          {c.subgroups.map((g) => (
+            <div class="cat-sub" data-sub>
+              {g.name && <h3 class="mono cat-sub-name">{g.name}</h3>}
+              <div class="cat-cards">
+                {g.services.map((s) => (
+                  <ServiceCard service={s} layer={c.layer} shared={sharedServiceNames.has(s.name)} />
+                ))}
+              </div>
+            </div>
+          ))}
+
+          {c.services[0]?.notes && <p class="cat-note">Note: {c.services[0].notes}</p>}
+        </section>
+      ))
+    }
+
+    <p class="cat-empty" data-empty hidden>
+      No services match that search. <a href="/contact">Tell us what you need</a> and we'll scope it.
+    </p>
+  </div>
+</Base>
+
+<style>
+  .cat-hero {
+    padding-top: calc(var(--nav-h) + clamp(3rem, 8vw, 7rem));
+    padding-bottom: clamp(2.5rem, 5vw, 4rem);
+    background:
+      radial-gradient(50% 80% at 85% 0%, rgba(148, 188, 227, 0.35), transparent 70%),
+      var(--paper);
+  }
+  .cat-hero .wrap { display: grid; gap: 1.75rem; }
+  .cat-stats { display: flex; flex-wrap: wrap; gap: clamp(1.5rem, 5vw, 4rem); margin-top: 1rem; }
+  .cat-stats div { display: grid; gap: 0.2rem; }
+  .cat-stats .display { font-size: clamp(2.5rem, 2rem + 2vw, 3.75rem); line-height: 1; }
+  .cat-stats .mono { color: var(--text-muted); text-transform: uppercase; }
+
+  .cat-tools {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: color-mix(in srgb, var(--paper) 90%, transparent);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-block: 1px solid var(--line);
+    transition: top 0.5s var(--ease-out);
+  }
+  :global(body:has(.nav:not(.is-hidden))) .cat-tools { top: var(--nav-h); }
+  .cat-tools-inner { display: grid; gap: 0.75rem; padding-block: 1rem; }
+  .cat-search {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.8rem 1.1rem;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--text-muted);
+  }
+  .cat-search:focus-within { border-color: var(--accent); }
+  .cat-search input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: none;
+    color: var(--text);
+  }
+  .cat-count { white-space: nowrap; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+  .cat-tabs {
+    display: flex;
+    gap: 0.4rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-inline: calc(var(--gutter) * -1);
+    padding-inline: var(--gutter);
+  }
+  .cat-tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex: none;
+    padding: 0.45rem 0.95rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: transparent;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.3s, color 0.3s, border-color 0.3s;
+  }
+  .tab:hover { border-color: var(--ink); }
+  .tab.is-on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+  .cat-body { padding-block: 3rem 8rem; display: grid; gap: clamp(4rem, 8vw, 6rem); }
+  .cat-group { scroll-margin-top: 220px; }
+  .cat-group-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 1rem;
+    padding-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .cat-group-meta { color: var(--accent); text-transform: uppercase; margin-bottom: 0.5rem; }
+  .cat-group-link { white-space: nowrap; font-weight: 500; font-size: 0.9rem; }
+  .cat-group-link .arrow { display: inline-block; transition: transform 0.4s var(--ease-out); }
+  .cat-group-link:hover .arrow { transform: translateX(4px); }
+  .cat-sub + .cat-sub { margin-top: 2.5rem; }
+  .cat-sub-name { color: var(--text-muted); text-transform: uppercase; margin-bottom: 1rem; }
+  .cat-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+  .cat-note {
+    margin-top: 1.5rem;
+    padding: 1rem 1.25rem;
+    border-left: 2px solid var(--accent);
+    background: var(--paper-sunk);
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    border-radius: 0 var(--radius-s) var(--radius-s) 0;
+  }
+  .cat-empty { text-align: center; color: var(--text-muted); }
+  .cat-empty a { color: var(--accent); border-bottom: 1px solid currentColor; }
+</style>
+
+<script>
+  const input = document.querySelector<HTMLInputElement>('[data-search-input]')!;
+  const tabs = [...document.querySelectorAll<HTMLButtonElement>('[data-filter]')];
+  const groups = [...document.querySelectorAll<HTMLElement>('[data-group]')];
+  const countEl = document.querySelector<HTMLElement>('[data-count]')!;
+  const empty = document.querySelector<HTMLElement>('[data-empty]')!;
+  let filter = 'all';
+
+  function apply() {
+    const q = input.value.trim().toLowerCase();
+    let total = 0;
+    groups.forEach((g) => {
+      const inCat = filter === 'all' || g.dataset.group === filter;
+      let shown = 0;
+      g.querySelectorAll<HTMLElement>('[data-sub]').forEach((sub) => {
+        let subShown = 0;
+        sub.querySelectorAll<HTMLElement>('[data-card]').forEach((card) => {
+          const ok = inCat && (!q || card.dataset.search!.includes(q));
+          card.hidden = !ok;
+          if (ok) subShown++;
+        });
+        sub.hidden = subShown === 0;
+        shown += subShown;
+      });
+      g.hidden = shown === 0;
+      total += shown;
+    });
+    countEl.textContent = `${total} shown`;
+    empty.hidden = total > 0;
+    window.dispatchEvent(new Event('resize')); // let ScrollTrigger recalc
+  }
+
+  tabs.forEach((t) =>
+    t.addEventListener('click', () => {
+      filter = t.dataset.filter!;
+      tabs.forEach((x) => x.classList.toggle('is-on', x === t));
+      history.replaceState(null, '', filter === 'all' ? location.pathname : `#${filter}`);
+      apply();
+      window.scrollTo({ top: document.querySelector<HTMLElement>('.cat-body')!.offsetTop - 220 });
+    }),
+  );
+  input.addEventListener('input', apply);
+
+  const hash = location.hash.slice(1);
+  const start = tabs.find((t) => t.dataset.filter === hash);
+  if (start) {
+    filter = hash;
+    tabs.forEach((x) => x.classList.toggle('is-on', x === start));
+  }
+  apply();
+</script>

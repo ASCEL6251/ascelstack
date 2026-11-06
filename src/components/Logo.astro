@@ -1,0 +1,39 @@
+---
+interface Props {
+  /** "dark" = ink base, for light backgrounds. "light" = paper base, for ink backgrounds. */
+  tone?: 'dark' | 'light';
+  wordmark?: boolean;
+  size?: number;
+  class?: string;
+}
+const { tone = 'dark', wordmark = true, size = 32, class: cls = '' } = Astro.props;
+const base = tone === 'dark' ? '#1D2D3D' : '#F2F2F3';
+---
+
+<span class:list={['logo', `logo--${tone}`, cls]}>
+  <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden="true">
+    <path class="logo-l1" d="M50 6 L66 38 L34 38 Z" fill="#94BCE3"></path>
+    <path class="logo-l2" d="M32 42 L68 42 L70 46 L80 66 L60 66 L50 46 L40 66 L20 66 L30 46 Z" fill="#5980A6"></path>
+    <path class="logo-l3" d="M18 70 L38 70 L26 94 L6 94 Z M82 70 L62 70 L74 94 L94 94 Z" fill={base}></path>
+  </svg>
+  {wordmark && <span class="logo-word">Ascelstack</span>}
+</span>
+
+<style>
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    line-height: 1;
+  }
+  .logo-word {
+    font-family: var(--font-display);
+    font-size: 1.45rem;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .logo--light .logo-word { color: var(--paper); }
+  .logo path { transition: transform 0.5s var(--ease-out); transform-box: fill-box; }
+  .logo:hover .logo-l1 { transform: translateY(-3px); }
+  .logo:hover .logo-l3 { transform: translateY(3px); }
+</style>

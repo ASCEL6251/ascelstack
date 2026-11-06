@@ -1,0 +1,381 @@
+---
+// "How a business works" as a loop. A pinned 3D ring: scroll moves a pulse
+// around six stations; each one it reaches is handed over to the stack.
+// Hours are illustrative placeholders.
+const steps = [
+  {
+    title: 'Lead arrives',
+    short: 'Lead',
+    layer: 'grow',
+    manual: 'Sits in an inbox until someone checks it.',
+    auto: 'An AI agent replies on WhatsApp in under a minute and qualifies the lead.',
+    tools: 'WhatsApp AI, AI Lead Generation',
+    hours: 6,
+  },
+  {
+    title: 'Sale is closed',
+    short: 'Sale',
+    layer: 'grow',
+    manual: 'Quotes typed by hand, follow-ups forgotten.',
+    auto: 'The CRM sends the quote, chases follow-ups and logs every touch.',
+    tools: 'CRM Automation',
+    hours: 6,
+  },
+  {
+    title: 'Order is placed',
+    short: 'Order',
+    layer: 'run',
+    manual: 'Re-keyed into a spreadsheet and the marketplace.',
+    auto: 'Orders sync across your store, Amazon and Flipkart, and stock updates itself.',
+    tools: 'Order Management, Inventory Sync',
+    hours: 9,
+  },
+  {
+    title: 'Invoice is raised',
+    short: 'Invoice',
+    layer: 'run',
+    manual: 'GST invoice built from a template and emailed by hand.',
+    auto: 'The invoice is generated, sent and reconciled the moment the order ships.',
+    tools: 'Invoice Automation, GST Reconciliation',
+    hours: 5,
+  },
+  {
+    title: 'Customer needs help',
+    short: 'Support',
+    layer: 'grow',
+    manual: 'Calls go to whoever is free, and answers vary.',
+    auto: 'Voice and chat agents answer from your own knowledge base, day and night.',
+    tools: 'AI Support Agents, AI Voice Agents',
+    hours: 12,
+  },
+  {
+    title: 'Owner wants numbers',
+    short: 'Numbers',
+    layer: 'build',
+    manual: 'A month-end scramble across four tools.',
+    auto: 'A live dashboard, plus a short summary in your inbox every Monday.',
+    tools: 'Reporting & Dashboards, AI Analytics',
+    hours: 2,
+  },
+];
+const total = steps.reduce((a, s) => a + s.hours, 0);
+---
+
+<section class="orbit" data-orbit id="how-it-works" aria-label="How a business works">
+  <div class="orbit-sticky">
+    <div class="wrap orbit-inner">
+      <div class="orbit-copy">
+        <p class="orbit-kicker">How a business works</p>
+        <h2 class="display orbit-title">Every business runs <em>in a loop.</em></h2>
+
+        <div class="orbit-steps" data-orbit-steps>
+          {
+            steps.map((s, i) => (
+              <article class="orbit-step" data-step={i} aria-hidden={i === 0 ? 'false' : 'true'}>
+                <p class="step-count">
+                  <span class="display">{i + 1}</span> of {steps.length}
+                </p>
+                <h3 class="display step-title">{s.title}</h3>
+                <dl class="step-rows">
+                  <div>
+                    <dt>By hand</dt>
+                    <dd>{s.manual}</dd>
+                  </div>
+                  <div class="is-auto">
+                    <dt>On the stack</dt>
+                    <dd>{s.auto}</dd>
+                  </div>
+                </dl>
+                <p class="step-tools">Handled by {s.tools}</p>
+              </article>
+            ))
+          }
+          <article class="orbit-step" data-step={steps.length} aria-hidden="true">
+            <p class="step-count"><span class="display">↻</span> every week</p>
+            <h3 class="display step-title">The loop closes</h3>
+            <p class="step-close">
+              Six steps that used to wait on people now run on their own, week after week. Your team keeps the
+              decisions.
+            </p>
+            <a href="/automation" class="step-link">Watch the workflows run <span aria-hidden="true">→</span></a>
+          </article>
+        </div>
+
+        <div class="orbit-hours">
+          <svg viewBox="0 0 64 64" class="hours-dial" aria-hidden="true">
+            <circle cx="32" cy="32" r="28" class="dial-track"></circle>
+            <circle cx="32" cy="32" r="28" class="dial-fill" data-dial pathLength="100"></circle>
+          </svg>
+          <div>
+            <span class="hours-n" data-hours>{total}</span>
+            <span class="hours-label">hours a week still done by hand<sup>*</sup></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="orbit-stage" data-orbit-stage>
+        <canvas data-orbit-canvas aria-hidden="true"></canvas>
+        <div class="orbit-labels" data-orbit-labels aria-hidden="true"></div>
+        <ol class="orbit-fallback" aria-hidden="true">
+          {steps.map((s, i) => <li style={`--a:${(i / steps.length) * 360}deg`}><b>{i + 1}</b>{s.short}</li>)}
+        </ol>
+      </div>
+    </div>
+    <p class="wrap orbit-note"><sup>*</sup> Illustrative figures for a small business.</p>
+  </div>
+</section>
+
+<script is:inline type="application/json" id="orbit-data" set:html={JSON.stringify(steps.map((s) => ({ short: s.short, layer: s.layer, hours: s.hours })))} />
+
+<style>
+  .orbit {
+    position: relative;
+    height: 560vh;
+    background: var(--paper);
+  }
+  .orbit-sticky {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100svh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-top: var(--nav-h);
+  }
+  .orbit-inner {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: center;
+    gap: clamp(1.5rem, 4vw, 4rem);
+  }
+
+  /* ---------- Copy ---------- */
+  .orbit-copy { display: grid; gap: 1.25rem; align-content: center; }
+  .orbit-kicker {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--accent);
+  }
+  .orbit-title {
+    font-size: clamp(2.2rem, 1.4rem + 2.6vw, 3.9rem);
+    line-height: 1.02;
+    margin: 0;
+  }
+  .orbit-title em { color: var(--accent); }
+
+  .orbit-steps {
+    display: grid;
+    margin-top: 0.75rem;
+    min-height: 15.5rem;
+  }
+  .orbit-step {
+    grid-area: 1 / 1;
+    display: grid;
+    align-content: start;
+    gap: 0.7rem;
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.45s var(--ease-out), transform 0.6s var(--ease-out);
+    pointer-events: none;
+  }
+  .orbit-step.is-on {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+  .orbit-step.is-past { transform: translateY(-18px); }
+  .step-count { color: var(--text-muted); font-size: 0.95rem; }
+  .step-count .display { font-size: 1.6rem; color: var(--ink); margin-right: 0.15rem; }
+  .step-title { font-size: clamp(1.6rem, 1.2rem + 1.2vw, 2.3rem); line-height: 1.1; }
+  .step-rows { display: grid; gap: 0.55rem; margin: 0.2rem 0 0; }
+  .step-rows div {
+    display: grid;
+    grid-template-columns: 7.5rem 1fr;
+    gap: 1rem;
+    padding-top: 0.55rem;
+    border-top: 1px solid var(--line);
+  }
+  .step-rows dt { font-weight: 600; font-size: 0.92rem; color: var(--text-muted); }
+  .step-rows dd { margin: 0; line-height: 1.5; color: var(--text-muted); }
+  .step-rows .is-auto dt { color: var(--accent); }
+  .step-rows .is-auto dd { color: var(--text); }
+  .step-tools { font-size: 0.9rem; color: var(--text-muted); font-style: italic; }
+  .step-close { color: var(--text-muted); line-height: 1.6; max-width: 34ch; }
+  .step-link { font-weight: 600; color: var(--accent); }
+  .step-link:hover { color: var(--ink); }
+
+  .orbit-hours {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    margin-top: 0.4rem;
+  }
+  .hours-dial { width: 3.4rem; height: 3.4rem; transform: rotate(-90deg); flex: none; }
+  .dial-track { fill: none; stroke: var(--paper-sunk); stroke-width: 5; }
+  .dial-fill {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 5;
+    stroke-linecap: round;
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+  }
+  .orbit-hours > div { display: grid; line-height: 1.15; }
+  .hours-n { font-size: 2rem; font-weight: 600; letter-spacing: -0.02em; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .hours-label { font-size: 0.9rem; color: var(--text-muted); }
+  .orbit-note { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.75rem; opacity: 0.8; }
+
+  /* ---------- Stage ---------- */
+  .orbit-stage {
+    position: relative;
+    height: min(72svh, 640px);
+  }
+  .orbit-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .orbit-labels { position: absolute; inset: 0; pointer-events: none; }
+  .orbit-labels :global(.orbit-label) {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.7rem 0.3rem 0.35rem;
+    border-radius: 999px;
+    background: rgba(250, 250, 251, 0.88);
+    border: 1px solid var(--line);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    white-space: nowrap;
+    will-change: transform;
+    transition: background 0.3s, color 0.3s, border-color 0.3s;
+  }
+  .orbit-labels :global(.orbit-label b) {
+    display: grid;
+    place-items: center;
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 50%;
+    background: var(--paper-sunk);
+    font-size: 0.72rem;
+    transition: background 0.3s, color 0.3s;
+  }
+  .orbit-labels :global(.orbit-label.is-done b) { background: var(--accent); color: var(--paper); }
+  .orbit-labels :global(.orbit-label.is-on) { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .orbit-labels :global(.orbit-label.is-on b) { background: var(--tint); color: var(--ink); }
+
+  /* No WebGL: a flat circle of the six steps. */
+  .orbit-fallback { display: none; }
+  .orbit.no-3d .orbit-fallback {
+    display: block;
+    position: absolute;
+    inset: 10%;
+    border: 2px solid var(--mist);
+    border-radius: 50%;
+  }
+  .orbit.no-3d .orbit-fallback li {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: rotate(var(--a)) translateY(-210%) rotate(calc(-1 * var(--a))) translate(-50%, -50%);
+    display: flex;
+    gap: 0.4rem;
+    font-weight: 600;
+  }
+
+  @media (max-width: 900px) {
+    .orbit { height: 600vh; }
+    .orbit-sticky { justify-content: flex-start; padding-top: calc(var(--nav-h) + 0.5rem); }
+    .orbit-inner { grid-template-columns: 1fr; gap: 0; }
+    .orbit-stage { order: -1; height: 40svh; margin: 0 calc(-1 * var(--gutter)); }
+    .orbit-copy { gap: 0.6rem; }
+    .orbit-kicker { display: none; }
+    .orbit-title { font-size: 1.9rem; }
+    .orbit-steps { margin-top: 0.25rem; min-height: 14.5rem; }
+    .step-count .display { font-size: 1.2rem; }
+    .step-title { font-size: 1.45rem; }
+    .step-rows div { grid-template-columns: 1fr; gap: 0.1rem; padding-top: 0.4rem; }
+    .step-rows dt { font-size: 0.8rem; }
+    .step-rows dd { font-size: 0.92rem; line-height: 1.45; }
+    .step-tools { font-size: 0.82rem; }
+    .orbit-hours { margin-top: 0; }
+    .hours-dial { width: 2.6rem; height: 2.6rem; }
+    .hours-n { font-size: 1.5rem; }
+    .hours-label { font-size: 0.8rem; }
+    .orbit-note { display: none; }
+    .orbit-labels :global(.orbit-label:not(.is-on)) { opacity: 0 !important; }
+  }
+</style>
+
+<script>
+  import { ScrollTrigger } from '../../scripts/motion';
+  import type { OrbitScene } from '../../scripts/business-orbit';
+
+  const section = document.querySelector<HTMLElement>('[data-orbit]')!;
+  const canvas = section.querySelector<HTMLCanvasElement>('[data-orbit-canvas]')!;
+  const labels = section.querySelector<HTMLElement>('[data-orbit-labels]')!;
+  const stepEls = Array.from(section.querySelectorAll<HTMLElement>('[data-step]'));
+  const hoursEl = section.querySelector<HTMLElement>('[data-hours]')!;
+  const dial = section.querySelector<SVGCircleElement>('[data-dial]')!;
+  const data: { short: string; layer: 'build' | 'grow' | 'run'; hours: number }[] = JSON.parse(
+    document.getElementById('orbit-data')!.textContent!,
+  );
+  const N = data.length;
+  const LEFT = 0.1; // share of each step's hours that still needs a person
+
+  let current = -1;
+  function render(s: number) {
+    const idx = s > N - 0.45 ? N : Math.min(N - 1, Math.round(s));
+    if (idx !== current) {
+      stepEls.forEach((el, i) => {
+        el.classList.toggle('is-on', i === idx);
+        el.classList.toggle('is-past', i < idx);
+        el.setAttribute('aria-hidden', String(i !== idx));
+      });
+      current = idx;
+    }
+    let hours = 0;
+    data.forEach((d, i) => {
+      const k = Math.min(1, Math.max(0, (s - i + 0.25) / 0.45));
+      hours += d.hours * (1 - k * (1 - LEFT));
+    });
+    hoursEl.textContent = String(Math.round(hours));
+    dial.style.strokeDashoffset = String(100 - (s / N) * 100);
+  }
+
+  const webgl = (() => {
+    try {
+      const c = document.createElement('canvas');
+      return !!(c.getContext('webgl2') || c.getContext('webgl'));
+    } catch {
+      return false;
+    }
+  })();
+
+  async function init() {
+    let scene: OrbitScene | null = null;
+    if (webgl) {
+      const { createOrbitScene } = await import('../../scripts/business-orbit');
+      scene = createOrbitScene(canvas, labels, data, render);
+    }
+    if (!scene) section.classList.add('no-3d');
+    render(0);
+
+    ScrollTrigger.create({
+      trigger: section,
+      start: 'top top',
+      end: 'bottom bottom',
+      onUpdate(self) {
+        // Hold briefly at the start and end so the first and closing states can be read.
+        const p = Math.min(1, Math.max(0, (self.progress - 0.04) / 0.9));
+        const s = p * N;
+        if (scene) scene.setTarget(s);
+        else render(s);
+      },
+    });
+  }
+  init();
+</script>

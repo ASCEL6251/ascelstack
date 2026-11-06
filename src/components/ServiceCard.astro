@@ -1,0 +1,117 @@
+---
+import type { Service, Layer } from '../data/catalog';
+
+interface Props {
+  service: Service;
+  layer: Layer;
+  shared?: boolean;
+}
+const { service: s, layer, shared = false } = Astro.props;
+const search = `${s.name} ${s.description} ${s.category} ${s.subcategory} ${s.id}`.toLowerCase();
+---
+
+<article class:list={['card', `card--${layer}`, { 'card--future': s.priority === 'future' }]} data-card data-search={search}>
+  <div class="card-top">
+    <span class="mono card-id">{s.id}</span>
+    {s.priority === 'future' && <span class="card-badge">Coming soon</span>}
+    {shared && <span class="card-badge card-badge--soft">Shared</span>}
+  </div>
+  <h3 class="card-name">{s.name}</h3>
+  <p class="card-desc">{s.description}</p>
+  {
+    s.priority === 'core' ? (
+      <a class="card-cta" href={`/contact?service=${s.id}`}>
+        Enquire <span class="arrow">→</span>
+      </a>
+    ) : (
+      <a class="card-cta" href={`/contact?service=${s.id}`}>
+        Register interest <span class="arrow">→</span>
+      </a>
+    )
+  }
+  <span class="card-strata" aria-hidden="true"><i></i><i></i><i></i></span>
+</article>
+
+<style>
+  .card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    min-height: 200px;
+    padding: 1.4rem 1.4rem 1.25rem;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: transform 0.5s var(--ease-out), border-color 0.4s, box-shadow 0.5s var(--ease-out);
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    border-color: color-mix(in srgb, var(--layer) 70%, transparent);
+    box-shadow: 0 24px 50px -32px rgba(29, 45, 61, 0.5);
+  }
+  .card--build { --layer: var(--tint); --layer-idx: 1; }
+  .card--grow { --layer: var(--accent); --layer-idx: 2; }
+  .card--run { --layer: var(--ink); --layer-idx: 3; }
+
+  .card-top { display: flex; align-items: center; gap: 0.5rem; }
+  .card-id { color: var(--text-muted); }
+  .card-badge {
+    margin-left: auto;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+  .card-badge--soft { background: var(--paper-sunk); color: var(--ink); }
+  .card-badge + .card-badge { margin-left: 0; }
+
+  .card-name {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 1.4rem;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin-top: 0.4rem;
+  }
+  .card-desc { font-size: 0.92rem; line-height: 1.5; color: var(--text-muted); }
+  .card-cta {
+    margin-top: auto;
+    padding-top: 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--accent);
+    width: fit-content;
+  }
+  .card-cta::before { content: ''; position: absolute; inset: 0; }
+  .card-cta .arrow { display: inline-block; transition: transform 0.4s var(--ease-out); }
+  .card:hover .card-cta .arrow { transform: translateX(4px); }
+
+  /* Three-stratum indicator; the card's own layer is filled. */
+  .card-strata {
+    position: absolute;
+    right: 1.25rem;
+    bottom: 1.35rem;
+    display: grid;
+    gap: 3px;
+    justify-items: center;
+  }
+  .card-strata i {
+    display: block;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--paper-sunk);
+  }
+  .card-strata i:nth-child(1) { width: 10px; }
+  .card-strata i:nth-child(2) { width: 18px; }
+  .card-strata i:nth-child(3) { width: 26px; }
+  .card--build .card-strata i:nth-child(1),
+  .card--grow .card-strata i:nth-child(2),
+  .card--run .card-strata i:nth-child(3) { background: var(--layer); }
+
+  .card--future { background: transparent; border-style: dashed; }
+</style>

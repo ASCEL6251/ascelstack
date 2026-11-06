@@ -1,0 +1,455 @@
+---
+import { industries } from '../../data/industries';
+const n = industries.length;
+---
+
+<section class="ind" id="industries" aria-labelledby="ind-title" data-ind style={`--n:${n}`}>
+  <div class="ind-sticky">
+    <div class="wrap ind-frame">
+      <header class="ind-head">
+        <div>
+          <p class="eyebrow">Industries</p>
+          <h2 id="ind-title" class="display ind-h">Packaged for the way <em>you already work.</em></h2>
+        </div>
+        <p class="mono ind-count" aria-hidden="true"><span data-ind-index>01</span> / 0{n}</p>
+      </header>
+
+      <div class="ind-grid">
+        <div class="ind-panels">
+          {
+            industries.map((ind, i) => (
+              <article class="ind-panel" data-ind-panel={i} aria-label={ind.title}>
+                <p class="mono ind-tag">{ind.tag}</p>
+                <h3 class="display ind-title">{ind.title}</h3>
+                <p class="ind-body">{ind.body}</p>
+
+                <dl class="ind-stats">
+                  <div>
+                    <dt class="display">{ind.total}</dt>
+                    <dd class="mono">services</dd>
+                  </div>
+                  <div>
+                    <dt class="display">{ind.branches.length}</dt>
+                    <dd class="mono">branches</dd>
+                  </div>
+                  <div>
+                    <dt class="display">{ind.roots.length}</dt>
+                    <dd class="mono">{ind.roots.length === 1 ? 'root' : 'roots'}</dd>
+                  </div>
+                </dl>
+
+                <ul class="ind-branches" aria-hidden="true">
+                  {ind.branches.map((b) => (
+                    <li class={`is-${b.layer}`}>{b.name} <span class="mono">{b.count}</span></li>
+                  ))}
+                </ul>
+
+                <div class="ind-trend">
+                  <p class="mono ind-trend-h"><span class="pulse" aria-hidden="true" />Trending now</p>
+                  <ol>
+                    {ind.trending.map((t) => (
+                      <li>
+                        <div class="tr-top">
+                          <span class="tr-name">{t.name}</span>
+                          <span class="mono tr-id">{t.id}</span>
+                        </div>
+                        <p class="tr-why">{t.why}</p>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+
+                <a href={`/services/${ind.slug}`} class="ind-link">
+                  Explore the full tree <span class="arrow">→</span>
+                </a>
+
+                <ul class="sr">
+                  {ind.branches.map((b) => <li>{b.name}: {b.count} services</li>)}
+                  {ind.roots.map((r) => <li>Root — {r.name}: {r.count} services</li>)}
+                </ul>
+              </article>
+            ))
+          }
+        </div>
+
+        <div class="ind-stage">
+          <canvas class="ind-canvas" data-ind-canvas aria-hidden="true"></canvas>
+          <div class="ind-labels" data-ind-labels aria-hidden="true"></div>
+          <div class="ind-legend mono" aria-hidden="true">
+            <span><i class="lg-branch"></i>Branch · service group</span>
+            <span><i class="lg-leaf"></i>Leaf · one service</span>
+            <span><i class="lg-root"></i>Root · registrations below ground</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="ind-rail" aria-label="Industries">
+        {
+          industries.map((ind, i) => (
+            <button class="rail-item" data-ind-go={i}>
+              <span class="rail-bar"><i data-ind-bar={i} /></span>
+              <span class="rail-name">{ind.title}</span>
+            </button>
+          ))
+        }
+      </nav>
+    </div>
+  </div>
+</section>
+
+<style>
+  .ind {
+    position: relative;
+    height: calc(100vh + var(--n) * 110vh);
+    background: var(--paper-sunk);
+  }
+  .ind-sticky {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100svh;
+    overflow: hidden;
+    padding-top: calc(var(--nav-h) + 1.25rem);
+    background:
+      radial-gradient(45% 60% at 72% 55%, rgba(148, 188, 227, 0.35), transparent 70%),
+      var(--paper-sunk);
+  }
+  .ind-frame {
+    height: 100%;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 1rem;
+    padding-bottom: 1.25rem;
+  }
+
+  .ind-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 1rem;
+  }
+  .ind-head > div { display: grid; gap: 0.6rem; }
+  .ind-h { font-size: clamp(1.9rem, 1.2rem + 2.2vw, 3.25rem); }
+  .ind-count { color: var(--text-muted); font-size: 0.85rem; }
+  .ind-count span { color: var(--ink); }
+
+  .ind-grid {
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(320px, 5fr) 7fr;
+    gap: clamp(1.5rem, 3vw, 3rem);
+  }
+
+  /* ---------- Slide-to-reveal panels */
+  .ind-panels { position: relative; min-height: 0; }
+  .ind-panel {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.9rem;
+    clip-path: inset(0 0 0 100%);
+    visibility: hidden;
+  }
+  .ind-tag { color: var(--accent); text-transform: uppercase; }
+  .ind-title { font-size: clamp(2rem, 1.3rem + 2.2vw, 3.4rem); line-height: 1; }
+  .ind-body { color: var(--text-muted); max-width: 42ch; }
+
+  .ind-stats {
+    display: flex;
+    gap: 1.75rem;
+    margin: 0.25rem 0 0;
+    padding-block: 0.9rem;
+    border-block: 1px solid var(--line);
+  }
+  .ind-stats div { display: grid; gap: 0.1rem; }
+  .ind-stats dt { font-size: 2.1rem; line-height: 1; color: var(--ink); }
+  .ind-stats dd { margin: 0; color: var(--text-muted); text-transform: uppercase; font-size: 0.68rem; }
+
+  .ind-branches { display: none; }
+
+  .ind-trend-h {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+  .pulse {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 0 rgba(89, 128, 166, 0.5);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    70% { box-shadow: 0 0 0 8px rgba(89, 128, 166, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(89, 128, 166, 0); }
+  }
+  .ind-trend ol { display: grid; gap: 0.15rem; }
+  .ind-trend li {
+    padding: 0.55rem 0.8rem;
+    border-radius: var(--radius-s);
+    border-left: 2px solid var(--tint);
+    background: color-mix(in srgb, var(--paper-raised) 70%, transparent);
+  }
+  .tr-top { display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem; }
+  .tr-name { font-weight: 600; font-size: 0.95rem; }
+  .tr-id { color: var(--text-muted); font-size: 0.65rem; }
+  .tr-why { font-size: 0.82rem; line-height: 1.45; color: var(--text-muted); margin-top: 0.15rem; }
+
+  .ind-link {
+    width: fit-content;
+    margin-top: 0.25rem;
+    padding-bottom: 0.2rem;
+    border-bottom: 1px solid currentColor;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .ind-link .arrow { display: inline-block; transition: transform 0.4s var(--ease-out); }
+  .ind-link:hover .arrow { transform: translateX(4px); }
+
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+  /* ---------- 3D stage */
+  .ind-stage {
+    position: relative;
+    min-height: 0;
+    border-radius: var(--radius-l);
+  }
+  .ind-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .ind-labels { position: absolute; inset: 0; pointer-events: none; }
+  .ind-labels :global(.tree-label) {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.3rem 0.35rem 0.3rem 0.7rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--paper-raised) 88%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--line);
+    box-shadow: 0 8px 20px -14px rgba(29, 45, 61, 0.5);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--ink);
+    white-space: nowrap;
+    will-change: transform, opacity;
+  }
+  .ind-labels :global(.tl-c) {
+    min-width: 1.6rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 999px;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    text-align: center;
+  }
+  .ind-labels :global(.tree-label.is-build .tl-c) { background: var(--tint); color: var(--ink); }
+  .ind-labels :global(.tree-label.is-grow .tl-c) { background: var(--accent); }
+  .ind-labels :global(.tree-label--root) {
+    background: color-mix(in srgb, var(--ink) 85%, transparent);
+    color: var(--paper);
+    border-color: transparent;
+    font-weight: 500;
+  }
+  .ind-labels :global(.tree-label--root .tl-c) { background: var(--tint); color: var(--ink); }
+
+  .ind-legend {
+    position: absolute;
+    right: 0.5rem;
+    bottom: 0.25rem;
+    display: grid;
+    gap: 0.3rem;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+  .ind-legend span { display: flex; align-items: center; gap: 0.5rem; }
+  .ind-legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; }
+  .lg-branch { background: var(--accent); clip-path: polygon(50% 0, 100% 35%, 80% 100%, 20% 100%, 0 35%); border-radius: 0 !important; }
+  .lg-leaf { background: var(--tint); }
+  .lg-root { background: var(--ink); transform: rotate(45deg) scale(0.8); border-radius: 1px !important; }
+
+  /* ---------- Rail */
+  .ind-rail {
+    display: grid;
+    grid-template-columns: repeat(var(--n), 1fr);
+    gap: 1rem;
+  }
+  .rail-item {
+    display: grid;
+    gap: 0.5rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+  }
+  .rail-bar { height: 2px; background: var(--line); border-radius: 2px; overflow: hidden; }
+  .rail-bar i { display: block; height: 100%; background: var(--accent); transform: scaleX(0); transform-origin: left; }
+  .rail-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    transition: color 0.3s;
+  }
+  .rail-item.on .rail-name,
+  .rail-item:hover .rail-name { color: var(--ink); }
+
+  /* ---------- No WebGL / reduced motion: panels only */
+  .ind.no-3d .ind-stage { display: none; }
+  .ind.no-3d .ind-grid { grid-template-columns: 1fr; }
+
+  @media (max-width: 900px) {
+    .ind-grid {
+      grid-template-columns: 1fr;
+      grid-template-rows: 36% 1fr;
+      gap: 0.5rem;
+    }
+    .ind-stage { order: -1; }
+    .ind-legend { display: none; }
+    .ind-panel { justify-content: flex-start; gap: 0.6rem; }
+    .ind-body { display: none; }
+    .ind-title { font-size: 1.9rem; }
+    .ind-stats { padding-block: 0.6rem; gap: 1.25rem; }
+    .ind-stats dt { font-size: 1.6rem; }
+    .ind-trend li:nth-child(n + 2) { display: none; }
+    .tr-why { font-size: 0.78rem; }
+    .ind-labels :global(.tree-label) { padding: 0.15rem; }
+    .ind-labels :global(.tl-n) { display: none; }
+    .ind-h { font-size: 1.6rem; }
+    .ind-count { white-space: nowrap; }
+    .ind-branches { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+    .ind-branches li {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.2rem 0.3rem 0.2rem 0.6rem;
+      border-radius: 999px;
+      background: var(--paper-raised);
+      border: 1px solid var(--line);
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .ind-branches .mono {
+      padding: 0 0.35rem;
+      border-radius: 999px;
+      background: var(--ink);
+      color: var(--paper);
+      font-size: 0.62rem;
+    }
+    .ind-branches .is-build .mono { background: var(--tint); color: var(--ink); }
+    .ind-branches .is-grow .mono { background: var(--accent); }
+    .rail-name { font-size: 0.72rem; }
+  }
+  @media (max-width: 900px) and (max-height: 760px) {
+    .tr-why { display: none; }
+  }
+</style>
+
+<script>
+  import { gsap, reducedMotion, getLenis } from '../../scripts/motion';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { industries } from '../../data/industries';
+
+  const section = document.querySelector<HTMLElement>('[data-ind]')!;
+  const canvas = section.querySelector<HTMLCanvasElement>('[data-ind-canvas]')!;
+  const labels = section.querySelector<HTMLElement>('[data-ind-labels]')!;
+  const panels = gsap.utils.toArray<HTMLElement>('[data-ind-panel]', section);
+  const bars = gsap.utils.toArray<HTMLElement>('[data-ind-bar]', section);
+  const rail = gsap.utils.toArray<HTMLElement>('[data-ind-go]', section);
+  const indexEl = section.querySelector<HTMLElement>('[data-ind-index]')!;
+  const N = industries.length;
+
+  const webgl = (() => {
+    try {
+      const c = document.createElement('canvas');
+      return !!(c.getContext('webgl2') || c.getContext('webgl'));
+    } catch {
+      return false;
+    }
+  })();
+
+  async function init() {
+    let scene: import('../../scripts/industry-tree').TreeScene | null = null;
+    if (webgl && !reducedMotion) {
+      const { createTreeScene } = await import('../../scripts/industry-tree');
+      scene = createTreeScene(canvas, labels, industries);
+    }
+    if (!scene) section.classList.add('no-3d');
+
+    const grow = industries.map(() => ({ g: 0 }));
+    const seg = 1 / N;
+
+    const tl = gsap.timeline({
+      defaults: { ease: 'power3.inOut' },
+      scrollTrigger: {
+        trigger: section,
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 0.7,
+        invalidateOnRefresh: true,
+        onUpdate(self) {
+          const p = self.progress;
+          const i = Math.min(N - 1, Math.floor(p / seg));
+          indexEl.textContent = String(i + 1).padStart(2, '0');
+          rail.forEach((r, k) => r.classList.toggle('on', k === i));
+          bars.forEach((b, k) => gsap.set(b, { scaleX: Math.min(1, Math.max(0, (p - k * seg) / seg)) }));
+        },
+      },
+      onUpdate: () => grow.forEach((o, i) => scene?.setGrow(i, o.g)),
+    });
+    tl.set({}, {}, 1);
+
+    industries.forEach((_, i) => {
+      const start = i * seg;
+      const end = start + seg;
+      const panel = panels[i];
+
+      // Slide in: the panel is wiped open from the right while its content slides left.
+      if (i === 0) {
+        gsap.set(panel, { clipPath: 'inset(0 0% 0 0)', visibility: 'visible' });
+      } else {
+        tl.fromTo(
+          panel,
+          { clipPath: 'inset(0 0 0 100%)', visibility: 'visible' },
+          { clipPath: 'inset(0 0 0 0%)', duration: seg * 0.22 },
+          start,
+        );
+        tl.from(panel.children, { x: 60, autoAlpha: 0, stagger: seg * 0.02, duration: seg * 0.22, ease: 'power3.out' }, start + seg * 0.02);
+      }
+
+      // Tree grows during the first ~55% of its segment.
+      tl.to(grow[i], { g: 1, duration: seg * 0.55, ease: 'none' }, i === 0 ? 0 : start + seg * 0.05);
+
+      // Slide out to the left and let the tree retract (not for the last one).
+      if (i < N - 1) {
+        tl.to(panel, { clipPath: 'inset(0 100% 0 0)', duration: seg * 0.2 }, end - seg * 0.12);
+        tl.to(grow[i], { g: 0, duration: seg * 0.17, ease: 'power2.in' }, end - seg * 0.12);
+      }
+    });
+
+    // Rail buttons jump to an industry.
+    rail.forEach((r, i) =>
+      r.addEventListener('click', () => {
+        const st = tl.scrollTrigger!;
+        const y = st.start + (st.end - st.start) * (i * seg + seg * 0.6);
+        const lenis = getLenis();
+        if (lenis) lenis.scrollTo(y, { duration: 1.2 });
+        else window.scrollTo({ top: y, behavior: 'smooth' });
+      }),
+    );
+
+    ScrollTrigger.refresh();
+  }
+
+  init();
+</script>

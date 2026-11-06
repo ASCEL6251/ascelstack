@@ -1,0 +1,130 @@
+---
+const steps = [
+  { t: 'Discover', d: 'We map how your business runs today: every hand-off, tool and spreadsheet.', w: 'Week 1' },
+  { t: 'Design', d: 'Brand, interface and workflow designs, signed off before any code is written.', w: 'Week 1–2' },
+  { t: 'Build', d: 'Software, sites and integrations shipped in short, demoable cycles.', w: 'Week 2–6' },
+  { t: 'Automate', d: 'Agents and workflows switched on step by step, with a human checkpoint at each one.', w: 'Week 4–8' },
+  { t: 'Operate', d: 'We monitor, maintain and keep improving. You get a report every week.', w: 'Ongoing' },
+];
+---
+
+<section class="proc section" id="process" aria-labelledby="proc-title" data-proc>
+  <div class="wrap proc-grid">
+    <header class="proc-head">
+      <p class="eyebrow" data-reveal>Process</p>
+      <h2 id="proc-title" class="display h2" data-reveal>From first call to <em>fully automated.</em></h2>
+      <p class="lead" data-reveal>Timelines shown are typical for a mid-sized engagement.<span class="temp"></span></p>
+    </header>
+
+    <ol class="proc-list">
+      <span class="proc-track" aria-hidden="true"><span class="proc-fill" data-proc-fill></span></span>
+      {
+        steps.map((s, i) => (
+          <li class="proc-step" data-proc-step>
+            <span class="proc-dot" aria-hidden="true" />
+            <span class="display proc-n">0{i + 1}</span>
+            <div class="proc-body">
+              <div class="proc-row">
+                <h3 class="display h3">{s.t}</h3>
+                <span class="mono proc-w">{s.w}</span>
+              </div>
+              <p>{s.d}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  .proc-grid {
+    display: grid;
+    grid-template-columns: 5fr 7fr;
+    gap: clamp(2rem, 6vw, 6rem);
+    align-items: start;
+  }
+  .proc-head {
+    position: sticky;
+    top: calc(var(--nav-h) + 3rem);
+    display: grid;
+    gap: 1.5rem;
+  }
+  .proc-list { position: relative; display: grid; }
+  .proc-track {
+    position: absolute;
+    left: 7px;
+    top: 0.75rem;
+    bottom: 0.75rem;
+    width: 1px;
+    background: var(--line);
+  }
+  .proc-fill {
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    transform-origin: top;
+    transform: scaleY(0);
+  }
+  .proc-step {
+    position: relative;
+    display: grid;
+    grid-template-columns: 15px 4.5rem 1fr;
+    gap: 1.25rem;
+    padding: 2rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .proc-step:first-of-type { padding-top: 0.25rem; }
+  .proc-dot {
+    width: 15px;
+    height: 15px;
+    margin-top: 0.6rem;
+    border-radius: 50%;
+    border: 1px solid var(--mist);
+    background: var(--paper);
+    transition: background 0.4s, border-color 0.4s, box-shadow 0.4s;
+  }
+  .proc-step.on .proc-dot {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 5px rgba(89, 128, 166, 0.16);
+  }
+  .proc-n {
+    font-size: 2.5rem;
+    line-height: 1;
+    color: var(--mist);
+    transition: color 0.5s;
+  }
+  .proc-step.on .proc-n { color: var(--accent); }
+  .proc-body { display: grid; gap: 0.5rem; }
+  .proc-body p { color: var(--text-muted); max-width: 48ch; }
+  .proc-row { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+  .proc-w { color: var(--text-muted); white-space: nowrap; }
+
+  @media (max-width: 900px) {
+    .proc-grid { grid-template-columns: 1fr; }
+    .proc-head { position: static; }
+    .proc-step { grid-template-columns: 15px 1fr; }
+    .proc-n { display: none; }
+  }
+</style>
+
+<script>
+  import { gsap, ScrollTrigger } from '../../scripts/motion';
+
+  const list = document.querySelector<HTMLElement>('.proc-list')!;
+  gsap.to('[data-proc-fill]', {
+    scaleY: 1,
+    ease: 'none',
+    scrollTrigger: { trigger: list, start: 'top 60%', end: 'bottom 60%', scrub: true },
+  });
+  gsap.utils.toArray<HTMLElement>('[data-proc-step]').forEach((step) => {
+    ScrollTrigger.create({
+      trigger: step,
+      start: 'top 60%',
+      onToggle: (self) => step.classList.toggle('on', self.isActive || self.progress === 1),
+      onUpdate: (self) => step.classList.toggle('on', self.progress > 0),
+      end: 'max',
+    });
+  });
+</script>

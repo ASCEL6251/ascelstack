@@ -1,0 +1,520 @@
+---
+// "Watch one order run itself": one real-world example followed through four
+// widgets (message → check → work → summary). Pinned and scroll-scrubbed, so it
+// plays forwards and backwards. Names and numbers are illustrative.
+const steps = [
+  {
+    title: 'A customer messages you at midnight.',
+    body: 'Orders, questions and payments arrive at any hour. The workflow starts the moment one comes in, even when your team is offline.',
+    gain: 'No order is lost after closing time.',
+  },
+  {
+    title: 'An assistant checks everything.',
+    body: 'It finds the customer, checks stock and price, and replies with a payment link. Anything unusual is passed to a person.',
+    gain: 'Replies in seconds, with the same answer every time.',
+  },
+  {
+    title: 'The work gets done on its own.',
+    body: 'The payment is matched, the GST invoice goes out, stock updates on every channel and the delivery is booked.',
+    gain: 'Nobody retypes data from one tool into another.',
+  },
+  {
+    title: 'You wake up to one summary.',
+    body: 'Each morning you get a short message: what came in, what you earned, and the one thing that needs your decision.',
+    gain: 'You make the calls. The stack does the rest.',
+  },
+];
+---
+
+<section class="run on-ink" id="automation" data-run aria-labelledby="run-title">
+  <div class="run-sticky">
+    <div class="wrap run-grid">
+      <div class="run-copy">
+        <h2 id="run-title" class="run-title">Watch one order <span>run itself.</span></h2>
+
+        <div class="run-progress" aria-hidden="true">
+          {steps.map((_, i) => <span data-run-bar={i}><i /></span>)}
+        </div>
+
+        <div class="run-steps">
+          {
+            steps.map((s, i) => (
+              <article class="run-step" data-run-step={i}>
+                <p class="run-n">Step {i + 1} of {steps.length}</p>
+                <h3>{s.title}</h3>
+                <p class="run-body">{s.body}</p>
+                <p class="run-gain">
+                  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 8.5l3 3 7-7" /></svg>
+                  {s.gain}
+                </p>
+              </article>
+            ))
+          }
+        </div>
+
+        <a href="/automation" class="run-link">See more workflows <span aria-hidden="true">→</span></a>
+      </div>
+
+      <div class="board" data-board aria-hidden="true">
+        <svg class="board-wires" data-wires>
+          <path data-wire-bg="0"></path><path data-wire-bg="1"></path><path data-wire-bg="2"></path>
+          <path class="lit" data-wire="0"></path><path class="lit" data-wire="1"></path><path class="lit" data-wire="2"></path>
+          <circle r="6" class="packet" data-packet></circle>
+        </svg>
+
+        <!-- 1 · Message -->
+        <div class="wg wg-1" data-wg="0">
+          <header class="wg-head">
+            <span class="wg-icon">
+              <svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z" /></svg>
+            </span>
+            <div><b>New message</b><small>WhatsApp · 11:48 PM</small></div>
+          </header>
+          <div class="chat">
+            <p class="chat-from" data-w1>Priya Sharma</p>
+            <p class="bub in" data-w1>Hi! Can I get 2 kg basmati rice and 1 L ghee delivered tomorrow morning?</p>
+            <p class="typing" data-w1><i></i><i></i><i></i></p>
+            <p class="chip-muted" data-w1>Shop closed · team offline</p>
+          </div>
+        </div>
+
+        <!-- 2 · Check -->
+        <div class="wg wg-2" data-wg="1">
+          <header class="wg-head">
+            <span class="wg-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z" /></svg>
+            </span>
+            <div><b>Order assistant</b><small>Checking the request</small></div>
+          </header>
+          <ul class="checks">
+            <li data-w2><span class="ck"></span>Returning customer <em>6 past orders</em></li>
+            <li data-w2><span class="ck"></span>Both items in stock</li>
+            <li data-w2><span class="ck"></span>Total <em>₹640 incl. GST</em></li>
+            <li data-w2><span class="ck"></span>Delivery slot <em>10–12 AM</em></li>
+          </ul>
+          <p class="bub out" data-w2>Done! Pay here to confirm your order: pay.link/2041</p>
+        </div>
+
+        <!-- 3 · Work -->
+        <div class="wg wg-3" data-wg="2">
+          <header class="wg-head">
+            <span class="wg-icon">
+              <svg viewBox="0 0 24 24"><path d="M5 12l4 4 10-10" /></svg>
+            </span>
+            <div><b>Work done</b><small>No one touched it</small></div>
+          </header>
+          <div class="tiles">
+            <div class="tile" data-w3><small>Payment</small><b>₹640 received</b></div>
+            <div class="tile" data-w3><small>GST invoice</small><b>INV-2041 sent</b></div>
+            <div class="tile" data-w3><small>Stock, all channels</small><b>48 → 46 kg</b></div>
+            <div class="tile" data-w3><small>Delivery</small><b>Booked 10 AM</b></div>
+          </div>
+        </div>
+
+        <!-- 4 · Summary -->
+        <div class="wg wg-4" data-wg="3">
+          <header class="wg-head">
+            <span class="wg-icon">
+              <svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M21 19H3" /></svg>
+            </span>
+            <div><b>Good morning</b><small>Summary · 7:30 AM</small></div>
+          </header>
+          <div class="sum">
+            <div data-w4><b data-count="14">0</b><small>orders overnight</small></div>
+            <div data-w4><b data-count="9860" data-prefix="₹">₹0</b><small>earned</small></div>
+            <div data-w4 class="needs"><b data-count="1">0</b><small>needs you</small></div>
+          </div>
+          <div class="spark" data-w4>
+            {[30, 42, 36, 58, 50, 72, 86].map((h) => <span style={`--h:${h}%`} />)}
+          </div>
+          <p class="sum-note" data-w4>Refund request from Rahul K. is waiting for your OK.</p>
+        </div>
+      </div>
+    </div>
+    <p class="wrap run-foot">Example names and figures are illustrative.</p>
+  </div>
+</section>
+
+<style>
+  .run {
+    position: relative;
+    height: 480vh;
+    --bold: 'Inter Tight', system-ui, sans-serif;
+  }
+  .run-sticky {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100svh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-top: var(--nav-h);
+  }
+  .run-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: center;
+  }
+
+  /* ---------- Copy ---------- */
+  .run-copy { display: grid; gap: 1.5rem; }
+  .run-title {
+    font-family: var(--bold);
+    font-weight: 700;
+    font-size: clamp(2.2rem, 1.3rem + 2.8vw, 4rem);
+    line-height: 1;
+    letter-spacing: -0.035em;
+    margin: 0;
+  }
+  .run-title span { color: var(--tint); }
+
+  .run-progress { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .run-progress span { height: 4px; border-radius: 4px; background: rgba(242, 242, 243, 0.12); overflow: hidden; }
+  .run-progress i { display: block; height: 100%; background: var(--tint); transform: scaleX(0); transform-origin: left; }
+
+  .run-steps { display: grid; min-height: 15rem; }
+  .run-step {
+    grid-area: 1 / 1;
+    display: grid;
+    align-content: start;
+    gap: 0.75rem;
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.4s var(--ease-out), transform 0.55s var(--ease-out);
+  }
+  .run-step.is-on { opacity: 1; transform: none; }
+  .run-step.is-past { transform: translateY(-16px); }
+  .run-n { font-weight: 600; font-size: 0.9rem; color: var(--tint); }
+  .run-step h3 {
+    font-family: var(--bold);
+    font-weight: 700;
+    font-size: clamp(1.4rem, 1.1rem + 0.9vw, 1.9rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+  .run-body { color: var(--text-on-ink-muted); line-height: 1.6; max-width: 46ch; }
+  .run-gain {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 700;
+    color: var(--paper);
+  }
+  .run-gain svg {
+    flex: none;
+    padding: 3px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--tint);
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .run-link { font-weight: 700; color: var(--tint); justify-self: start; }
+  .run-link:hover { color: var(--paper); }
+  .run-foot { font-size: 0.75rem; color: var(--text-on-ink-muted); opacity: 0.7; margin-top: 1rem; }
+
+  /* ---------- Board ---------- */
+  .board {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: 'a b' 'd c';
+    gap: clamp(1.5rem, 3vw, 2.75rem);
+    font-family: var(--bold);
+  }
+  .wg-1 { grid-area: a; }
+  .wg-2 { grid-area: b; }
+  .wg-3 { grid-area: c; }
+  .wg-4 { grid-area: d; }
+
+  .board-wires {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .board-wires path { fill: none; stroke: rgba(242, 242, 243, 0.12); stroke-width: 2; stroke-dasharray: 4 6; }
+  .board-wires path.lit { stroke: var(--tint); stroke-dasharray: none; stroke-linecap: round; }
+  .packet { fill: var(--paper); stroke: var(--tint); stroke-width: 3; opacity: 0; }
+
+  .wg {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    align-content: start;
+    gap: 0.9rem;
+    padding: 1.1rem;
+    border-radius: 20px;
+    background: var(--ink-raised);
+    border: 1px solid var(--line-on-ink);
+    box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.6);
+    opacity: 0.35;
+    transform: scale(0.96);
+    transition: opacity 0.5s var(--ease-out), transform 0.6s var(--ease-out), border-color 0.4s, box-shadow 0.5s;
+    font-size: 0.88rem;
+    min-height: 15.5rem;
+  }
+  .wg.is-on {
+    opacity: 1;
+    transform: none;
+    border-color: rgba(148, 188, 227, 0.55);
+    box-shadow: 0 30px 70px -28px rgba(0, 0, 0, 0.7), 0 0 0 4px rgba(148, 188, 227, 0.1);
+  }
+  .wg.is-done { opacity: 0.75; transform: none; }
+
+  .wg-head { display: flex; align-items: center; gap: 0.7rem; }
+  .wg-head div { display: grid; line-height: 1.2; }
+  .wg-head b { font-weight: 700; font-size: 0.98rem; }
+  .wg-head small { color: var(--text-on-ink-muted); font-size: 0.78rem; }
+  .wg-icon {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: rgba(148, 188, 227, 0.14);
+  }
+  .wg-icon svg { width: 18px; height: 18px; fill: none; stroke: var(--tint); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .chat { display: grid; gap: 0.5rem; }
+  .chat-from { font-weight: 700; font-size: 0.78rem; color: var(--tint); }
+  .bub { padding: 0.65rem 0.85rem; border-radius: 14px; line-height: 1.45; font-weight: 500; }
+  .bub.in { background: rgba(242, 242, 243, 0.08); border-top-left-radius: 4px; }
+  .bub.out { background: var(--accent); color: var(--paper); border-bottom-right-radius: 4px; margin-left: 12%; }
+  .typing { display: flex; gap: 4px; padding: 0.3rem 0; }
+  .typing i { width: 6px; height: 6px; border-radius: 50%; background: var(--text-on-ink-muted); animation: blink 1.2s infinite; }
+  .typing i:nth-child(2) { animation-delay: 0.2s; }
+  .typing i:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes blink { 0%, 80%, 100% { opacity: 0.25; } 40% { opacity: 1; } }
+  .chip-muted {
+    justify-self: start;
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    background: rgba(242, 242, 243, 0.06);
+    color: var(--text-on-ink-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .checks { display: grid; gap: 0.45rem; }
+  .checks li { display: flex; align-items: center; gap: 0.6rem; font-weight: 600; }
+  .checks em { font-style: normal; font-weight: 500; color: var(--text-on-ink-muted); margin-left: auto; font-size: 0.8rem; }
+  .ck {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--tint) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8.5l2.5 2.5L12 5.5' fill='none' stroke='%231D2D3D' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/12px no-repeat;
+  }
+
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+  .tile {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.75rem;
+    border-radius: 12px;
+    background: rgba(242, 242, 243, 0.05);
+    border-left: 3px solid var(--tint);
+  }
+  .tile small { color: var(--text-on-ink-muted); font-size: 0.74rem; font-weight: 600; }
+  .tile b { font-weight: 700; font-size: 0.95rem; }
+
+  .sum { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+  .sum div { display: grid; gap: 0.1rem; }
+  .sum b { font-weight: 700; font-size: 1.5rem; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+  .sum small { color: var(--text-on-ink-muted); font-size: 0.74rem; font-weight: 600; }
+  .sum .needs b { color: var(--tint); }
+  .spark { display: flex; align-items: end; gap: 5px; height: 46px; }
+  .spark span { flex: 1; height: var(--h); border-radius: 3px 3px 0 0; background: linear-gradient(var(--tint), var(--accent)); }
+  .sum-note {
+    padding: 0.55rem 0.7rem;
+    border-radius: 10px;
+    background: rgba(148, 188, 227, 0.12);
+    font-weight: 600;
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+
+  @media (max-width: 1100px) and (min-width: 901px) {
+    .wg { min-height: 14rem; padding: 0.95rem; font-size: 0.82rem; }
+    .tiles { grid-template-columns: 1fr; }
+  }
+
+  /* Phones and small tablets: one widget at a time. */
+  @media (max-width: 900px) {
+    .run { height: 520vh; }
+    .run-sticky { justify-content: flex-start; padding-top: calc(var(--nav-h) + 1rem); }
+    .run-grid { grid-template-columns: 1fr; gap: 1.25rem; }
+    .run-copy { gap: 0.9rem; }
+    .run-title { font-size: 2rem; }
+    .run-steps { min-height: 12.5rem; }
+    .run-step h3 { font-size: 1.3rem; }
+    .run-body { font-size: 0.95rem; line-height: 1.5; }
+    .run-gain { font-size: 0.92rem; }
+    .run-link { display: none; }
+    .board { grid-template-columns: 1fr; grid-template-areas: 'a'; }
+    .wg-1, .wg-2, .wg-3, .wg-4 { grid-area: a; }
+    .board-wires { display: none; }
+    .wg { min-height: 0; opacity: 0; transform: translateY(24px) scale(0.97); pointer-events: none; }
+    .wg.is-on { opacity: 1; transform: none; }
+    .wg.is-done { opacity: 0; transform: translateY(-24px) scale(0.97); }
+    .run-foot { display: none; }
+  }
+  @media (max-width: 900px) and (max-height: 760px) {
+    .run-body { display: none; }
+    .run-steps { min-height: 7rem; }
+  }
+</style>
+
+<script>
+  import { gsap } from '../../scripts/motion';
+
+  const section = document.querySelector<HTMLElement>('[data-run]')!;
+  const board = section.querySelector<HTMLElement>('[data-board]')!;
+  const wgs = gsap.utils.toArray<HTMLElement>('[data-wg]', section);
+  const stepEls = gsap.utils.toArray<HTMLElement>('[data-run-step]', section);
+  const bars = gsap.utils.toArray<HTMLElement>('[data-run-bar] i', section);
+  const wiresSvg = section.querySelector<SVGSVGElement>('[data-wires]')!;
+  const wires = [0, 1, 2].map((i) => section.querySelector<SVGPathElement>(`[data-wire="${i}"]`)!);
+  const wiresBg = [0, 1, 2].map((i) => section.querySelector<SVGPathElement>(`[data-wire-bg="${i}"]`)!);
+  const packet = section.querySelector<SVGCircleElement>('[data-packet]')!;
+  const N = wgs.length;
+
+  // Wires follow the board layout: 1 → 2 (right), 2 → 3 (down), 3 → 4 (left).
+  function layoutWires() {
+    const b = board.getBoundingClientRect();
+    wiresSvg.setAttribute('viewBox', `0 0 ${b.width} ${b.height}`);
+    const r = wgs.map((w) => {
+      const x = w.getBoundingClientRect();
+      return { l: x.left - b.left, t: x.top - b.top, r: x.right - b.left, btm: x.bottom - b.top, cx: x.left - b.left + x.width / 2, cy: x.top - b.top + x.height / 2 };
+    });
+    const d = [
+      `M${r[0].r} ${r[0].cy} C${r[0].r + 30} ${r[0].cy} ${r[1].l - 30} ${r[1].cy} ${r[1].l} ${r[1].cy}`,
+      `M${r[1].cx} ${r[1].btm} C${r[1].cx} ${r[1].btm + 30} ${r[2].cx} ${r[2].t - 30} ${r[2].cx} ${r[2].t}`,
+      `M${r[2].l} ${r[2].cy} C${r[2].l - 30} ${r[2].cy} ${r[3].r + 30} ${r[3].cy} ${r[3].r} ${r[3].cy}`,
+    ];
+    d.forEach((p, i) => {
+      wires[i].setAttribute('d', p);
+      wiresBg[i].setAttribute('d', p);
+      const len = wires[i].getTotalLength();
+      wires[i].style.strokeDasharray = `${len}`;
+      wires[i].dataset.len = String(len);
+    });
+  }
+
+  // Wire progress 0..1 for each connector; drawn and the packet placed from these.
+  const wireP = [{ v: 0 }, { v: 0 }, { v: 0 }];
+  function drawWires() {
+    let shown = false;
+    wireP.forEach((w, i) => {
+      const len = Number(wires[i].dataset.len || 0);
+      wires[i].style.strokeDashoffset = String(len * (1 - w.v));
+      if (!shown && w.v > 0 && w.v < 1) {
+        const pt = wires[i].getPointAtLength(len * w.v);
+        packet.setAttribute('cx', String(pt.x));
+        packet.setAttribute('cy', String(pt.y));
+        packet.style.opacity = '1';
+        shown = true;
+      }
+    });
+    if (!shown) packet.style.opacity = '0';
+  }
+
+  let current = -1;
+  function setActive(idx: number) {
+    if (idx === current) return;
+    current = idx;
+    wgs.forEach((w, i) => {
+      w.classList.toggle('is-on', i === idx);
+      w.classList.toggle('is-done', i < idx);
+    });
+    stepEls.forEach((s, i) => {
+      s.classList.toggle('is-on', i === idx);
+      s.classList.toggle('is-past', i < idx);
+    });
+  }
+
+  const counters = gsap.utils.toArray<HTMLElement>('[data-count]', section).map((el) => ({
+    el,
+    to: Number(el.dataset.count),
+    prefix: el.dataset.prefix ?? '',
+    v: 0,
+  }));
+  const fmt = (n: number) => Math.round(n).toLocaleString('en-IN');
+
+  layoutWires();
+  setActive(0);
+
+  // Each step owns a quarter of the scroll. Inside it: wire + packet travel in,
+  // the widget lights up, then its contents build one by one.
+  const SEG = 1 / N;
+  const tl = gsap.timeline({
+    defaults: { ease: 'power2.out' },
+    scrollTrigger: {
+      trigger: section,
+      start: 'top top',
+      end: 'bottom bottom',
+      scrub: 0.7,
+      invalidateOnRefresh: true,
+      onRefresh: () => {
+        layoutWires();
+        drawWires();
+      },
+    },
+    onUpdate() {
+      const p = tl.progress();
+      // A step becomes active when the packet arrives (12% into its segment).
+      let idx = 0;
+      for (let i = 1; i < N; i++) if (p >= i * SEG + SEG * 0.12) idx = i;
+      setActive(idx);
+      bars.forEach((b, i) => gsap.set(b, { scaleX: Math.min(1, Math.max(0, (p - i * SEG) / SEG)) }));
+      drawWires();
+      counters.forEach((c) => (c.el.textContent = c.prefix + fmt(c.v)));
+    },
+  });
+  tl.set({}, {}, 1);
+
+  const items = (sel: string) => gsap.utils.toArray<HTMLElement>(sel, section);
+  // Start states are set up front: staggered fromTo inside a scrubbed timeline
+  // only pre-renders its first target.
+  const build = (sel: string, at: number) => {
+    gsap.set(items(sel), { autoAlpha: 0, y: 10 });
+    return tl.to(items(sel), { autoAlpha: 1, y: 0, duration: SEG * 0.1, stagger: SEG * 0.1 }, at);
+  };
+
+  // Step 1: the message arrives.
+  build('[data-w1]', SEG * 0.05);
+
+  // Step 2: wire, then the checks tick through.
+  tl.to(wireP[0], { v: 1, duration: SEG * 0.14, ease: 'none' }, SEG * 1);
+  gsap.set(items('[data-w2]'), { autoAlpha: 0, x: -10 });
+  tl.to(items('[data-w2]'), { autoAlpha: 1, x: 0, duration: SEG * 0.1, stagger: SEG * 0.11 }, SEG * 1.16);
+
+  // Step 3: wire, then the work tiles pop in.
+  tl.to(wireP[1], { v: 1, duration: SEG * 0.14, ease: 'none' }, SEG * 2);
+  gsap.set(items('[data-w3]'), { autoAlpha: 0, scale: 0.85 });
+  tl.to(items('[data-w3]'), { autoAlpha: 1, scale: 1, duration: SEG * 0.12, stagger: SEG * 0.12, ease: 'back.out(1.6)' }, SEG * 2.16);
+
+  // Step 4: wire, then the summary counts up.
+  tl.to(wireP[2], { v: 1, duration: SEG * 0.14, ease: 'none' }, SEG * 3);
+  build('[data-w4]', SEG * 3.16);
+  counters.forEach((c) => tl.to(c, { v: c.to, duration: SEG * 0.35, ease: 'power1.out' }, SEG * 3.2));
+  gsap.set(items('.spark span'), { scaleY: 0, transformOrigin: 'bottom' });
+  tl.to(items('.spark span'), { scaleY: 1, duration: SEG * 0.2, stagger: SEG * 0.03 }, SEG * 3.3);
+
+  window.addEventListener('resize', () => {
+    layoutWires();
+    drawWires();
+  });
+</script>

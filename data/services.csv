@@ -1,0 +1,233 @@
+﻿service_id,category_id,category,subcategory,service,description,launch_priority,notes
+ASC-0001,CAT-01,Technology & Software Development,General,Website Development,"Business, portfolio, corporate and e-commerce websites",Core,
+ASC-0002,CAT-02,Technology & Software Development,General,Web Application Development,Custom business web applications,Core,
+ASC-0003,CAT-02,Technology & Software Development,General,Mobile App Development,Android and iOS applications,Core,
+ASC-0004,CAT-02,Technology & Software Development,General,E-commerce Development,Online shopping platforms,Core,
+ASC-0005,CAT-02,Technology & Software Development,General,SaaS Development,Subscription-based software,Core,
+ASC-0006,CAT-02,Technology & Software Development,General,UI/UX Design,Website and app interface design,Core,
+ASC-0007,CAT-02,Technology & Software Development,General,Custom Software Development,Tailored software solutions,Core,
+ASC-0008,CAT-02,Technology & Software Development,General,API Development & Integration,Third-party API integration,Core,
+ASC-0009,CAT-02,Technology & Software Development,General,CRM Development,Customer relationship management systems,Core,
+ASC-0010,CAT-02,Technology & Software Development,General,ERP Development,Enterprise resource planning systems,Core,
+ASC-0011,CAT-02,Technology & Software Development,General,AI Integration,AI-powered business solutions,Core,
+ASC-0012,CAT-02,Technology & Software Development,General,Chatbot Development,Website and WhatsApp chatbots,Core,
+ASC-0013,CAT-02,Technology & Software Development,General,Website Audit,"Technical, SEO, security and performance audits",Core,
+ASC-0014,CAT-02,Technology & Software Development,General,Website Maintenance,Regular updates and technical support,Core,
+ASC-0015,CAT-02,Technology & Software Development,General,Domain & Hosting,Domain registration and hosting management,Core,
+ASC-0016,CAT-02,Technology & Software Development,General,Cloud Deployment,Application deployment and cloud infrastructure,Core,
+ASC-0017,CAT-02,Technology & Software Development,General,Payment Gateway Integration,Online payment integration,Core,
+ASC-0018,CAT-02,Technology & Software Development,General,Database Management,"Database design, maintenance and optimization",Core,
+ASC-0019,CAT-02,Technology & Software Development,General,Software Testing & QA,"Functional, performance and quality testing",Core,
+ASC-0020,CAT-02,Technology & Software Development,General,Website Security,"SSL, security hardening and vulnerability assessment",Core,
+ASC-0021,CAT-02,Digital Marketing & Online Growth,General,SEO,Search Engine Optimization,Core,
+ASC-0022,CAT-03,Digital Marketing & Online Growth,General,GEO,Generative Engine Optimization,Core,
+ASC-0023,CAT-03,Digital Marketing & Online Growth,General,AEO,Answer Engine Optimization,Core,
+ASC-0024,CAT-03,Digital Marketing & Online Growth,General,Google Ads,"Search, display and YouTube advertising",Core,
+ASC-0025,CAT-03,Digital Marketing & Online Growth,General,Meta Ads,Facebook and Instagram advertising,Core,
+ASC-0026,CAT-03,Digital Marketing & Online Growth,General,YouTube Marketing,Video promotions and campaigns,Core,
+ASC-0027,CAT-03,Digital Marketing & Online Growth,General,Social Media Marketing,Organic growth strategies,Core,
+ASC-0028,CAT-03,Digital Marketing & Online Growth,General,Influencer Marketing,Influencer collaborations,Core,
+ASC-0029,CAT-03,Digital Marketing & Online Growth,General,Lead Generation,Business leads and customer acquisition,Core,
+ASC-0030,CAT-03,Digital Marketing & Online Growth,General,Email Marketing,Promotional and automated emails,Core,
+ASC-0031,CAT-03,Digital Marketing & Online Growth,General,WhatsApp Marketing,Customer engagement campaigns,Core,
+ASC-0032,CAT-03,Digital Marketing & Online Growth,General,Affiliate Marketing,Affiliate partnership management,Core,
+ASC-0033,CAT-03,Digital Marketing & Online Growth,General,Online Reputation Management,Reviews and brand reputation,Core,
+ASC-0034,CAT-03,Digital Marketing & Online Growth,General,Conversion Rate Optimization,Improving website conversions,Core,
+ASC-0035,CAT-03,Digital Marketing & Online Growth,General,Local SEO,Google Maps and local search visibility,Core,
+ASC-0036,CAT-03,Digital Marketing & Online Growth,General,Competitor Analysis,Competitor research and market positioning,Core,
+ASC-0037,CAT-03,Digital Marketing & Online Growth,General,Marketing Analytics,Campaign tracking and performance reports,Core,
+ASC-0038,CAT-03,Digital Marketing & Online Growth,General,Remarketing & Retargeting,Re-engaging potential customers,Core,
+ASC-0039,CAT-03,"Branding, Graphics & Creative Studio",General,Logo Designing,Professional logo creation,Core,
+ASC-0040,CAT-04,"Branding, Graphics & Creative Studio",General,Brand Identity,Complete visual brand identity,Core,
+ASC-0041,CAT-04,"Branding, Graphics & Creative Studio",General,Brand Guidelines,Brand usage and design standards,Core,
+ASC-0042,CAT-04,"Branding, Graphics & Creative Studio",General,Business Card Designing,Professional visiting cards,Core,
+ASC-0043,CAT-04,"Branding, Graphics & Creative Studio",General,Brochure & Catalogue Design,Marketing brochures and product catalogues,Core,
+ASC-0044,CAT-04,"Branding, Graphics & Creative Studio",General,Packaging Design,Product packaging and labels,Core,
+ASC-0045,CAT-04,"Branding, Graphics & Creative Studio",General,Promotional Video Production,Business and product promotional videos,Core,
+ASC-0046,CAT-04,"Branding, Graphics & Creative Studio",General,Reels & Short Video Editing,"Instagram, YouTube and Facebook videos",Core,
+ASC-0047,CAT-04,"Branding, Graphics & Creative Studio",General,Motion Graphics,Animated promotional graphics,Core,
+ASC-0048,CAT-04,"Branding, Graphics & Creative Studio",General,Animation & Explainer Videos,Product and service explainers,Core,
+ASC-0049,CAT-04,"Branding, Graphics & Creative Studio",General,Advertisement Creatives,Digital advertising designs,Core,
+ASC-0050,CAT-04,"Branding, Graphics & Creative Studio",General,Menu Card Designing,Restaurant and cafe menus,Core,
+ASC-0051,CAT-04,"Branding, Graphics & Creative Studio",General,Thumbnail Designing,YouTube and video thumbnails,Core,
+ASC-0052,CAT-04,"Branding, Graphics & Creative Studio",General,Corporate Presentation Design,Company profiles and pitch decks,Core,
+ASC-0053,CAT-04,"Branding, Graphics & Creative Studio",General,Product Photography,Commercial product photography,Core,
+ASC-0054,CAT-04,"Branding, Graphics & Creative Studio",General,Social Media Creatives,"Posts, banners and story designs",Core,
+ASC-0055,CAT-04,Business Management & Digital Operations,General,Business Process Management,Business workflow management,Core,
+ASC-0056,CAT-05,Business Management & Digital Operations,General,Business Automation,Automated business operations,Core,
+ASC-0057,CAT-05,Business Management & Digital Operations,General,Inventory Management,Stock and inventory tracking,Core,
+ASC-0058,CAT-05,Business Management & Digital Operations,General,Billing & Invoicing,Digital billing systems,Core,
+ASC-0059,CAT-05,Business Management & Digital Operations,General,POS System Setup,Point-of-sale solutions,Core,
+ASC-0060,CAT-05,Business Management & Digital Operations,General,CRM Setup & Management,Customer relationship management,Core,
+ASC-0061,CAT-05,Business Management & Digital Operations,General,ERP Implementation,Business resource management,Core,
+ASC-0062,CAT-05,Business Management & Digital Operations,General,Employee Management,Employee information systems,Core,
+ASC-0063,CAT-05,Business Management & Digital Operations,General,Attendance Management,Employee attendance tracking,Core,
+ASC-0064,CAT-05,Business Management & Digital Operations,General,Payroll Software Setup,Salary and payroll management,Core,
+ASC-0065,CAT-05,Business Management & Digital Operations,General,Customer Database Management,Customer records and segmentation,Core,
+ASC-0066,CAT-05,Business Management & Digital Operations,General,Sales Management,Sales tracking and reporting,Core,
+ASC-0067,CAT-05,Business Management & Digital Operations,General,Vendor Management,Supplier and vendor management,Core,
+ASC-0068,CAT-05,Business Management & Digital Operations,General,Business Analytics,Business performance analysis,Core,
+ASC-0069,CAT-05,Business Management & Digital Operations,General,Reporting & Dashboards,Customized reporting systems,Core,
+ASC-0070,CAT-05,Business Management & Digital Operations,General,Workflow Automation,Automated task management,Core,
+ASC-0071,CAT-05,Business Management & Digital Operations,General,WhatsApp Business Automation,Automated business communication,Core,
+ASC-0072,CAT-05,Business Management & Digital Operations,General,Appointment Management,Booking and scheduling systems,Core,
+ASC-0073,CAT-05,Business Management & Digital Operations,General,Loyalty Management,Customer retention and rewards,Core,
+ASC-0074,CAT-05,E-commerce & Marketplace Management,General,E-commerce Store Development,Online shopping website development,Core,
+ASC-0075,CAT-06,E-commerce & Marketplace Management,General,Amazon Seller Onboarding,Seller account setup assistance,Core,
+ASC-0076,CAT-06,E-commerce & Marketplace Management,General,Flipkart Seller Onboarding,Marketplace registration assistance,Core,
+ASC-0077,CAT-06,E-commerce & Marketplace Management,General,Meesho Seller Onboarding,Seller account setup,Core,
+ASC-0078,CAT-06,E-commerce & Marketplace Management,General,Shopify Store Setup,Shopify e-commerce store,Core,
+ASC-0079,CAT-06,E-commerce & Marketplace Management,General,WooCommerce Setup,WordPress-based online store,Core,
+ASC-0080,CAT-06,E-commerce & Marketplace Management,General,Product Listing,Product uploading and cataloguing,Core,
+ASC-0081,CAT-06,E-commerce & Marketplace Management,General,Product SEO,Marketplace product optimization,Core,
+ASC-0082,CAT-06,E-commerce & Marketplace Management,General,Marketplace Account Management,Seller account management,Core,
+ASC-0083,CAT-06,E-commerce & Marketplace Management,General,Order Management,Order processing and tracking,Core,
+ASC-0084,CAT-06,E-commerce & Marketplace Management,General,Inventory Synchronization,Stock synchronization,Core,
+ASC-0085,CAT-06,E-commerce & Marketplace Management,General,Marketplace Advertising,Marketplace promotional campaigns,Core,
+ASC-0086,CAT-06,E-commerce & Marketplace Management,General,Customer Support Management,Customer queries and support,Core,
+ASC-0087,CAT-06,E-commerce & Marketplace Management,General,Product Photography,Product images and editing,Core,
+ASC-0088,CAT-06,E-commerce & Marketplace Management,General,Sales Analytics,Marketplace sales reporting,Core,
+ASC-0089,CAT-06,E-commerce & Marketplace Management,General,Returns & Refund Management,Return and refund workflow assistance,Core,
+ASC-0090,CAT-06,"Restaurant, Cafe & Food Business Solutions",General,Swiggy Onboarding,Restaurant registration assistance,Core,
+ASC-0091,CAT-07,"Restaurant, Cafe & Food Business Solutions",General,Zomato Onboarding,Restaurant registration assistance,Core,
+ASC-0092,CAT-07,"Restaurant, Cafe & Food Business Solutions",General,Google Business Profile,Restaurant listing and optimization,Core,
+ASC-0093,CAT-07,"Restaurant, Cafe & Food Business Solutions",General,Restaurant Website,Website development,Core,
+ASC-0094,CAT-07,"Restaurant, Cafe & Food Business Solutions",General,Digital Menu Card,Digital food menus,Core,
+ASC-0095,CAT-07,"Restaurant, Cafe & Food Business Solutions",General,QR Code Menu,Scan-and-view menus,Core,
+ASC-0096,CAT-07,"Restaurant, Cafe & Food Business Solutions",General,Online Ordering System,Direct restaurant ordering,Core,
+ASC-0097,CAT-07,"Restaurant, Cafe & Food Business Solutions",General,Restaurant POS Setup,Restaurant billing systems,Core,
+ASC-0098,CAT-07,"Restaurant, Cafe & Food Business Solutions",General,Food Photography,Professional food photography,Core,
+ASC-0099,CAT-07,"Restaurant, Cafe & Food Business Solutions",General,Restaurant Branding,Brand identity and positioning,Core,
+ASC-0100,CAT-07,"Restaurant, Cafe & Food Business Solutions",General,Food Packaging Design,Food packaging and labels,Core,
+ASC-0101,CAT-07,"Restaurant, Cafe & Food Business Solutions",General,Social Media Management,Restaurant social media handling,Core,
+ASC-0102,CAT-07,"Restaurant, Cafe & Food Business Solutions",General,Restaurant Advertisement,Google and Meta campaigns,Core,
+ASC-0103,CAT-07,"Restaurant, Cafe & Food Business Solutions",General,Customer Review Management,Online reputation management,Core,
+ASC-0104,CAT-07,"Restaurant, Cafe & Food Business Solutions",General,Table Reservation System,Online table booking,Core,
+ASC-0105,CAT-07,"Restaurant, Cafe & Food Business Solutions",General,Loyalty & Membership Programs,Customer rewards,Core,
+ASC-0106,CAT-07,"Restaurant, Cafe & Food Business Solutions",General,Restaurant Inventory,Raw material and stock management,Core,
+ASC-0107,CAT-07,"Restaurant, Cafe & Food Business Solutions",General,Kitchen Display System,Digital kitchen order management,Core,
+ASC-0108,CAT-07,"Restaurant, Cafe & Food Business Solutions",General,Food Cost Management,Recipe costing and profitability tracking,Core,
+ASC-0109,CAT-07,"Restaurant, Cafe & Food Business Solutions",General,Delivery Management,Delivery workflow solutions,Core,
+ASC-0110,CAT-07,"AI, Automation & Emerging Technologies",General,AI Chatbot Integration,AI-powered chatbots,Core,
+ASC-0111,CAT-08,"AI, Automation & Emerging Technologies",General,AI Customer Support Agents,Automated customer assistance,Core,
+ASC-0112,CAT-08,"AI, Automation & Emerging Technologies",General,AI Lead Generation,AI-assisted prospect identification,Core,
+ASC-0113,CAT-08,"AI, Automation & Emerging Technologies",General,AI Content Generation,Content creation workflows,Core,
+ASC-0114,CAT-08,"AI, Automation & Emerging Technologies",General,AI Business Analytics,Intelligent business insights,Core,
+ASC-0115,CAT-08,"AI, Automation & Emerging Technologies",General,WhatsApp AI Automation,AI-based WhatsApp communication,Core,
+ASC-0116,CAT-08,"AI, Automation & Emerging Technologies",General,Appointment Automation,Automated appointment booking,Core,
+ASC-0117,CAT-08,"AI, Automation & Emerging Technologies",General,Email Automation,Automated email workflows,Core,
+ASC-0118,CAT-08,"AI, Automation & Emerging Technologies",General,Invoice Automation,Automated billing processes,Core,
+ASC-0119,CAT-08,"AI, Automation & Emerging Technologies",General,CRM Automation,Automated customer management,Core,
+ASC-0120,CAT-08,"AI, Automation & Emerging Technologies",General,No-Code & Low-Code Development,Faster application development,Core,
+ASC-0121,CAT-08,"AI, Automation & Emerging Technologies",General,AI Voice Agents,Automated voice-based assistance,Core,
+ASC-0122,CAT-08,"AI, Automation & Emerging Technologies",General,Document Processing,AI-powered document extraction,Core,
+ASC-0123,CAT-08,"AI, Automation & Emerging Technologies",General,Custom AI Tool Development,Customized AI applications,Core,
+ASC-0124,CAT-08,"AI, Automation & Emerging Technologies",General,AI Workflow Integration,AI integration into existing business systems,Core,
+ASC-0125,CAT-08,"AI, Automation & Emerging Technologies",General,AI Knowledge Base,Internal business knowledge assistants,Core,
+ASC-0126,CAT-08,"Business Registration, Licensing & Compliance",Business Registration & Startup Establishment,Udyam Registration,MSME registration,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0127,CAT-09,"Business Registration, Licensing & Compliance",Business Registration & Startup Establishment,Proprietorship Setup,Sole proprietorship documentation assistance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0128,CAT-09,"Business Registration, Licensing & Compliance",Business Registration & Startup Establishment,Partnership Firm Registration,Partnership deed and registration support,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0129,CAT-09,"Business Registration, Licensing & Compliance",Business Registration & Startup Establishment,LLP Registration,Limited Liability Partnership incorporation assistance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0130,CAT-09,"Business Registration, Licensing & Compliance",Business Registration & Startup Establishment,Private Limited Company,Company incorporation assistance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0131,CAT-09,"Business Registration, Licensing & Compliance",Business Registration & Startup Establishment,OPC Registration,One Person Company incorporation assistance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0132,CAT-09,"Business Registration, Licensing & Compliance",Business Registration & Startup Establishment,Startup India Registration,DPIIT recognition assistance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0133,CAT-09,"Business Registration, Licensing & Compliance",Business Registration & Startup Establishment,Digital Signature Certificate (DSC),DSC application assistance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0134,CAT-09,"Business Registration, Licensing & Compliance",Business Registration & Startup Establishment,Director Identification Number (DIN),DIN application support,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0135,CAT-09,"Business Registration, Licensing & Compliance",Business Registration & Startup Establishment,PAN Assistance,Business PAN application,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0136,CAT-09,"Business Registration, Licensing & Compliance",Business Registration & Startup Establishment,TAN Assistance,Tax deduction account application,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0137,CAT-09,"Business Registration, Licensing & Compliance",Taxation & Financial Registrations,GST Registration,New GST registration,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0138,CAT-09,"Business Registration, Licensing & Compliance",Taxation & Financial Registrations,GST Amendment,Changes to GST details,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0139,CAT-09,"Business Registration, Licensing & Compliance",Taxation & Financial Registrations,GST Return Filing,"GSTR-1, GSTR-3B and applicable returns",Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0140,CAT-09,"Business Registration, Licensing & Compliance",Taxation & Financial Registrations,ITR Filing,Individual and business income tax returns,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0141,CAT-09,"Business Registration, Licensing & Compliance",Taxation & Financial Registrations,TAN Registration,Tax deduction and collection account number,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0142,CAT-09,"Business Registration, Licensing & Compliance",Taxation & Financial Registrations,TDS Return Filing,Applicable TDS compliance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0143,CAT-09,"Business Registration, Licensing & Compliance",Taxation & Financial Registrations,Professional Tax Registration,State-specific registration,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0144,CAT-09,"Business Registration, Licensing & Compliance",Taxation & Financial Registrations,LUT Application,Letter of Undertaking for eligible exporters,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0145,CAT-09,"Business Registration, Licensing & Compliance",Taxation & Financial Registrations,E-Way Bill Assistance,E-way bill setup,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0146,CAT-09,"Business Registration, Licensing & Compliance",Taxation & Financial Registrations,Accounting & Bookkeeping,Financial record maintenance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0147,CAT-09,"Business Registration, Licensing & Compliance",Taxation & Financial Registrations,GST Cancellation,GST cancellation assistance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0148,CAT-09,"Business Registration, Licensing & Compliance",Taxation & Financial Registrations,GST Reconciliation,"Purchase, sales and tax reconciliation",Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0149,CAT-09,"Business Registration, Licensing & Compliance",Trade Licenses & Local Business Permissions,Trade License,Municipal trade license,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0150,CAT-09,"Business Registration, Licensing & Compliance",Trade Licenses & Local Business Permissions,Shop & Establishment Registration,State-specific registration,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0151,CAT-09,"Business Registration, Licensing & Compliance",Trade Licenses & Local Business Permissions,Fire NOC,Fire safety approval assistance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0152,CAT-09,"Business Registration, Licensing & Compliance",Trade Licenses & Local Business Permissions,Pollution Control NOC,Applicable pollution consent,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0153,CAT-09,"Business Registration, Licensing & Compliance",Trade Licenses & Local Business Permissions,Factory License,Factory licensing assistance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0154,CAT-09,"Business Registration, Licensing & Compliance",Trade Licenses & Local Business Permissions,Signage Permission,Local signage approval assistance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0155,CAT-09,"Business Registration, Licensing & Compliance",Trade Licenses & Local Business Permissions,Health Trade License,Applicable local health permissions,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0156,CAT-09,"Business Registration, Licensing & Compliance",Trade Licenses & Local Business Permissions,Commercial Utility Assistance,Commercial electricity and related applications,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0157,CAT-09,"Business Registration, Licensing & Compliance",Intellectual Property & Brand Protection,Trademark Search,Brand name availability search,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0158,CAT-09,"Business Registration, Licensing & Compliance",Intellectual Property & Brand Protection,Trademark Registration,Trademark application assistance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0159,CAT-09,"Business Registration, Licensing & Compliance",Intellectual Property & Brand Protection,Trademark Objection,Objection response assistance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0160,CAT-09,"Business Registration, Licensing & Compliance",Intellectual Property & Brand Protection,Trademark Renewal,Renewal application assistance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0161,CAT-09,"Business Registration, Licensing & Compliance",Intellectual Property & Brand Protection,Copyright Registration,Copyright application assistance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0162,CAT-09,"Business Registration, Licensing & Compliance",Intellectual Property & Brand Protection,Patent Application,Patent filing coordination,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0163,CAT-09,"Business Registration, Licensing & Compliance",Intellectual Property & Brand Protection,Design Registration,Industrial design protection,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0164,CAT-09,"Business Registration, Licensing & Compliance",Intellectual Property & Brand Protection,Trademark Assignment,Ownership transfer assistance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0165,CAT-09,"Business Registration, Licensing & Compliance",Intellectual Property & Brand Protection,Brand Protection,Intellectual property support,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0166,CAT-09,"Business Registration, Licensing & Compliance",Food Business & FSSAI Compliance,Basic FSSAI Registration,Basic food business registration,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0167,CAT-09,"Business Registration, Licensing & Compliance",Food Business & FSSAI Compliance,State FSSAI License,State-level food license,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0168,CAT-09,"Business Registration, Licensing & Compliance",Food Business & FSSAI Compliance,Central FSSAI License,Central food license,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0169,CAT-09,"Business Registration, Licensing & Compliance",Food Business & FSSAI Compliance,FSSAI Renewal,License renewal assistance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0170,CAT-09,"Business Registration, Licensing & Compliance",Food Business & FSSAI Compliance,FSSAI Modification,License detail modification,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0171,CAT-09,"Business Registration, Licensing & Compliance",Food Business & FSSAI Compliance,FSSAI Annual Return,Applicable annual return assistance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0172,CAT-09,"Business Registration, Licensing & Compliance",Food Business & FSSAI Compliance,Food Business Category Assessment,Correct license category identification,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0173,CAT-09,"Business Registration, Licensing & Compliance",Food Business & FSSAI Compliance,FoSTaC Training Coordination,Food safety training coordination,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0174,CAT-09,"Business Registration, Licensing & Compliance",Food Business & FSSAI Compliance,Food Lab Testing Coordination,Food testing coordination,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0175,CAT-09,"Business Registration, Licensing & Compliance",Food Business & FSSAI Compliance,Food Labelling Compliance,Packaging and label compliance assistance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0176,CAT-09,"Business Registration, Licensing & Compliance",Food Business & FSSAI Compliance,Nutritional Information Coordination,Nutritional information coordination,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0177,CAT-09,"Business Registration, Licensing & Compliance",Food Business & FSSAI Compliance,Swiggy & Zomato Documentation,Food platform documentation support,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0178,CAT-09,"Business Registration, Licensing & Compliance",Import & Export Registrations,Import Export Code (IEC),IEC application assistance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0179,CAT-09,"Business Registration, Licensing & Compliance",Import & Export Registrations,APEDA Registration,Agricultural export registration assistance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0180,CAT-09,"Business Registration, Licensing & Compliance",Import & Export Registrations,RCMC,Registration-cum-membership certificate assistance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0181,CAT-09,"Business Registration, Licensing & Compliance",Import & Export Registrations,AD Code Registration,Bank AD code registration support,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0182,CAT-09,"Business Registration, Licensing & Compliance",Import & Export Registrations,Export Documentation,Export documentation assistance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0183,CAT-09,"Business Registration, Licensing & Compliance",Import & Export Registrations,Import Documentation,Import documentation assistance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0184,CAT-09,"Business Registration, Licensing & Compliance",Labour & Employee Compliance,EPFO Registration,Employee provident fund registration,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0185,CAT-09,"Business Registration, Licensing & Compliance",Labour & Employee Compliance,ESIC Registration,Employee state insurance registration,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0186,CAT-09,"Business Registration, Licensing & Compliance",Labour & Employee Compliance,Labour License,Applicable labour licensing assistance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0187,CAT-09,"Business Registration, Licensing & Compliance",Labour & Employee Compliance,Contract Labour Registration,Applicable contract labour compliance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0188,CAT-09,"Business Registration, Licensing & Compliance",Labour & Employee Compliance,Payroll Compliance,Payroll documentation and compliance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0189,CAT-09,"Business Registration, Licensing & Compliance",Labour & Employee Compliance,POSH Compliance,Workplace compliance support,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0190,CAT-09,"Business Registration, Licensing & Compliance",Labour & Employee Compliance,Employee Documentation,Employment records and documentation,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0191,CAT-09,"Business Registration, Licensing & Compliance",Other Business Certifications & Registrations,GeM Seller Registration,Government e-Marketplace seller registration assistance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0192,CAT-09,"Business Registration, Licensing & Compliance",Other Business Certifications & Registrations,NSIC Registration,NSIC registration assistance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0193,CAT-09,"Business Registration, Licensing & Compliance",Other Business Certifications & Registrations,ISO Certification Coordination,ISO certification coordination,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0194,CAT-09,"Business Registration, Licensing & Compliance",Other Business Certifications & Registrations,BIS Certification Assistance,BIS certification assistance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0195,CAT-09,"Business Registration, Licensing & Compliance",Other Business Certifications & Registrations,Legal Metrology Registration,Legal Metrology registration assistance,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0196,CAT-09,"Business Registration, Licensing & Compliance",Other Business Certifications & Registrations,MSME Scheme Application Assistance,Assistance with eligible MSME scheme applications,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0197,CAT-09,"Business Registration, Licensing & Compliance",Other Business Certifications & Registrations,Startup India Scheme Assistance,Assistance with eligible Startup India schemes,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0198,CAT-09,"Business Registration, Licensing & Compliance",Other Business Certifications & Registrations,RERA Registration Assistance,RERA registration assistance where applicable,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0199,CAT-09,"Business Registration, Licensing & Compliance",Other Business Certifications & Registrations,Drug License Assistance,Drug license assistance where applicable,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0200,CAT-09,"Business Registration, Licensing & Compliance",Other Business Certifications & Registrations,Clinical Establishment Registration Assistance,Registration assistance where applicable,Core,"Eligibility and requirements depend on business activity, location and applicable rules. Regulated filings or professional work may require a qualified/authorized professional."
+ASC-0201,CAT-09,IT Infrastructure & Technical Support,Future Expansion,Cloud Migration,Migration of applications and data to cloud platforms,Future,
+ASC-0202,CAT-10,IT Infrastructure & Technical Support,Future Expansion,Server Management,"Server setup, monitoring and maintenance",Future,
+ASC-0203,CAT-10,IT Infrastructure & Technical Support,Future Expansion,Backup & Recovery,Data backup and recovery planning,Future,
+ASC-0204,CAT-10,IT Infrastructure & Technical Support,Future Expansion,Cybersecurity Support,Security assessment and implementation support,Future,
+ASC-0205,CAT-10,IT Infrastructure & Technical Support,Future Expansion,Business Email Setup,Professional business email configuration,Future,
+ASC-0206,CAT-10,IT Infrastructure & Technical Support,Future Expansion,Google Workspace Implementation,Google Workspace setup and administration,Future,
+ASC-0207,CAT-10,IT Infrastructure & Technical Support,Future Expansion,Microsoft 365 Implementation,Microsoft 365 setup and administration,Future,
+ASC-0208,CAT-10,IT Infrastructure & Technical Support,Future Expansion,Network Setup,Business network setup and troubleshooting,Future,
+ASC-0209,CAT-10,IT Infrastructure & Technical Support,Future Expansion,IT Support Contracts,Ongoing technical support and maintenance,Future,
+ASC-0210,CAT-10,HR & Recruitment Solutions,Future Expansion,Recruitment Assistance,Candidate sourcing and recruitment coordination,Future,
+ASC-0211,CAT-11,HR & Recruitment Solutions,Future Expansion,Job Portal Management,Job posting and applicant tracking support,Future,
+ASC-0212,CAT-11,HR & Recruitment Solutions,Future Expansion,Resume Screening,Initial resume screening support,Future,
+ASC-0213,CAT-11,HR & Recruitment Solutions,Future Expansion,LinkedIn Recruitment Campaigns,Recruitment campaigns on LinkedIn,Future,
+ASC-0214,CAT-11,HR & Recruitment Solutions,Future Expansion,Employee Onboarding,Employee onboarding workflows,Future,
+ASC-0215,CAT-11,HR & Recruitment Solutions,Future Expansion,HRMS Implementation,Human resource management system setup,Future,
+ASC-0216,CAT-11,HR & Recruitment Solutions,Future Expansion,Corporate Training Coordination,Employee training coordination,Future,
+ASC-0217,CAT-11,Education & Training,Future Expansion,Programming Workshops,Practical programming workshops,Future,
+ASC-0218,CAT-12,Education & Training,Future Expansion,Digital Marketing Training,"SEO, advertising and social media training",Future,
+ASC-0219,CAT-12,Education & Training,Future Expansion,AI Tools Workshops,Training on AI tools and workflows,Future,
+ASC-0220,CAT-12,Education & Training,Future Expansion,Corporate Digital Training,Digital skills training for teams,Future,
+ASC-0221,CAT-12,Education & Training,Future Expansion,Technical Workshops,Technology workshops and seminars,Future,
+ASC-0222,CAT-12,Startup & Business Consulting,Future Expansion,Business Plan Preparation,Business plan development support,Future,
+ASC-0223,CAT-13,Startup & Business Consulting,Future Expansion,Market Research,Market and customer research,Future,
+ASC-0224,CAT-13,Startup & Business Consulting,Future Expansion,Competitor Research,Competitor and industry analysis,Future,
+ASC-0225,CAT-13,Startup & Business Consulting,Future Expansion,Go-to-Market Strategy,Product and service launch planning,Future,
+ASC-0226,CAT-13,Startup & Business Consulting,Future Expansion,Pitch Deck Preparation,Investor and business presentation preparation,Future,
+ASC-0227,CAT-13,Startup & Business Consulting,Future Expansion,Digital Transformation Consulting,Technology adoption and process improvement,Future,
+ASC-0228,CAT-13,Startup & Business Consulting,Future Expansion,Business Expansion Planning,Business growth and expansion planning,Future,
+ASC-0229,CAT-13,Corporate Solutions,Future Expansion,Enterprise Software Solutions,Custom enterprise software solutions,Future,
+ASC-0230,CAT-14,Corporate Solutions,Future Expansion,Corporate Website Development,Corporate website design and development,Future,
+ASC-0231,CAT-14,Corporate Solutions,Future Expansion,IT Support for Businesses,Ongoing business IT support,Future,
+ASC-0232,CAT-14,Corporate Solutions,Future Expansion,Digital Transformation Projects,End-to-end digital transformation support,Future,

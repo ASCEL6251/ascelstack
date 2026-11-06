@@ -1,0 +1,178 @@
+---
+import { heroCaptions } from '../../data/workflows';
+---
+
+<section class="sh" data-sh aria-label="An order-to-cash workflow, built as you scroll">
+  <div class="sh-sticky">
+    <div class="wrap sh-grid">
+      <div class="sh-copy">
+        <p class="eyebrow">Automation studio</p>
+        <h1 class="display sh-title">Watch a business <em>run itself.</em></h1>
+
+        <ol class="sh-steps">
+          {
+            heroCaptions.map((c, i) => (
+              <li class="sh-step" data-sh-step={i}>
+                <span class="mono sh-k">0{i + 1} · {c.k}</span>
+                <span class="sh-t">{c.t}</span>
+                <p class="sh-d">{c.d}</p>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+
+      <div class="sh-canvas">
+        <div class="wf sh-wf">
+          <div class="wf-head mono">
+            <span class="wf-dot-live"></span> order-to-cash.flow
+            <span class="wf-head-r" data-sh-status>idle</span>
+          </div>
+          <div class="wf-scroll" data-sh-scroll data-lenis-prevent>
+            <div class="wf-host" data-sh-host></div>
+          </div>
+        </div>
+        <div class="sh-progress" aria-hidden="true"><span data-sh-bar></span></div>
+      </div>
+    </div>
+
+    <p class="sh-hint mono" data-sh-hint>Scroll to run the workflow</p>
+  </div>
+</section>
+
+<style>
+  .sh { position: relative; height: 460vh; }
+  .sh-sticky {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100svh;
+    display: flex;
+    align-items: center;
+    padding-top: var(--nav-h);
+    overflow: hidden;
+    background:
+      radial-gradient(45% 55% at 75% 55%, rgba(148, 188, 227, 0.32), transparent 70%),
+      var(--paper);
+  }
+  .sh-grid {
+    display: grid;
+    grid-template-columns: minmax(280px, 3.6fr) 8.4fr;
+    gap: clamp(2rem, 4vw, 4rem);
+    align-items: center;
+  }
+  .sh-copy { display: grid; gap: 1.5rem; }
+  .sh-title { font-size: clamp(2.5rem, 1.5rem + 3.2vw, 4.75rem); }
+
+  .sh-steps { display: grid; border-top: 1px solid var(--line); }
+  .sh-step {
+    display: grid;
+    gap: 0.15rem;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid var(--line);
+    opacity: 0.38;
+    transition: opacity 0.4s var(--ease-out);
+  }
+  .sh-step.on { opacity: 1; }
+  .sh-k { color: var(--accent); text-transform: uppercase; }
+  .sh-t { font-family: var(--font-display); font-size: 1.3rem; line-height: 1.2; }
+  .sh-d {
+    display: grid;
+    grid-template-rows: 0fr;
+    font-size: 0.92rem;
+    color: var(--text-muted);
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.5s var(--ease-out);
+  }
+  .sh-step.on .sh-d { max-height: 4.5em; }
+
+  .sh-canvas { display: grid; gap: 1rem; }
+  .sh-wf {
+    border: 1px solid var(--line);
+    box-shadow: 0 40px 80px -50px rgba(29, 45, 61, 0.45);
+    overflow: hidden;
+  }
+  .wf-head {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.85rem 1.1rem;
+    border-bottom: 1px solid var(--line);
+    color: var(--text-muted);
+    background: color-mix(in srgb, var(--paper-raised) 80%, transparent);
+  }
+  .wf-head-r { margin-left: auto; text-transform: uppercase; color: var(--accent); }
+  .wf-dot-live {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 4px rgba(89, 128, 166, 0.18);
+  }
+  .sh-wf :global(.wf-host) { padding: 0.5rem 0.75rem 0.25rem; }
+
+  .sh-progress { height: 2px; background: var(--line); border-radius: 2px; overflow: hidden; }
+  .sh-progress span {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    transform-origin: left;
+    transform: scaleX(0);
+  }
+
+  .sh-hint {
+    position: absolute;
+    left: 50%;
+    bottom: 1.25rem;
+    transform: translateX(-50%);
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 960px) {
+    .sh-grid { grid-template-columns: 1fr; gap: 1.25rem; }
+    .sh-title { font-size: 2.25rem; }
+    .sh-steps .sh-step:not(.on) { display: none; }
+    .sh-steps { border: 0; }
+    .sh-step { padding: 0; }
+    .sh-hint { display: none; }
+  }
+</style>
+
+<script>
+  import '../../styles/workflow.css';
+  import { gsap, ScrollTrigger } from '../../scripts/motion';
+  import { renderWorkflow, buildTimeline } from '../../scripts/workflow';
+  import { orderToCash } from '../../data/workflows';
+
+  const section = document.querySelector<HTMLElement>('[data-sh]')!;
+  const host = section.querySelector<HTMLElement>('[data-sh-host]')!;
+  const scroller = section.querySelector<HTMLElement>('[data-sh-scroll]')!;
+  const steps = [...section.querySelectorAll<HTMLElement>('[data-sh-step]')];
+  const bar = section.querySelector<HTMLElement>('[data-sh-bar]')!;
+  const status = section.querySelector<HTMLElement>('[data-sh-status]')!;
+  const hint = section.querySelector<HTMLElement>('[data-sh-hint]')!;
+
+  const r = renderWorkflow(host, orderToCash);
+  const narrow = () => window.innerWidth <= 760;
+  const tl = buildTimeline(r, { follow: narrow() ? scroller : null });
+
+  const st = ScrollTrigger.create({
+    trigger: section,
+    start: 'top top',
+    end: 'bottom bottom',
+    scrub: 0.6,
+    animation: tl,
+    onUpdate(self) {
+      const p = self.progress;
+      gsap.set(bar, { scaleX: p });
+      hint.style.opacity = p > 0.02 ? '0' : '1';
+      const idx = Math.min(steps.length - 1, Math.floor(p * steps.length * 0.999));
+      steps.forEach((s, i) => s.classList.toggle('on', i === idx));
+      status.textContent = p < 0.01 ? 'idle' : p > 0.98 ? 'success · 6 steps' : 'running…';
+    },
+  });
+
+  if (st.progress === 0) steps[0].classList.add('on');
+</script>

@@ -1,0 +1,207 @@
+---
+import { coreCategories, counts, LAYERS, type Layer } from '../../data/catalog';
+
+const order: Layer[] = ['build', 'grow', 'run'];
+const cats = [...coreCategories].sort((a, b) => order.indexOf(a.layer) - order.indexOf(b.layer));
+
+// Alternate shade within a layer so neighbouring cards stay distinct.
+const seen: Record<string, number> = {};
+const items = cats.map((c) => {
+  const n = (seen[c.layer] = (seen[c.layer] ?? -1) + 1);
+  return { ...c, shade: n % 2 };
+});
+---
+
+<section class="svc section" id="services" aria-labelledby="svc-title">
+  <div class="wrap">
+    <header class="svc-head">
+      <p class="eyebrow" data-reveal>What we do</p>
+      <h2 id="svc-title" class="display h2" data-reveal>
+        {counts.core} services.<br /><em>Eight disciplines.</em> One team.
+      </h2>
+      <p class="lead" data-reveal>
+        Pick one service or stack several. Every discipline shares one team, one roadmap and one set of systems.
+      </p>
+    </header>
+
+    <div class="svc-cards" data-svc-cards>
+      {
+        items.map((c, i) => (
+          <article
+            class:list={['svc-card', `svc-card--${c.layer}`, { 'is-alt': c.shade }]}
+            style={`--i:${i}`}
+            data-svc-card
+          >
+            <div class="svc-card-inner">
+              <div class="svc-meta">
+                <span class="mono">
+                  {String(i + 1).padStart(2, '0')} / {String(items.length).padStart(2, '0')}
+                </span>
+                <span class="mono">{LAYERS[c.layer].title} layer</span>
+              </div>
+
+              <div class="svc-main">
+                <div class="svc-left">
+                  <h3 class="display svc-name">{c.name}</h3>
+                  <p class="svc-blurb">{c.blurb}</p>
+                  <a href={`/services/${c.slug}`} class="svc-link">
+                    View all {c.services.length} services <span class="arrow">→</span>
+                  </a>
+                </div>
+                <ul class="svc-list">
+                  {c.services.slice(0, 6).map((s) => (
+                    <li>
+                      <span class="mono">{s.id}</span>
+                      <span>{s.name}</span>
+                    </li>
+                  ))}
+                  {c.services.length > 6 && <li class="svc-more">+ {c.services.length - 6} more</li>}
+                </ul>
+              </div>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .svc-head {
+    display: grid;
+    gap: 1.5rem;
+    margin-bottom: clamp(3rem, 8vw, 6rem);
+    max-width: 60rem;
+  }
+
+  .svc-cards { display: grid; gap: 2rem; }
+
+  .svc-card {
+    position: sticky;
+    top: calc(var(--nav-h) + 1rem + var(--i) * 12px);
+    min-height: min(78vh, 640px);
+    border-radius: var(--radius-l);
+    transform-origin: 50% 0%;
+    will-change: transform;
+    --fg: var(--ink);
+    --fg-muted: rgba(29, 45, 61, 0.7);
+    --rule: rgba(29, 45, 61, 0.18);
+    background: var(--bg);
+    color: var(--fg);
+    box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.2) inset, 0 30px 60px -30px rgba(29, 45, 61, 0.35);
+    overflow: hidden;
+  }
+  .svc-card--build { --bg: var(--tint); }
+  .svc-card--build.is-alt { --bg: #b5d9fd; }
+  .svc-card--grow {
+    --bg: var(--accent);
+    --fg: var(--paper);
+    --fg-muted: rgba(242, 242, 243, 0.78);
+    --rule: rgba(242, 242, 243, 0.22);
+  }
+  .svc-card--grow.is-alt { --bg: #4d7398; }
+  .svc-card--run {
+    --bg: var(--ink);
+    --fg: var(--paper);
+    --fg-muted: var(--text-on-ink-muted);
+    --rule: var(--line-on-ink);
+  }
+  .svc-card--run.is-alt { --bg: var(--ink-raised); }
+
+  /* Layered-A stratum watermark */
+  .svc-card::after {
+    content: '';
+    position: absolute;
+    right: -4%;
+    bottom: -12%;
+    width: 46%;
+    aspect-ratio: 1;
+    background: currentColor;
+    opacity: 0.06;
+    pointer-events: none;
+    clip-path: polygon(50% 6%, 66% 38%, 34% 38%);
+  }
+  .svc-card--grow::after { clip-path: polygon(32% 42%, 68% 42%, 80% 66%, 60% 66%, 50% 46%, 40% 66%, 20% 66%); }
+  .svc-card--run::after {
+    clip-path: polygon(18% 70%, 38% 70%, 26% 94%, 6% 94%, 18% 70%, 82% 70%, 94% 94%, 74% 94%, 62% 70%, 82% 70%);
+  }
+
+  .svc-card-inner {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: clamp(1.5rem, 4vw, 3.5rem);
+  }
+  .svc-meta {
+    display: flex;
+    justify-content: space-between;
+    color: var(--fg-muted);
+    text-transform: uppercase;
+  }
+  .svc-main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: end;
+  }
+  .svc-left { display: grid; gap: 1.25rem; align-content: end; }
+  .svc-name { font-size: clamp(2.25rem, 1.4rem + 3.2vw, 4.75rem); line-height: 0.98; }
+  .svc-blurb { color: var(--fg-muted); max-width: 40ch; font-size: 1.05rem; }
+  .svc-link {
+    display: inline-flex;
+    gap: 0.6rem;
+    align-items: center;
+    width: fit-content;
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid currentColor;
+    font-weight: 500;
+  }
+  .svc-link .arrow { transition: transform 0.4s var(--ease-out); }
+  .svc-link:hover .arrow { transform: translateX(5px); }
+
+  .svc-list { border-top: 1px solid var(--rule); }
+  .svc-list li {
+    display: grid;
+    grid-template-columns: 5.5rem 1fr;
+    gap: 1rem;
+    align-items: baseline;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .svc-list .mono { color: var(--fg-muted); }
+  .svc-more { color: var(--fg-muted); display: block !important; font-size: 0.9rem; }
+
+  @media (max-width: 860px) {
+    .svc-card { min-height: 0; top: calc(var(--nav-h) + 0.5rem + var(--i) * 8px); }
+    .svc-main { grid-template-columns: 1fr; }
+    .svc-list li:nth-child(n + 4):not(.svc-more) { display: none; }
+  }
+</style>
+
+<script>
+  import { gsap, reducedMotion } from '../../scripts/motion';
+
+  if (!reducedMotion) {
+    const cards = gsap.utils.toArray<HTMLElement>('[data-svc-card]');
+    cards.forEach((card, i) => {
+      const next = cards[i + 1];
+      if (!next) return;
+      // As the next card slides over, the current one recedes. Scrubbed, so it reverses.
+      gsap.to(card, {
+        scale: 0.92,
+        filter: 'brightness(0.82)',
+        ease: 'none',
+        scrollTrigger: {
+          trigger: next,
+          start: 'top bottom',
+          end: 'top top+=120',
+          scrub: true,
+        },
+      });
+    });
+  }
+</script>
