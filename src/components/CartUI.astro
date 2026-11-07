@@ -1,0 +1,180 @@
+---
+// Global cart pieces: package picker dialog + "added" toast.
+// Any element with data-add="ASC-XXXX" becomes an add-to-estimate button.
+---
+
+<dialog class="pkg" data-pkg-dialog aria-labelledby="pkg-title" data-lenis-prevent>
+  <form method="dialog" class="pkg-inner">
+    <header class="pkg-head">
+      <div>
+        <p class="eyebrow">Choose a package</p>
+        <h2 class="display h3" id="pkg-title" data-pkg-name></h2>
+        <p class="pkg-sub" data-pkg-sub></p>
+      </div>
+      <button class="pkg-close" value="cancel" aria-label="Close">×</button>
+    </header>
+    <div class="pkg-list" data-pkg-list></div>
+    <p class="pkg-fine">Prices exclude 18% GST. <span data-pkg-notes></span></p>
+  </form>
+</dialog>
+
+<div class="toast" data-toast role="status" aria-live="polite">
+  <span data-toast-text></span>
+  <a href="/cart" class="toast-link">View estimate →</a>
+</div>
+
+<style is:global>
+  .pkg {
+    width: min(760px, calc(100vw - 2rem));
+    max-height: calc(100dvh - 2rem);
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-l);
+    background: var(--paper-raised);
+    color: var(--text);
+    box-shadow: 0 40px 80px -30px rgba(20, 33, 48, 0.55);
+  }
+  .pkg::backdrop { background: rgba(20, 33, 48, 0.55); backdrop-filter: blur(4px); }
+  .pkg-inner { display: grid; gap: 1.25rem; padding: clamp(1.25rem, 3vw, 2rem); }
+  .pkg-head { display: flex; justify-content: space-between; gap: 1rem; align-items: start; }
+  .pkg-head > div { display: grid; gap: 0.5rem; }
+  .pkg-sub { color: var(--text-muted); font-size: 0.9rem; }
+  .pkg-close {
+    flex: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+  }
+  .pkg-list { display: grid; gap: 0.6rem; }
+  .pkg-opt {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.35rem 1rem;
+    align-items: center;
+    width: 100%;
+    padding: 1rem 1.1rem;
+    text-align: left;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper);
+    cursor: pointer;
+    transition: border-color 0.25s, background 0.25s, transform 0.3s var(--ease-out);
+  }
+  .pkg-opt:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .pkg-opt.is-in { border-color: var(--accent); background: color-mix(in srgb, var(--tint) 18%, var(--paper)); }
+  .pkg-opt-name { font-weight: 700; display: flex; gap: 0.5rem; align-items: baseline; flex-wrap: wrap; }
+  .pkg-opt-name .mono { color: var(--text-muted); font-weight: 400; }
+  .pkg-opt-price { font-weight: 700; font-size: 1.1rem; text-align: right; white-space: nowrap; }
+  .pkg-opt-inc { grid-column: 1 / -1; font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; }
+  .pkg-opt-cta { grid-column: 1 / -1; font-size: 0.8rem; font-weight: 600; color: var(--accent); }
+  .pkg-fine { font-size: 0.8rem; color: var(--text-muted); }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: calc(1.25rem + env(safe-area-inset-bottom));
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    max-width: calc(100vw - 2rem);
+    padding: 0.8rem 0.8rem 0.8rem 1.2rem;
+    border-radius: 999px;
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 0.9rem;
+    box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.6);
+    transform: translate(-50%, 150%);
+    transition: transform 0.5s var(--ease-out);
+  }
+  .toast.is-on { transform: translate(-50%, 0); }
+  .toast-link {
+    flex: none;
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+    background: var(--paper);
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 0.8rem;
+  }
+</style>
+
+<script>
+  import { addItem, onCart, getCart } from '../lib/cart';
+  import { getPricing, formatINR } from '../lib/pricing';
+  import raw from '../data/services.json';
+
+  const names = Object.fromEntries((raw as { id: string; name: string }[]).map((s) => [s.id, s.name]));
+  const dialog = document.querySelector<HTMLDialogElement>('[data-pkg-dialog]')!;
+  const list = dialog.querySelector<HTMLElement>('[data-pkg-list]')!;
+  const toast = document.querySelector<HTMLElement>('[data-toast]')!;
+  let toastTimer = 0;
+
+  const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+
+  function showToast(text: string) {
+    toast.querySelector('[data-toast-text]')!.textContent = text;
+    toast.classList.add('is-on');
+    clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(() => toast.classList.remove('is-on'), 3200);
+  }
+
+  function openPicker(id: string) {
+    const p = getPricing(id);
+    if (!p?.packages) return;
+    const cart = getCart();
+    dialog.querySelector('[data-pkg-name]')!.textContent = names[id] ?? id;
+    dialog.querySelector('[data-pkg-sub]')!.textContent = `${id} · Market rate: ${p.market}`;
+    dialog.querySelector('[data-pkg-notes]')!.textContent = p.notes;
+    list.innerHTML = p.packages
+      .map((k, i) => {
+        const isIn = cart.items.some((c) => c.id === id && c.pkg === k.key);
+        return `<button type="button" class="pkg-opt${isIn ? ' is-in' : ''}" data-pick="${esc(k.key)}">
+          <span class="pkg-opt-name">${k.key === 'custom' ? '' : `<span class="mono">0${i + 1}</span>`}${esc(k.name)}<span class="mono">${esc(k.delivery)}</span></span>
+          <span class="pkg-opt-price">${k.price === null ? 'On quote' : formatINR(k.price)}</span>
+          <span class="pkg-opt-inc">${esc(k.includes)}</span>
+          <span class="pkg-opt-cta">${isIn ? '✓ In your estimate — add another' : k.price === null ? 'Add for a custom quote →' : 'Add to estimate →'}</span>
+        </button>`;
+      })
+      .join('');
+    list.querySelectorAll<HTMLButtonElement>('[data-pick]').forEach((b) =>
+      b.addEventListener('click', () => {
+        const pkg = p.packages!.find((k) => k.key === b.dataset.pick)!;
+        addItem(id, pkg.key);
+        dialog.close();
+        showToast(`${names[id]} · ${pkg.name} added`);
+      }),
+    );
+    dialog.showModal();
+  }
+
+  document.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-add]');
+    if (!btn) return;
+    e.preventDefault();
+    const id = btn.dataset.add!;
+    const p = getPricing(id);
+    if (!p) return;
+    if (p.type === 'package' && p.packages) return openPicker(id);
+    addItem(id);
+    showToast(`${names[id] ?? id} added to your estimate`);
+  });
+
+  dialog.addEventListener('click', (e) => e.target === dialog && dialog.close());
+
+  // Reflect cart state on every add button.
+  onCart((cart) => {
+    document.querySelectorAll<HTMLElement>('[data-add]').forEach((b) => {
+      const id = b.dataset.add!;
+      const n = cart.items.filter((i) => i.id === id).reduce((a, i) => a + i.qty, 0);
+      const isPkg = getPricing(id)?.type === 'package';
+      b.classList.toggle('is-added', n > 0);
+      const label = b.querySelector('[data-add-label]');
+      if (label) label.textContent = n > 0 ? `In estimate (${n})` : isPkg ? 'Choose package' : 'Add to estimate';
+    });
+  });
+</script>

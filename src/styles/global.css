@@ -209,3 +209,38 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 }
 
 [hidden] { display: none !important; }
+
+/* ---------- Form fields (auth, cart) ---------- */
+.ff { display: grid; gap: 0.45rem; min-width: 0; }
+.ff > .mono { color: var(--text-muted); text-transform: uppercase; }
+.ff em { font-style: normal; text-transform: none; opacity: 0.6; }
+.ff :is(input, select, textarea) {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.ff textarea { resize: vertical; }
+.ff :is(input, select, textarea):focus {
+  outline: 0;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(89, 128, 166, 0.15);
+}
+.form-err { color: #9a3b2e; font-size: 0.9rem; }
+
+/* Prototype marker for mocked flows (remove when Clerk / Neon are live) */
+.proto-note {
+  display: flex;
+  gap: 0.6rem;
+  align-items: start;
+  padding: 0.75rem 1rem;
+  border: 1px dashed var(--accent);
+  border-radius: var(--radius-s);
+  background: color-mix(in srgb, var(--tint) 14%, transparent);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.proto-note strong { color: var(--ink); font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.1em; }

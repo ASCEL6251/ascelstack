@@ -1,0 +1,64 @@
+---
+import Base from '../layouts/Base.astro';
+import AuthShell from '../components/auth/AuthShell.astro';
+---
+
+<Base title="Create account" description="Create an Ascelstack account to save and submit project estimates.">
+  <AuthShell eyebrow="Create account" title="Price your project <em>in minutes.</em>" lead="An account keeps your estimates in one place so our team can pick up exactly where you left off.">
+    <form data-signup novalidate>
+      <label class="ff">
+        <span class="mono">Full name</span>
+        <input name="name" required autocomplete="name" />
+      </label>
+      <label class="ff">
+        <span class="mono">Work email</span>
+        <input name="email" type="email" required autocomplete="email" />
+      </label>
+      <label class="ff">
+        <span class="mono">Phone / WhatsApp <em>optional</em></span>
+        <input name="phone" type="tel" autocomplete="tel" />
+      </label>
+      <label class="ff">
+        <span class="mono">Business name <em>optional</em></span>
+        <input name="company" autocomplete="organization" />
+      </label>
+      <label class="ff">
+        <span class="mono">Password</span>
+        <input name="password" type="password" required minlength="8" autocomplete="new-password" />
+      </label>
+      <p class="form-err" data-err hidden></p>
+      <button class="btn" type="submit">Create account <span class="arrow">→</span></button>
+      <p class="auth-alt">Already have an account? <a href="/sign-in" data-keep-redirect>Sign in</a></p>
+    </form>
+  </AuthShell>
+</Base>
+
+<script>
+  import { signUp, getUser, safeRedirect } from '../lib/auth';
+
+  const params = new URLSearchParams(location.search);
+  const next = safeRedirect(params.get('redirect'));
+  if (getUser()) location.replace(next);
+  document.querySelectorAll<HTMLAnchorElement>('[data-keep-redirect]').forEach((a) => params.get('redirect') && (a.search = `?redirect=${encodeURIComponent(next)}`));
+
+  const form = document.querySelector<HTMLFormElement>('[data-signup]')!;
+  const err = form.querySelector<HTMLElement>('[data-err]')!;
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const d = new FormData(form);
+    const name = String(d.get('name') ?? '').trim();
+    const email = String(d.get('email') ?? '').trim();
+    const password = String(d.get('password') ?? '');
+    const fail = (m: string) => ((err.textContent = m), (err.hidden = false));
+    if (!name) return fail('Enter your name.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('Enter a valid email.');
+    if (password.length < 8) return fail('Password needs at least 8 characters.');
+    try {
+      // Password intentionally not stored (mock). Clerk handles it later.
+      signUp({ name, email, phone: String(d.get('phone') ?? '').trim(), company: String(d.get('company') ?? '').trim() });
+      location.href = next;
+    } catch (x) {
+      fail((x as Error).message);
+    }
+  });
+</script>

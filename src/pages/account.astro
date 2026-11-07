@@ -1,0 +1,212 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Your account" description="Your Ascelstack estimates and profile.">
+  <section class="acct">
+    <div class="wrap">
+      <div class="acct-flash" data-flash hidden></div>
+
+      <header class="acct-head">
+        <div>
+          <p class="eyebrow">Account</p>
+          <h1 class="display h2" data-hello>Your account</h1>
+        </div>
+        <div class="acct-head-act">
+          <a class="btn" href="/cart">Open estimate <span class="arrow">→</span></a>
+          <button type="button" class="btn btn-ghost" data-signout>Sign out</button>
+        </div>
+      </header>
+
+      <div class="acct-grid">
+        <div>
+          <h2 class="mono acct-sec">Submitted estimates</h2>
+          <div class="acct-list" data-list><p class="muted">Loading…</p></div>
+        </div>
+
+        <aside class="acct-side">
+          <h2 class="mono acct-sec">Profile</h2>
+          <form class="acct-form" data-profile>
+            <label class="ff"><span class="mono">Name</span><input name="name" required /></label>
+            <label class="ff"><span class="mono">Email</span><input name="email" disabled /></label>
+            <label class="ff"><span class="mono">Phone</span><input name="phone" type="tel" /></label>
+            <label class="ff"><span class="mono">Business</span><input name="company" /></label>
+            <button class="btn" type="submit">Save profile</button>
+            <span class="muted" data-saved hidden>Saved.</span>
+          </form>
+          <p class="proto-note">
+            <strong>PROTOTYPE</strong>
+            <span>Profile and estimates are mock data in this browser. Clerk (auth) and Neon (database) replace this later.</span>
+          </p>
+        </aside>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .acct { padding: calc(var(--nav-h) + clamp(2rem, 5vw, 4rem)) 0 clamp(4rem, 8vw, 7rem); }
+  .acct-flash {
+    margin-bottom: 1.5rem;
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius);
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 0.95rem;
+  }
+  .acct-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    padding-bottom: 2rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .acct-head > div:first-child { display: grid; gap: 1rem; }
+  .acct-head h1 { font-size: clamp(2.25rem, 1.4rem + 3vw, 4rem); }
+  .acct-head-act { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  .acct-grid { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 2.5rem; align-items: start; }
+  .acct-sec { color: var(--text-muted); text-transform: uppercase; margin-bottom: 1rem; }
+  .muted { color: var(--text-muted); font-size: 0.9rem; }
+  .acct-list { display: grid; gap: 0.75rem; }
+  .acct-list :global(details) { border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper-raised); }
+  .acct-list :global(summary) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.4rem 1rem;
+    padding: 1.1rem 1.25rem;
+    cursor: pointer;
+    list-style: none;
+  }
+  .acct-list :global(summary::-webkit-details-marker) { display: none; }
+  .acct-list :global(.e-id) { font-weight: 700; }
+  .acct-list :global(.e-meta) { font-size: 0.85rem; color: var(--text-muted); }
+  .acct-list :global(.e-tot) { text-align: right; font-weight: 700; white-space: nowrap; }
+  .acct-list :global(.e-status) {
+    justify-self: end;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    background: var(--paper-sunk);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .acct-list :global(.e-body) { display: grid; gap: 0.5rem; padding: 0 1.25rem 1.25rem; border-top: 1px dashed var(--line); padding-top: 1rem; }
+  .acct-list :global(.e-row) { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.875rem; }
+  .acct-list :global(.e-row span:first-child) { color: var(--text-muted); }
+  .acct-list :global(.e-note) { font-size: 0.85rem; font-style: italic; color: var(--text-muted); }
+  .acct-list :global(.e-reuse) {
+    justify-self: start;
+    margin-top: 0.5rem;
+    border: 0;
+    background: none;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+  .acct-list :global(.empty) { padding: 2rem; border: 1px dashed var(--line); border-radius: var(--radius); }
+  .acct-list :global(.empty a) { color: var(--accent); font-weight: 600; }
+  .acct-side { display: grid; gap: 1rem; }
+  .acct-form { display: grid; gap: 0.9rem; }
+  .acct-form .btn { justify-content: center; }
+  @media (max-width: 900px) { .acct-grid { grid-template-columns: 1fr; } }
+</style>
+
+<script>
+  import { getUser, onAuth, signOut, updateUser } from '../lib/auth';
+  import { listEstimates } from '../lib/api';
+  import { getCart, setSize, addItem, setQty } from '../lib/cart';
+  import { buildEstimate } from '../lib/estimate';
+  import { formatINR, RECURRENCE_LABEL, RECURRENCE_SUFFIX, type Recurrence } from '../lib/pricing';
+
+  const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+  const user = getUser();
+  if (!user) location.replace('/sign-in?redirect=/account');
+
+  onAuth((u) => !u && location.replace('/sign-in'));
+
+  if (user) {
+    document.querySelector('[data-hello]')!.textContent = `Hi, ${user.name.split(' ')[0]}.`;
+
+    const params = new URLSearchParams(location.search);
+    const sub = params.get('submitted');
+    if (sub) {
+      const f = document.querySelector<HTMLElement>('[data-flash]')!;
+      f.textContent = `Estimate ${sub} submitted. Our team will review scope and reply within one working day.`;
+      f.hidden = false;
+      history.replaceState(null, '', '/account');
+    }
+
+    const form = document.querySelector<HTMLFormElement>('[data-profile]')!;
+    (form.elements.namedItem('name') as HTMLInputElement).value = user.name;
+    (form.elements.namedItem('email') as HTMLInputElement).value = user.email;
+    (form.elements.namedItem('phone') as HTMLInputElement).value = user.phone ?? '';
+    (form.elements.namedItem('company') as HTMLInputElement).value = user.company ?? '';
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const d = new FormData(form);
+      const name = String(d.get('name') ?? '').trim();
+      if (!name) return;
+      updateUser({ name, phone: String(d.get('phone') ?? '').trim(), company: String(d.get('company') ?? '').trim() });
+      document.querySelector('[data-hello]')!.textContent = `Hi, ${name.split(' ')[0]}.`;
+      const s = document.querySelector<HTMLElement>('[data-saved]')!;
+      s.hidden = false;
+      setTimeout(() => (s.hidden = true), 2000);
+    });
+
+    document.querySelector('[data-signout]')!.addEventListener('click', () => {
+      signOut();
+      location.href = '/';
+    });
+
+    const list = document.querySelector<HTMLElement>('[data-list]')!;
+    listEstimates(user).then((items) => {
+      if (!items.length) {
+        list.innerHTML = `<div class="empty"><p class="muted">No estimates yet. <a href="/services">Browse services</a> to build your first one.</p></div>`;
+        return;
+      }
+      list.innerHTML = items
+        .map((e) => {
+          const est = buildEstimate(e.cart);
+          const head = e.totals[0];
+          const date = new Date(e.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+          return `<details>
+            <summary>
+              <span class="e-id">${esc(e.id)}</span>
+              <span class="e-tot">${head ? formatINR(head.total) + RECURRENCE_SUFFIX[head.recurrence as Recurrence] : 'On quote'}</span>
+              <span class="e-meta">${date} · ${est.lines.length} service${est.lines.length === 1 ? '' : 's'} · ${e.cart.size === 'mid' ? 'Mid-size' : 'Small business'} pricing</span>
+              <span class="e-status">${e.status.replace('_', ' ')}</span>
+            </summary>
+            <div class="e-body">
+              ${est.lines
+                .map((l) => `<div class="e-row"><span>${esc(l.name)} · ${esc(l.quote.label)} × ${l.qty}</span><span>${l.total === null ? 'On quote' : formatINR(l.total) + RECURRENCE_SUFFIX[l.quote.recurrence]}</span></div>`)
+                .join('')}
+              ${e.totals
+                .map((t) => `<div class="e-row"><strong>${RECURRENCE_LABEL[t.recurrence as Recurrence]} total incl. GST</strong><strong>${formatINR(t.total)}</strong></div>`)
+                .join('')}
+              ${e.note ? `<p class="e-note">“${esc(e.note)}”</p>` : ''}
+              <button type="button" class="e-reuse" data-reuse="${esc(e.id)}">Copy into a new estimate →</button>
+            </div>
+          </details>`;
+        })
+        .join('');
+
+      list.addEventListener('click', (ev) => {
+        const id = (ev.target as HTMLElement).closest<HTMLElement>('[data-reuse]')?.dataset.reuse;
+        const e = items.find((x) => x.id === id);
+        if (!e) return;
+        setSize(e.cart.size);
+        for (const it of e.cart.items) {
+          addItem(it.id, it.pkg);
+          const now = getCart().items.find((c) => c.id === it.id && (c.pkg ?? '') === (it.pkg ?? ''));
+          if (now) setQty(it.id, it.pkg, now.qty - 1 + it.qty);
+        }
+        location.href = '/cart';
+      });
+    });
+  }
+</script>

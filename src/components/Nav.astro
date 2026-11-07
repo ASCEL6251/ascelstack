@@ -68,6 +68,15 @@ const menu: { label: string; href: string; sub?: Sub[]; all?: string }[] = [
         }
       </nav>
 
+      <a href="/account" class="nav-icon" aria-label="Account" data-account-link>
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" /></svg>
+        <span class="nav-avatar" data-avatar hidden></span>
+      </a>
+      <a href="/cart" class="nav-icon" aria-label="Your estimate">
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.4 11.2a1 1 0 0 0 1 .8h9.2a1 1 0 0 0 1-.8L21 8H6.2" /><circle cx="9.5" cy="20" r="1.3" /><circle cx="17.5" cy="20" r="1.3" /></svg>
+        <span class="nav-count" data-cart-count hidden>0</span>
+      </a>
+
       <a href="/contact" class="nav-cta">
         <span class="nav-cta-text">Start a project</span>
         <span class="nav-cta-icon" aria-hidden="true">
@@ -145,6 +154,10 @@ const menu: { label: string; href: string; sub?: Sub[]; all?: string }[] = [
       }
     </nav>
     <div class="mnav-foot" style={`--i:${menu.length}`}>
+      <div class="mnav-acct">
+        <a href="/cart" class="mnav-acct-link">Your estimate <span class="mono" data-cart-count-m>0</span></a>
+        <a href="/account" class="mnav-acct-link" data-account-label-m>Sign in</a>
+      </div>
       <a href="/contact" class="mnav-cta">
         Start a project <span aria-hidden="true">→</span>
       </a>
@@ -297,6 +310,64 @@ const menu: { label: string; href: string; sub?: Sub[]; all?: string }[] = [
   .nav-cta-icon svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; transition: transform 0.45s var(--ease-out); }
   .nav-cta:hover .nav-cta-icon svg { transform: rotate(45deg); }
 
+  /* ------------------------------------------------------------- Cart + account */
+  .nav-icon {
+    position: relative;
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    color: var(--ink);
+    background: rgba(29, 45, 61, 0.05);
+    transition: background 0.3s;
+  }
+  .nav-icon:hover { background: rgba(29, 45, 61, 0.12); }
+  .nav-icon svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .nav-count {
+    position: absolute;
+    top: 2px;
+    right: 0;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--paper);
+    font-size: 0.68rem;
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
+  }
+  .nav-count.is-bump { animation: bump 0.45s var(--ease-out); }
+  @keyframes bump { 40% { transform: scale(1.35); } }
+  .nav-avatar {
+    position: absolute;
+    inset: 4px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+
+  .mnav-acct { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.75rem; }
+  .mnav-acct-link {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.85rem;
+    border-radius: 999px;
+    border: 1px solid var(--line-on-ink);
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+  .mnav-acct-link .mono { padding: 0.1rem 0.45rem; border-radius: 999px; background: var(--accent); }
+
   /* ------------------------------------------------------------- Menu toggle (phone) */
   .nav-dots {
     display: none;
@@ -345,8 +416,9 @@ const menu: { label: string; href: string; sub?: Sub[]; all?: string }[] = [
     .nav-links { display: none; }
     .nav-dots { display: block; }
     .nav-pill { height: 54px; padding: 5px 5px 5px 16px; gap: 6px; }
-    /* "Start a project" lives inside the menu on phones. */
+    /* "Start a project" and account live inside the menu on phones. */
     .nav-cta { display: none; }
+    .nav-icon[data-account-link] { display: none; }
   }
 
   /* ------------------------------------------------------------- Full-screen menu (phone only) */
@@ -567,6 +639,31 @@ const menu: { label: string; href: string; sub?: Sub[]; all?: string }[] = [
 
 <script>
   import { getLenis } from '../scripts/motion';
+  import { onCart, count } from '../lib/cart';
+  import { onAuth } from '../lib/auth';
+
+  /* ---------- Cart count + signed-in state */
+  const badge = document.querySelector<HTMLElement>('[data-cart-count]')!;
+  const badgeM = document.querySelector<HTMLElement>('[data-cart-count-m]')!;
+  let lastCount = -1;
+  onCart((cart) => {
+    const n = count(cart);
+    badge.textContent = badgeM.textContent = String(n);
+    badge.hidden = n === 0;
+    if (lastCount >= 0 && n > lastCount) {
+      badge.classList.remove('is-bump');
+      void badge.offsetWidth;
+      badge.classList.add('is-bump');
+    }
+    lastCount = n;
+  });
+  const avatar = document.querySelector<HTMLElement>('[data-avatar]')!;
+  const acctM = document.querySelector<HTMLElement>('[data-account-label-m]')!;
+  onAuth((u) => {
+    avatar.hidden = !u;
+    avatar.textContent = u ? u.name.trim().charAt(0).toUpperCase() : '';
+    acctM.textContent = u ? 'Account' : 'Sign in';
+  });
 
   const nav = document.querySelector<HTMLElement>('[data-nav]')!;
   const linksBox = nav.querySelector<HTMLElement>('[data-links]')!;

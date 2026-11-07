@@ -1,5 +1,6 @@
 ---
 import type { Service, Layer } from '../data/catalog';
+import { getPricing, cardPrice } from '../lib/pricing';
 
 interface Props {
   service: Service;
@@ -8,27 +9,48 @@ interface Props {
 }
 const { service: s, layer, shared = false } = Astro.props;
 const search = `${s.name} ${s.description} ${s.category} ${s.subcategory} ${s.id}`.toLowerCase();
+const p = getPricing(s.id);
+const price = p ? cardPrice(p) : null;
+const open = p ? p.status === 'open' : s.priority === 'core';
+const typeLabel = p ? { package: '5 packages', fixed: 'Fixed price', starting: 'Starting price' }[p.type] : '';
 ---
 
-<article class:list={['card', `card--${layer}`, { 'card--future': s.priority === 'future' }]} data-card data-search={search}>
+<article class:list={['card', `card--${layer}`, { 'card--future': !open }]} data-card data-search={search}>
   <div class="card-top">
     <span class="mono card-id">{s.id}</span>
-    {s.priority === 'future' && <span class="card-badge">Coming soon</span>}
+    {!open && <span class="card-badge">Coming soon</span>}
     {shared && <span class="card-badge card-badge--soft">Shared</span>}
   </div>
   <h3 class="card-name">{s.name}</h3>
   <p class="card-desc">{s.description}</p>
   {
-    s.priority === 'core' ? (
-      <a class="card-cta" href={`/contact?service=${s.id}`}>
-        Enquire <span class="arrow">→</span>
-      </a>
-    ) : (
-      <a class="card-cta" href={`/contact?service=${s.id}`}>
-        Register interest <span class="arrow">→</span>
-      </a>
+    price && (
+      <div class="card-price">
+        <span class="mono card-price-type">{typeLabel}</span>
+        <span class="card-price-row">
+          {price.prefix && <span class="card-price-from">{price.prefix}</span>}
+          <strong class="card-price-amt">{price.amount}</strong>
+          <span class="card-price-unit">{price.unit}</span>
+        </span>
+        {p?.market && <span class="card-market" title="India market rate, 2026">Market: {p.market}</span>}
+      </div>
     )
   }
+  <div class="card-actions">
+    {
+      open && p ? (
+        <button type="button" class="card-add" data-add={s.id}>
+          <span class="card-add-label" data-add-label>{p.type === 'package' ? 'Choose package' : 'Add to estimate'}</span>
+          <span class="card-add-plus" aria-hidden="true">+</span>
+        </button>
+      ) : (
+        <a class="card-cta" href={`/contact?service=${s.id}`}>
+          Register interest <span class="arrow">→</span>
+        </a>
+      )
+    }
+    {open && <a class="card-link" href={`/contact?service=${s.id}`}>Enquire</a>}
+  </div>
   <span class="card-strata" aria-hidden="true"><i></i><i></i><i></i></span>
 </article>
 
@@ -79,15 +101,63 @@ const search = `${s.name} ${s.description} ${s.category} ${s.subcategory} ${s.id
     margin-top: 0.4rem;
   }
   .card-desc { font-size: 0.92rem; line-height: 1.5; color: var(--text-muted); }
-  .card-cta {
+  .card-price { display: grid; gap: 0.15rem; margin-top: 0.35rem; padding-top: 0.85rem; border-top: 1px dashed var(--line); }
+  .card-price-type { color: var(--text-muted); text-transform: uppercase; font-size: 0.65rem; }
+  .card-price-row { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.35rem; }
+  .card-price-from { font-size: 0.8rem; color: var(--text-muted); }
+  .card-price-amt { font-size: 1.25rem; font-weight: 600; color: var(--ink); letter-spacing: -0.01em; }
+  .card-price-unit { font-size: 0.8rem; color: var(--text-muted); }
+  .card-market { font-size: 0.75rem; color: var(--text-muted); opacity: 0.85; line-height: 1.4; }
+
+  .card-actions {
     margin-top: auto;
     padding-top: 1rem;
+    padding-right: 2.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .card-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    height: 38px;
+    padding: 0 5px 0 1rem;
+    border: 0;
+    border-radius: 999px;
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s var(--ease-out);
+  }
+  .card-add:hover { background: var(--accent); }
+  .card-add-plus {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 1rem;
+    line-height: 1;
+    transition: transform 0.4s var(--ease-out);
+  }
+  .card-add:hover .card-add-plus { transform: rotate(90deg); }
+  .card-add.is-added { background: var(--accent); }
+  .card-add.is-added .card-add-plus { transform: none; }
+  .card-link { font-size: 0.85rem; font-weight: 500; color: var(--text-muted); }
+  .card-link:hover { color: var(--accent); }
+
+  .card-cta {
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--accent);
     width: fit-content;
   }
-  .card-cta::before { content: ''; position: absolute; inset: 0; }
   .card-cta .arrow { display: inline-block; transition: transform 0.4s var(--ease-out); }
   .card:hover .card-cta .arrow { transform: translateX(4px); }
 

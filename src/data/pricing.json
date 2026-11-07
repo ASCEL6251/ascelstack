@@ -1,0 +1,5842 @@
+{
+  "ASC-0001": {
+    "id": "ASC-0001",
+    "status": "open",
+    "type": "package",
+    "small": {
+      "price": 2999,
+      "text": "",
+      "unit": "Starter package (5 packages)",
+      "detail": "5 packages from ₹2,999 (see Development Packages tab)"
+    },
+    "mid": {
+      "price": 29999,
+      "text": "",
+      "unit": "Premium package; custom work on quote",
+      "detail": "Premium package ₹29,999; anything more is a custom quote from the support team"
+    },
+    "billing": "One-time project",
+    "market": "₹10,000–₹80,000 (freelancer) · ₹50,000–₹1,50,000 (agency)",
+    "notes": "Domain + hosting ₹3,000–₹8,000/yr extra",
+    "packages": [
+      {
+        "key": "starter",
+        "name": "Starter",
+        "price": 2999,
+        "includes": "1–3 pages, mobile responsive, contact form, WhatsApp chat button, SSL setup",
+        "delivery": "3 days",
+        "notes": "Domain + hosting extra (from ₹2,999/yr)"
+      },
+      {
+        "key": "basic",
+        "name": "Basic",
+        "price": 7999,
+        "includes": "5–8 pages, basic on-page SEO, Google Maps, social media links, 2 revision rounds",
+        "delivery": "7 days",
+        "notes": ""
+      },
+      {
+        "key": "business",
+        "name": "Business",
+        "price": 14999,
+        "includes": "Up to 12 pages, blog/CMS so you can edit content, Google Business Profile setup, speed optimisation, 3 months support",
+        "delivery": "10–14 days",
+        "notes": ""
+      },
+      {
+        "key": "professional",
+        "name": "Professional",
+        "price": 22999,
+        "includes": "Up to 20 pages, custom design, lead forms to email and WhatsApp, Google Analytics, SEO for 10 keywords, 6 months support",
+        "delivery": "15–20 days",
+        "notes": ""
+      },
+      {
+        "key": "premium",
+        "name": "Premium",
+        "price": 29999,
+        "includes": "Up to 30 pages, custom UI, Hindi + English, booking/enquiry system, payment link, 12 months support",
+        "delivery": "20–30 days",
+        "notes": ""
+      },
+      {
+        "key": "custom",
+        "name": "Custom",
+        "price": null,
+        "includes": "Need more than the Premium package? Our team will scope extra features and quote a price.",
+        "delivery": "On quote",
+        "notes": ""
+      }
+    ]
+  },
+  "ASC-0002": {
+    "id": "ASC-0002",
+    "status": "open",
+    "type": "package",
+    "small": {
+      "price": 24999,
+      "text": "",
+      "unit": "Starter package (5 packages)",
+      "detail": "5 packages from ₹24,999 (see Development Packages tab)"
+    },
+    "mid": {
+      "price": 349999,
+      "text": "",
+      "unit": "Premium package; custom work on quote",
+      "detail": "Premium package ₹349,999; anything more is a custom quote from the support team"
+    },
+    "billing": "Project (milestones)",
+    "market": "₹1,50,000–₹15,00,000",
+    "notes": "Scope-based; 40/40/20 milestone billing",
+    "packages": [
+      {
+        "key": "starter",
+        "name": "Starter",
+        "price": 24999,
+        "includes": "Simple web portal up to 5 screens, login, basic admin panel",
+        "delivery": "2–3 weeks",
+        "notes": "Hosting/cloud billed at actuals"
+      },
+      {
+        "key": "basic",
+        "name": "Basic",
+        "price": 49999,
+        "includes": "Up to 10 screens, user roles, database, reports",
+        "delivery": "4 weeks",
+        "notes": ""
+      },
+      {
+        "key": "business",
+        "name": "Business",
+        "price": 99999,
+        "includes": "Up to 20 screens, online payments, email/WhatsApp notifications, dashboard",
+        "delivery": "6–8 weeks",
+        "notes": ""
+      },
+      {
+        "key": "professional",
+        "name": "Professional",
+        "price": 199999,
+        "includes": "Multi-role portal, third-party API integrations, analytics",
+        "delivery": "8–12 weeks",
+        "notes": ""
+      },
+      {
+        "key": "premium",
+        "name": "Premium",
+        "price": 349999,
+        "includes": "Complex platform built to scale, 6 months support",
+        "delivery": "12–16 weeks",
+        "notes": ""
+      },
+      {
+        "key": "custom",
+        "name": "Custom",
+        "price": null,
+        "includes": "Need more than the Premium package? Our team will scope extra features and quote a price.",
+        "delivery": "On quote",
+        "notes": ""
+      }
+    ]
+  },
+  "ASC-0003": {
+    "id": "ASC-0003",
+    "status": "open",
+    "type": "package",
+    "small": {
+      "price": 19999,
+      "text": "",
+      "unit": "Starter package (5 packages)",
+      "detail": "5 packages from ₹19,999 (see Development Packages tab)"
+    },
+    "mid": {
+      "price": 349999,
+      "text": "",
+      "unit": "Premium package; custom work on quote",
+      "detail": "Premium package ₹349,999; anything more is a custom quote from the support team"
+    },
+    "billing": "Project (milestones)",
+    "market": "₹1L–₹8L basic · ₹8L–₹25L mid-level",
+    "notes": "Store fees extra (Play one-time, Apple yearly)",
+    "packages": [
+      {
+        "key": "starter",
+        "name": "Starter",
+        "price": 19999,
+        "includes": "Your website as an Android app (PWA/WebView), Play Store publishing",
+        "delivery": "1–2 weeks",
+        "notes": "Play Store / App Store fees extra"
+      },
+      {
+        "key": "basic",
+        "name": "Basic",
+        "price": 49999,
+        "includes": "Android app up to 8 screens (Flutter), login, push notifications",
+        "delivery": "3–4 weeks",
+        "notes": ""
+      },
+      {
+        "key": "business",
+        "name": "Business",
+        "price": 99999,
+        "includes": "Android + iOS up to 15 screens, admin panel, payments",
+        "delivery": "6–8 weeks",
+        "notes": ""
+      },
+      {
+        "key": "professional",
+        "name": "Professional",
+        "price": 199999,
+        "includes": "Up to 30 screens, real-time features, chat, maps, API integrations",
+        "delivery": "10–12 weeks",
+        "notes": ""
+      },
+      {
+        "key": "premium",
+        "name": "Premium",
+        "price": 349999,
+        "includes": "Complex app (delivery, booking or marketplace), separate customer/partner apps",
+        "delivery": "14–20 weeks",
+        "notes": ""
+      },
+      {
+        "key": "custom",
+        "name": "Custom",
+        "price": null,
+        "includes": "Need more than the Premium package? Our team will scope extra features and quote a price.",
+        "delivery": "On quote",
+        "notes": ""
+      }
+    ]
+  },
+  "ASC-0004": {
+    "id": "ASC-0004",
+    "status": "open",
+    "type": "package",
+    "small": {
+      "price": 9999,
+      "text": "",
+      "unit": "Starter package (5 packages)",
+      "detail": "5 packages from ₹9,999 (see Development Packages tab)"
+    },
+    "mid": {
+      "price": 89999,
+      "text": "",
+      "unit": "Premium package; custom work on quote",
+      "detail": "Premium package ₹89,999; anything more is a custom quote from the support team"
+    },
+    "billing": "One-time project",
+    "market": "₹40,000–₹3,00,000",
+    "notes": "Payment gateway MDR (~2%) extra",
+    "packages": [
+      {
+        "key": "starter",
+        "name": "Starter",
+        "price": 9999,
+        "includes": "Up to 25 products, cart, UPI/Razorpay checkout, WhatsApp orders",
+        "delivery": "5 days",
+        "notes": "Payment gateway fees (~2%) extra"
+      },
+      {
+        "key": "basic",
+        "name": "Basic",
+        "price": 17999,
+        "includes": "Up to 100 products, categories, coupons, Shiprocket shipping integration",
+        "delivery": "10 days",
+        "notes": ""
+      },
+      {
+        "key": "business",
+        "name": "Business",
+        "price": 29999,
+        "includes": "Up to 500 products, customer accounts, COD, GST invoices, order tracking",
+        "delivery": "15–20 days",
+        "notes": ""
+      },
+      {
+        "key": "professional",
+        "name": "Professional",
+        "price": 49999,
+        "includes": "Unlimited products, custom design, inventory, abandoned-cart recovery, reviews, SEO",
+        "delivery": "3–4 weeks",
+        "notes": ""
+      },
+      {
+        "key": "premium",
+        "name": "Premium",
+        "price": 89999,
+        "includes": "Custom features, multi-vendor or B2B wholesale, installable mobile web app",
+        "delivery": "5–6 weeks",
+        "notes": ""
+      },
+      {
+        "key": "custom",
+        "name": "Custom",
+        "price": null,
+        "includes": "Need more than the Premium package? Our team will scope extra features and quote a price.",
+        "delivery": "On quote",
+        "notes": ""
+      }
+    ]
+  },
+  "ASC-0005": {
+    "id": "ASC-0005",
+    "status": "open",
+    "type": "package",
+    "small": {
+      "price": 49999,
+      "text": "",
+      "unit": "Starter package (5 packages)",
+      "detail": "5 packages from ₹49,999 (see Development Packages tab)"
+    },
+    "mid": {
+      "price": 599999,
+      "text": "",
+      "unit": "Premium package; custom work on quote",
+      "detail": "Premium package ₹599,999; anything more is a custom quote from the support team"
+    },
+    "billing": "Project + monthly retainer",
+    "market": "₹5,00,000–₹40,00,000",
+    "notes": "Add ₹15k–₹50k/mo maintenance retainer",
+    "packages": [
+      {
+        "key": "starter",
+        "name": "Starter",
+        "price": 49999,
+        "includes": "MVP: landing page + 1 core feature, login, subscription payments",
+        "delivery": "3–4 weeks",
+        "notes": "Cloud hosting at actuals"
+      },
+      {
+        "key": "basic",
+        "name": "Basic",
+        "price": 99999,
+        "includes": "MVP with up to 3 core modules, admin panel, Razorpay subscriptions",
+        "delivery": "6 weeks",
+        "notes": ""
+      },
+      {
+        "key": "business",
+        "name": "Business",
+        "price": 199999,
+        "includes": "Multi-tenant SaaS, team accounts, billing, email notifications",
+        "delivery": "8–10 weeks",
+        "notes": ""
+      },
+      {
+        "key": "professional",
+        "name": "Professional",
+        "price": 349999,
+        "includes": "Integrations, analytics, public API, role permissions",
+        "delivery": "12–16 weeks",
+        "notes": ""
+      },
+      {
+        "key": "premium",
+        "name": "Premium",
+        "price": 599999,
+        "includes": "Full product on scalable cloud, mobile companion app, 6 months support",
+        "delivery": "16–24 weeks",
+        "notes": ""
+      },
+      {
+        "key": "custom",
+        "name": "Custom",
+        "price": null,
+        "includes": "Need more than the Premium package? Our team will scope extra features and quote a price.",
+        "delivery": "On quote",
+        "notes": ""
+      }
+    ]
+  },
+  "ASC-0006": {
+    "id": "ASC-0006",
+    "status": "open",
+    "type": "package",
+    "small": {
+      "price": 1999,
+      "text": "",
+      "unit": "Starter package (5 packages)",
+      "detail": "5 packages from ₹1,999 (see Development Packages tab)"
+    },
+    "mid": {
+      "price": 49999,
+      "text": "",
+      "unit": "Premium package; custom work on quote",
+      "detail": "Premium package ₹49,999; anything more is a custom quote from the support team"
+    },
+    "billing": "Per screen / project",
+    "market": "₹1,500–₹8,000 per screen · ₹30k–₹3L per project",
+    "notes": "Figma files + clickable prototype",
+    "packages": [
+      {
+        "key": "starter",
+        "name": "Starter",
+        "price": 1999,
+        "includes": "1 screen or landing page design in Figma",
+        "delivery": "2 days",
+        "notes": ""
+      },
+      {
+        "key": "basic",
+        "name": "Basic",
+        "price": 6999,
+        "includes": "Up to 5 screens",
+        "delivery": "4 days",
+        "notes": ""
+      },
+      {
+        "key": "business",
+        "name": "Business",
+        "price": 14999,
+        "includes": "Up to 12 screens + clickable prototype",
+        "delivery": "1 week",
+        "notes": ""
+      },
+      {
+        "key": "professional",
+        "name": "Professional",
+        "price": 29999,
+        "includes": "Up to 25 screens, mobile + web, design system",
+        "delivery": "2–3 weeks",
+        "notes": ""
+      },
+      {
+        "key": "premium",
+        "name": "Premium",
+        "price": 49999,
+        "includes": "Up to 50 screens, user research, UX audit, full design system",
+        "delivery": "4 weeks",
+        "notes": ""
+      },
+      {
+        "key": "custom",
+        "name": "Custom",
+        "price": null,
+        "includes": "Need more than the Premium package? Our team will scope extra features and quote a price.",
+        "delivery": "On quote",
+        "notes": ""
+      }
+    ]
+  },
+  "ASC-0007": {
+    "id": "ASC-0007",
+    "status": "open",
+    "type": "package",
+    "small": {
+      "price": 14999,
+      "text": "",
+      "unit": "Starter package (5 packages)",
+      "detail": "5 packages from ₹14,999 (see Development Packages tab)"
+    },
+    "mid": {
+      "price": 299999,
+      "text": "",
+      "unit": "Premium package; custom work on quote",
+      "detail": "Premium package ₹299,999; anything more is a custom quote from the support team"
+    },
+    "billing": "Project or hourly",
+    "market": "₹800–₹3,000/hr (Indian agencies)",
+    "notes": "",
+    "packages": [
+      {
+        "key": "starter",
+        "name": "Starter",
+        "price": 14999,
+        "includes": "Small tool or automation (single purpose)",
+        "delivery": "1–2 weeks",
+        "notes": ""
+      },
+      {
+        "key": "basic",
+        "name": "Basic",
+        "price": 39999,
+        "includes": "Small business software up to 5 modules (e.g. billing, stock)",
+        "delivery": "3–4 weeks",
+        "notes": ""
+      },
+      {
+        "key": "business",
+        "name": "Business",
+        "price": 79999,
+        "includes": "Up to 10 modules, multi-user, reports",
+        "delivery": "6–8 weeks",
+        "notes": ""
+      },
+      {
+        "key": "professional",
+        "name": "Professional",
+        "price": 149999,
+        "includes": "Integrations (Tally, WhatsApp, payments), user roles",
+        "delivery": "10–12 weeks",
+        "notes": ""
+      },
+      {
+        "key": "premium",
+        "name": "Premium",
+        "price": 299999,
+        "includes": "Large custom system",
+        "delivery": "12–20 weeks",
+        "notes": ""
+      },
+      {
+        "key": "custom",
+        "name": "Custom",
+        "price": null,
+        "includes": "Need more than the Premium package? Our team will scope extra features and quote a price.",
+        "delivery": "On quote",
+        "notes": ""
+      }
+    ]
+  },
+  "ASC-0008": {
+    "id": "ASC-0008",
+    "status": "open",
+    "type": "package",
+    "small": {
+      "price": 2999,
+      "text": "",
+      "unit": "Starter package (5 packages)",
+      "detail": "5 packages from ₹2,999 (see Development Packages tab)"
+    },
+    "mid": {
+      "price": 49999,
+      "text": "",
+      "unit": "Premium package; custom work on quote",
+      "detail": "Premium package ₹49,999; anything more is a custom quote from the support team"
+    },
+    "billing": "Per integration",
+    "market": "₹15,000–₹80,000 per integration",
+    "notes": "Third-party API costs at actuals",
+    "packages": [
+      {
+        "key": "starter",
+        "name": "Starter",
+        "price": 2999,
+        "includes": "1 simple integration (e.g. form to Google Sheets, WhatsApp link)",
+        "delivery": "2 days",
+        "notes": "Third-party API charges at actuals"
+      },
+      {
+        "key": "basic",
+        "name": "Basic",
+        "price": 6999,
+        "includes": "1 standard third-party API (SMS, email, shipping)",
+        "delivery": "4 days",
+        "notes": ""
+      },
+      {
+        "key": "business",
+        "name": "Business",
+        "price": 14999,
+        "includes": "Up to 3 third-party APIs",
+        "delivery": "1 week",
+        "notes": ""
+      },
+      {
+        "key": "professional",
+        "name": "Professional",
+        "price": 29999,
+        "includes": "Custom REST API up to 15 endpoints, with documentation",
+        "delivery": "2–3 weeks",
+        "notes": ""
+      },
+      {
+        "key": "premium",
+        "name": "Premium",
+        "price": 49999,
+        "includes": "Custom API up to 40 endpoints, authentication, webhooks",
+        "delivery": "4 weeks",
+        "notes": ""
+      },
+      {
+        "key": "custom",
+        "name": "Custom",
+        "price": null,
+        "includes": "Need more than the Premium package? Our team will scope extra features and quote a price.",
+        "delivery": "On quote",
+        "notes": ""
+      }
+    ]
+  },
+  "ASC-0009": {
+    "id": "ASC-0009",
+    "status": "open",
+    "type": "package",
+    "small": {
+      "price": 9999,
+      "text": "",
+      "unit": "Starter package (5 packages)",
+      "detail": "5 packages from ₹9,999 (see Development Packages tab)"
+    },
+    "mid": {
+      "price": 199999,
+      "text": "",
+      "unit": "Premium package; custom work on quote",
+      "detail": "Premium package ₹199,999; anything more is a custom quote from the support team"
+    },
+    "billing": "Project",
+    "market": "Custom ₹2L–₹15L · Zoho partner setup ₹75k–₹3.5L",
+    "notes": "CRM licence extra (Zoho ~₹800–₹2,600/user/mo)",
+    "packages": [
+      {
+        "key": "starter",
+        "name": "Starter",
+        "price": 9999,
+        "includes": "Lead tracker setup (Zoho free / open-source), up to 3 users",
+        "delivery": "3 days",
+        "notes": "CRM licence fees extra (if any)"
+      },
+      {
+        "key": "basic",
+        "name": "Basic",
+        "price": 24999,
+        "includes": "Zoho/HubSpot configured: pipelines, WhatsApp + email integration",
+        "delivery": "1 week",
+        "notes": ""
+      },
+      {
+        "key": "business",
+        "name": "Business",
+        "price": 49999,
+        "includes": "Custom CRM web app: leads, follow-ups, reports, up to 10 users",
+        "delivery": "3–4 weeks",
+        "notes": ""
+      },
+      {
+        "key": "professional",
+        "name": "Professional",
+        "price": 99999,
+        "includes": "Custom CRM with automation, mobile access, WhatsApp, invoices",
+        "delivery": "6–8 weeks",
+        "notes": ""
+      },
+      {
+        "key": "premium",
+        "name": "Premium",
+        "price": 199999,
+        "includes": "Multi-branch CRM with integrations",
+        "delivery": "10–12 weeks",
+        "notes": ""
+      },
+      {
+        "key": "custom",
+        "name": "Custom",
+        "price": null,
+        "includes": "Need more than the Premium package? Our team will scope extra features and quote a price.",
+        "delivery": "On quote",
+        "notes": ""
+      }
+    ]
+  },
+  "ASC-0010": {
+    "id": "ASC-0010",
+    "status": "open",
+    "type": "package",
+    "small": {
+      "price": 29999,
+      "text": "",
+      "unit": "Starter package (5 packages)",
+      "detail": "5 packages from ₹29,999 (see Development Packages tab)"
+    },
+    "mid": {
+      "price": 399999,
+      "text": "",
+      "unit": "Premium package; custom work on quote",
+      "detail": "Premium package ₹399,999; anything more is a custom quote from the support team"
+    },
+    "billing": "Project",
+    "market": "₹3,00,000–₹25,00,000+",
+    "notes": "Licences/hosting at actuals",
+    "packages": [
+      {
+        "key": "starter",
+        "name": "Starter",
+        "price": 29999,
+        "includes": "ERPNext/Odoo setup: accounts, inventory, sales, up to 5 users",
+        "delivery": "2 weeks",
+        "notes": "Licences/hosting at actuals"
+      },
+      {
+        "key": "basic",
+        "name": "Basic",
+        "price": 59999,
+        "includes": "Adds purchase, HR, GST invoicing, data import",
+        "delivery": "3–4 weeks",
+        "notes": ""
+      },
+      {
+        "key": "business",
+        "name": "Business",
+        "price": 99999,
+        "includes": "Adds manufacturing or projects, custom reports, staff training",
+        "delivery": "6 weeks",
+        "notes": ""
+      },
+      {
+        "key": "professional",
+        "name": "Professional",
+        "price": 199999,
+        "includes": "Custom modules, multi-branch, integrations",
+        "delivery": "8–12 weeks",
+        "notes": ""
+      },
+      {
+        "key": "premium",
+        "name": "Premium",
+        "price": 399999,
+        "includes": "Fully custom ERP",
+        "delivery": "16–24 weeks",
+        "notes": ""
+      },
+      {
+        "key": "custom",
+        "name": "Custom",
+        "price": null,
+        "includes": "Need more than the Premium package? Our team will scope extra features and quote a price.",
+        "delivery": "On quote",
+        "notes": ""
+      }
+    ]
+  },
+  "ASC-0011": {
+    "id": "ASC-0011",
+    "status": "open",
+    "type": "package",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "Starter package (5 packages)",
+      "detail": "5 packages from ₹4,999 (see Development Packages tab)"
+    },
+    "mid": {
+      "price": 99999,
+      "text": "",
+      "unit": "Premium package; custom work on quote",
+      "detail": "Premium package ₹99,999; anything more is a custom quote from the support team"
+    },
+    "billing": "Project + usage",
+    "market": "₹50,000–₹5,00,000",
+    "notes": "LLM API usage billed at actuals",
+    "packages": [
+      {
+        "key": "starter",
+        "name": "Starter",
+        "price": 4999,
+        "includes": "Ready-made AI FAQ/writing widget on your website",
+        "delivery": "2 days",
+        "notes": "AI usage (API) fees at actuals"
+      },
+      {
+        "key": "basic",
+        "name": "Basic",
+        "price": 12999,
+        "includes": "1 AI feature (ChatGPT/Claude) inside your site or app",
+        "delivery": "1 week",
+        "notes": ""
+      },
+      {
+        "key": "business",
+        "name": "Business",
+        "price": 29999,
+        "includes": "AI trained on your business documents, up to 2 use cases",
+        "delivery": "2–3 weeks",
+        "notes": ""
+      },
+      {
+        "key": "professional",
+        "name": "Professional",
+        "price": 59999,
+        "includes": "Multiple AI features connected to CRM/database",
+        "delivery": "4–6 weeks",
+        "notes": ""
+      },
+      {
+        "key": "premium",
+        "name": "Premium",
+        "price": 99999,
+        "includes": "Custom AI workflows, dashboards, monitoring",
+        "delivery": "6–8 weeks",
+        "notes": ""
+      },
+      {
+        "key": "custom",
+        "name": "Custom",
+        "price": null,
+        "includes": "Need more than the Premium package? Our team will scope extra features and quote a price.",
+        "delivery": "On quote",
+        "notes": ""
+      }
+    ]
+  },
+  "ASC-0012": {
+    "id": "ASC-0012",
+    "status": "open",
+    "type": "package",
+    "small": {
+      "price": 2999,
+      "text": "",
+      "unit": "Starter package (5 packages)",
+      "detail": "5 packages from ₹2,999 (see Development Packages tab)"
+    },
+    "mid": {
+      "price": 49999,
+      "text": "",
+      "unit": "Premium package; custom work on quote",
+      "detail": "Premium package ₹49,999; anything more is a custom quote from the support team"
+    },
+    "billing": "Setup + monthly",
+    "market": "₹10k–₹75k setup + ₹2k–₹15k/mo",
+    "notes": "WhatsApp/Meta conversation fees extra",
+    "packages": [
+      {
+        "key": "starter",
+        "name": "Starter",
+        "price": 2999,
+        "includes": "Website FAQ chatbot, up to 20 questions",
+        "delivery": "2 days",
+        "notes": "Platform/Meta/AI usage fees extra; maintenance from ₹999/mo"
+      },
+      {
+        "key": "basic",
+        "name": "Basic",
+        "price": 6999,
+        "includes": "WhatsApp auto-reply bot with menus and lead capture",
+        "delivery": "4 days",
+        "notes": ""
+      },
+      {
+        "key": "business",
+        "name": "Business",
+        "price": 14999,
+        "includes": "AI chatbot for website + WhatsApp, trained on your data",
+        "delivery": "1–2 weeks",
+        "notes": ""
+      },
+      {
+        "key": "professional",
+        "name": "Professional",
+        "price": 29999,
+        "includes": "AI chatbot + CRM/Google Sheets, bookings, Hindi + English",
+        "delivery": "2–3 weeks",
+        "notes": ""
+      },
+      {
+        "key": "premium",
+        "name": "Premium",
+        "price": 49999,
+        "includes": "Website, WhatsApp and Instagram bot, payments, human handover, dashboard",
+        "delivery": "4 weeks",
+        "notes": ""
+      },
+      {
+        "key": "custom",
+        "name": "Custom",
+        "price": null,
+        "includes": "Need more than the Premium package? Our team will scope extra features and quote a price.",
+        "delivery": "On quote",
+        "notes": ""
+      }
+    ]
+  },
+  "ASC-0013": {
+    "id": "ASC-0013",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 1999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹1,999"
+    },
+    "mid": {
+      "price": 1999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹1,999"
+    },
+    "billing": "One-time",
+    "market": "₹5,000–₹40,000",
+    "notes": ""
+  },
+  "ASC-0014": {
+    "id": "ASC-0014",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 1499,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹1,499–₹2,999/mo"
+    },
+    "mid": {
+      "price": 7999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹7,999–₹19,999/mo"
+    },
+    "billing": "Monthly",
+    "market": "₹2,000–₹15,000/mo",
+    "notes": ""
+  },
+  "ASC-0015": {
+    "id": "ASC-0015",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 2999,
+      "text": "",
+      "unit": "per year",
+      "detail": "Fixed price ₹2,999 per year"
+    },
+    "mid": {
+      "price": 2999,
+      "text": "",
+      "unit": "per year",
+      "detail": "Fixed price ₹2,999 per year"
+    },
+    "billing": "Yearly",
+    "market": "₹3,000–₹8,000/yr (shared hosting + domain)",
+    "notes": ""
+  },
+  "ASC-0016": {
+    "id": "ASC-0016",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 9999,
+      "text": "",
+      "unit": "one-time setup",
+      "detail": "₹9,999 setup"
+    },
+    "mid": {
+      "price": 50000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹50,000–₹2,00,000"
+    },
+    "billing": "Setup + monthly",
+    "market": "₹15,000–₹1,50,000 setup",
+    "notes": "Cloud bill (AWS/GCP/Azure) at actuals"
+  },
+  "ASC-0017": {
+    "id": "ASC-0017",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 2999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹2,999"
+    },
+    "mid": {
+      "price": 2999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹2,999"
+    },
+    "billing": "One-time",
+    "market": "₹5,000–₹30,000",
+    "notes": "Razorpay/Cashfree/PhonePe MDR ~2% extra"
+  },
+  "ASC-0018": {
+    "id": "ASC-0018",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹4,999/mo"
+    },
+    "mid": {
+      "price": 20000,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹20,000–₹60,000/mo"
+    },
+    "billing": "Monthly",
+    "market": "₹5,000–₹50,000/mo",
+    "notes": ""
+  },
+  "ASC-0019": {
+    "id": "ASC-0019",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 14999,
+      "text": "",
+      "unit": "per test cycle",
+      "detail": "From ₹14,999 per cycle"
+    },
+    "mid": {
+      "price": 50000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹50,000–₹2,00,000"
+    },
+    "billing": "Per test cycle / hourly",
+    "market": "₹600–₹1,800/hr",
+    "notes": ""
+  },
+  "ASC-0020": {
+    "id": "ASC-0020",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹4,999 hardening + SSL"
+    },
+    "mid": {
+      "price": 25000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹25,000–₹1,00,000 (VAPT)"
+    },
+    "billing": "Audit + monthly",
+    "market": "₹5k–₹50k audit · ₹2k–₹10k/mo",
+    "notes": ""
+  },
+  "ASC-0021": {
+    "id": "ASC-0021",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 9999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹9,999–₹14,999/mo"
+    },
+    "mid": {
+      "price": 30000,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹30,000–₹60,000/mo"
+    },
+    "billing": "Monthly retainer",
+    "market": "₹8k–₹25k/mo (small) · ₹25k–₹60k/mo (mid)",
+    "notes": "6-month minimum"
+  },
+  "ASC-0022": {
+    "id": "ASC-0022",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 7999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹7,999/mo (add-on to SEO)"
+    },
+    "mid": {
+      "price": 40000,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹40,000–₹1,00,000/mo"
+    },
+    "billing": "Monthly retainer",
+    "market": "₹35,000–₹3,50,000/mo (agency, mostly mid-market)",
+    "notes": ""
+  },
+  "ASC-0023": {
+    "id": "ASC-0023",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹4,999/mo (add-on)"
+    },
+    "mid": {
+      "price": 25000,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹25,000–₹60,000/mo"
+    },
+    "billing": "Monthly retainer",
+    "market": "Usually bundled with GEO (₹35k+/mo)",
+    "notes": ""
+  },
+  "ASC-0024": {
+    "id": "ASC-0024",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 7999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹7,999/mo (spend up to ₹50k)"
+    },
+    "mid": {
+      "price": 25000,
+      "text": "",
+      "unit": "per month",
+      "detail": "12–15% of spend (min ₹25,000)"
+    },
+    "billing": "Monthly mgmt fee",
+    "market": "₹15k–₹40k/mo flat or 10–20% of ad spend",
+    "notes": "Ad spend paid directly to Google"
+  },
+  "ASC-0025": {
+    "id": "ASC-0025",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 6999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹6,999/mo (spend up to ₹50k)"
+    },
+    "mid": {
+      "price": 20000,
+      "text": "",
+      "unit": "per month",
+      "detail": "12–15% of spend (min ₹20,000)"
+    },
+    "billing": "Monthly mgmt fee",
+    "market": "₹10k–₹40k/mo flat or 10–20% of ad spend",
+    "notes": "Ad spend paid directly to Meta"
+  },
+  "ASC-0026": {
+    "id": "ASC-0026",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 14999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹14,999/mo"
+    },
+    "mid": {
+      "price": 40000,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹40,000–₹1,00,000/mo"
+    },
+    "billing": "Monthly",
+    "market": "₹15,000–₹1,00,000/mo",
+    "notes": "Video production billed separately"
+  },
+  "ASC-0027": {
+    "id": "ASC-0027",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 7999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹7,999/mo (12 posts, 2 platforms)"
+    },
+    "mid": {
+      "price": 25000,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹25,000–₹60,000/mo"
+    },
+    "billing": "Monthly retainer",
+    "market": "₹5k–₹15k basic · ₹15k–₹50k standard",
+    "notes": "Reels add-on per piece"
+  },
+  "ASC-0028": {
+    "id": "ASC-0028",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 14999,
+      "text": "",
+      "unit": "per campaign",
+      "detail": "₹14,999 campaign fee"
+    },
+    "mid": {
+      "price": null,
+      "text": "15% of campaign budget",
+      "unit": "per campaign",
+      "detail": "15% of campaign budget"
+    },
+    "billing": "Per campaign",
+    "market": "Creator fees + 15–20% agency fee",
+    "notes": ""
+  },
+  "ASC-0029": {
+    "id": "ASC-0029",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 9999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹9,999/mo + ad spend"
+    },
+    "mid": {
+      "price": 40000,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹40,000+/mo"
+    },
+    "billing": "Monthly or per lead",
+    "market": "₹15k–₹1L/mo or ₹100–₹1,500 per lead",
+    "notes": ""
+  },
+  "ASC-0030": {
+    "id": "ASC-0030",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 3999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹3,999/mo"
+    },
+    "mid": {
+      "price": 15000,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹15,000–₹40,000/mo"
+    },
+    "billing": "Monthly",
+    "market": "₹5,000–₹30,000/mo",
+    "notes": "Email tool cost at actuals"
+  },
+  "ASC-0031": {
+    "id": "ASC-0031",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 2999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹2,999/mo + Meta fees"
+    },
+    "mid": {
+      "price": 15000,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹15,000–₹35,000/mo"
+    },
+    "billing": "Monthly",
+    "market": "₹3,000–₹25,000/mo incl. BSP platform",
+    "notes": "Marketing msgs ~₹0.80 each (Meta)"
+  },
+  "ASC-0032": {
+    "id": "ASC-0032",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 9999,
+      "text": "",
+      "unit": "one-time setup",
+      "detail": "₹9,999 setup"
+    },
+    "mid": {
+      "price": 40000,
+      "text": "",
+      "unit": "one-time setup + monthly fee",
+      "detail": "₹40,000 + ₹15,000/mo"
+    },
+    "billing": "Setup + monthly",
+    "market": "₹20,000–₹1,00,000 setup",
+    "notes": ""
+  },
+  "ASC-0033": {
+    "id": "ASC-0033",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹4,999/mo"
+    },
+    "mid": {
+      "price": 25000,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹25,000–₹75,000/mo"
+    },
+    "billing": "Monthly",
+    "market": "₹10,000–₹1,00,000/mo",
+    "notes": ""
+  },
+  "ASC-0034": {
+    "id": "ASC-0034",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 14999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹14,999 (audit + fixes)"
+    },
+    "mid": {
+      "price": 50000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹50,000–₹1,50,000"
+    },
+    "billing": "Project / monthly",
+    "market": "₹20,000–₹1,50,000",
+    "notes": ""
+  },
+  "ASC-0035": {
+    "id": "ASC-0035",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹4,999–₹7,999/mo"
+    },
+    "mid": {
+      "price": 15000,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹15,000–₹30,000/mo (multi-location)"
+    },
+    "billing": "Monthly retainer",
+    "market": "₹5,000–₹25,000/mo",
+    "notes": ""
+  },
+  "ASC-0036": {
+    "id": "ASC-0036",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹4,999"
+    },
+    "mid": {
+      "price": 20000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹20,000–₹50,000"
+    },
+    "billing": "One-time",
+    "market": "₹5,000–₹50,000",
+    "notes": ""
+  },
+  "ASC-0037": {
+    "id": "ASC-0037",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 5999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹5,999 (GA4 + GTM + dashboard)"
+    },
+    "mid": {
+      "price": 25000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹25,000–₹75,000"
+    },
+    "billing": "Setup + monthly",
+    "market": "₹10,000–₹50,000 setup",
+    "notes": ""
+  },
+  "ASC-0038": {
+    "id": "ASC-0038",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 3999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹3,999/mo add-on"
+    },
+    "mid": {
+      "price": 15000,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹15,000/mo"
+    },
+    "billing": "Monthly",
+    "market": "Included in ads mgmt or ₹5k–₹25k/mo",
+    "notes": ""
+  },
+  "ASC-0039": {
+    "id": "ASC-0039",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 2999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹2,999–₹6,999"
+    },
+    "mid": {
+      "price": 15000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹15,000–₹40,000"
+    },
+    "billing": "One-time",
+    "market": "₹1,500–₹10,000 (freelancer) · ₹15k–₹1.5L (agency)",
+    "notes": ""
+  },
+  "ASC-0040": {
+    "id": "ASC-0040",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 14999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹14,999"
+    },
+    "mid": {
+      "price": 50000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹50,000–₹2,00,000"
+    },
+    "billing": "One-time",
+    "market": "₹15,000–₹2,00,000",
+    "notes": ""
+  },
+  "ASC-0041": {
+    "id": "ASC-0041",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 7999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹7,999"
+    },
+    "mid": {
+      "price": 30000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹30,000–₹80,000"
+    },
+    "billing": "One-time",
+    "market": "₹10,000–₹1,00,000",
+    "notes": ""
+  },
+  "ASC-0042": {
+    "id": "ASC-0042",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 499,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹499–₹999"
+    },
+    "mid": {
+      "price": 2999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹2,999 (team set)"
+    },
+    "billing": "Per design",
+    "market": "₹500–₹3,000",
+    "notes": "Printing extra"
+  },
+  "ASC-0043": {
+    "id": "ASC-0043",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 999,
+      "text": "",
+      "unit": "per page",
+      "detail": "₹999/page"
+    },
+    "mid": {
+      "price": 2499,
+      "text": "",
+      "unit": "per page",
+      "detail": "₹2,499/page"
+    },
+    "billing": "Per page",
+    "market": "₹1,000–₹5,000 per page",
+    "notes": "Printing extra"
+  },
+  "ASC-0044": {
+    "id": "ASC-0044",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "per SKU",
+      "detail": "₹4,999/SKU"
+    },
+    "mid": {
+      "price": 15000,
+      "text": "",
+      "unit": "per SKU",
+      "detail": "₹15,000–₹50,000/SKU"
+    },
+    "billing": "Per SKU",
+    "market": "₹5,000–₹50,000 per SKU",
+    "notes": ""
+  },
+  "ASC-0045": {
+    "id": "ASC-0045",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 14999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹14,999 (60-sec)"
+    },
+    "mid": {
+      "price": 50000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹50,000–₹2,00,000"
+    },
+    "billing": "Per video",
+    "market": "₹15,000–₹2,00,000",
+    "notes": ""
+  },
+  "ASC-0046": {
+    "id": "ASC-0046",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 499,
+      "text": "",
+      "unit": "per reel",
+      "detail": "₹499–₹999/reel · ₹6,999 for 10"
+    },
+    "mid": {
+      "price": 1500,
+      "text": "",
+      "unit": "per reel",
+      "detail": "₹1,500–₹3,000/reel"
+    },
+    "billing": "Per reel / monthly pack",
+    "market": "₹400–₹1,500 (freelancer) · ₹2k–₹4k (mid-tier)",
+    "notes": ""
+  },
+  "ASC-0047": {
+    "id": "ASC-0047",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹4,999 (15-sec)"
+    },
+    "mid": {
+      "price": 20000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹20,000–₹60,000"
+    },
+    "billing": "Per 15–30 sec",
+    "market": "₹5,000–₹40,000",
+    "notes": ""
+  },
+  "ASC-0048": {
+    "id": "ASC-0048",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 14999,
+      "text": "",
+      "unit": "per minute",
+      "detail": "₹14,999/min (2D)"
+    },
+    "mid": {
+      "price": 40000,
+      "text": "",
+      "unit": "per minute",
+      "detail": "₹40,000–₹1,00,000/min"
+    },
+    "billing": "Per minute",
+    "market": "₹15,000–₹1,00,000 per minute",
+    "notes": ""
+  },
+  "ASC-0049": {
+    "id": "ASC-0049",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 2999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹2,999 for 10 statics"
+    },
+    "mid": {
+      "price": 14999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹14,999 for 30"
+    },
+    "billing": "Per pack",
+    "market": "₹500–₹3,000 per static creative",
+    "notes": ""
+  },
+  "ASC-0050": {
+    "id": "ASC-0050",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 1999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹1,999"
+    },
+    "mid": {
+      "price": 5999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹5,999 (multi-outlet)"
+    },
+    "billing": "Per menu",
+    "market": "₹2,000–₹10,000",
+    "notes": ""
+  },
+  "ASC-0051": {
+    "id": "ASC-0051",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 299,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹299"
+    },
+    "mid": {
+      "price": 799,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹799"
+    },
+    "billing": "Per thumbnail",
+    "market": "₹200–₹1,500",
+    "notes": ""
+  },
+  "ASC-0052": {
+    "id": "ASC-0052",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 299,
+      "text": "",
+      "unit": "per slide",
+      "detail": "₹299/slide"
+    },
+    "mid": {
+      "price": 799,
+      "text": "",
+      "unit": "per slide",
+      "detail": "₹799/slide"
+    },
+    "billing": "Per slide",
+    "market": "₹300–₹1,500 per slide",
+    "notes": ""
+  },
+  "ASC-0053": {
+    "id": "ASC-0053",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 349,
+      "text": "",
+      "unit": "per image",
+      "detail": "₹349/image (min 10)"
+    },
+    "mid": {
+      "price": 999,
+      "text": "",
+      "unit": "per image",
+      "detail": "₹999/image"
+    },
+    "billing": "Per image",
+    "market": "₹300–₹2,000 per image",
+    "notes": ""
+  },
+  "ASC-0054": {
+    "id": "ASC-0054",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 3999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹3,999 for 15 creatives"
+    },
+    "mid": {
+      "price": 12000,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹12,000–₹25,000/mo"
+    },
+    "billing": "Monthly pack",
+    "market": "₹500–₹3,000 per static · ₹1.5k–₹5k per carousel",
+    "notes": ""
+  },
+  "ASC-0055": {
+    "id": "ASC-0055",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 14999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹14,999 (process mapping)"
+    },
+    "mid": {
+      "price": 75000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹75,000–₹2,50,000"
+    },
+    "billing": "Project",
+    "market": "₹25,000–₹3,00,000",
+    "notes": ""
+  },
+  "ASC-0056": {
+    "id": "ASC-0056",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 9999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "From ₹9,999 per workflow"
+    },
+    "mid": {
+      "price": 50000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹50,000–₹2,00,000"
+    },
+    "billing": "Per workflow / project",
+    "market": "₹15,000–₹2,00,000",
+    "notes": ""
+  },
+  "ASC-0057": {
+    "id": "ASC-0057",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 7999,
+      "text": "",
+      "unit": "one-time setup",
+      "detail": "₹7,999 setup"
+    },
+    "mid": {
+      "price": 40000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹40,000–₹1,00,000"
+    },
+    "billing": "Setup + SaaS",
+    "market": "₹10k–₹1L setup + ₹500–₹5k/mo software",
+    "notes": "Software licence at actuals"
+  },
+  "ASC-0058": {
+    "id": "ASC-0058",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 2999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹2,999 (Zoho Books/Vyapar/Tally)"
+    },
+    "mid": {
+      "price": 15000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹15,000–₹40,000"
+    },
+    "billing": "Setup",
+    "market": "₹3,000–₹25,000 setup",
+    "notes": "Software licence at actuals"
+  },
+  "ASC-0059": {
+    "id": "ASC-0059",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "one-time setup",
+      "detail": "₹4,999 setup"
+    },
+    "mid": {
+      "price": 20000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹20,000–₹60,000"
+    },
+    "billing": "Setup",
+    "market": "₹5k–₹30k + software + hardware",
+    "notes": "Hardware & licence extra"
+  },
+  "ASC-0060": {
+    "id": "ASC-0060",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 9999,
+      "text": "",
+      "unit": "one-time setup + monthly fee",
+      "detail": "₹9,999 setup + ₹2,999/mo"
+    },
+    "mid": {
+      "price": 50000,
+      "text": "",
+      "unit": "one-time setup + monthly fee",
+      "detail": "₹50,000–₹2,00,000 + ₹9,999/mo"
+    },
+    "billing": "Setup + monthly",
+    "market": "₹15k–₹2L setup (Zoho partners ₹75k–₹3.5L)",
+    "notes": "CRM licence extra"
+  },
+  "ASC-0061": {
+    "id": "ASC-0061",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 74999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹74,999 (ERPNext/Odoo/Zoho)"
+    },
+    "mid": {
+      "price": 250000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹2,50,000–₹8,00,000"
+    },
+    "billing": "Project",
+    "market": "₹1,00,000–₹10,00,000+",
+    "notes": ""
+  },
+  "ASC-0062": {
+    "id": "ASC-0062",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "one-time setup",
+      "detail": "₹4,999 setup"
+    },
+    "mid": {
+      "price": 25000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹25,000–₹60,000"
+    },
+    "billing": "Setup",
+    "market": "₹5k–₹50k + HRMS ₹50–₹300/user/mo",
+    "notes": ""
+  },
+  "ASC-0063": {
+    "id": "ASC-0063",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 2999,
+      "text": "",
+      "unit": "one-time setup",
+      "detail": "₹2,999 setup"
+    },
+    "mid": {
+      "price": 15000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹15,000–₹40,000"
+    },
+    "billing": "Setup",
+    "market": "₹3,000–₹30,000 (+ biometric hardware)",
+    "notes": ""
+  },
+  "ASC-0064": {
+    "id": "ASC-0064",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹4,999"
+    },
+    "mid": {
+      "price": 20000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹20,000–₹50,000"
+    },
+    "billing": "Setup",
+    "market": "₹5,000–₹40,000",
+    "notes": ""
+  },
+  "ASC-0065": {
+    "id": "ASC-0065",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 2999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹2,999 clean-up · ₹1,999/mo"
+    },
+    "mid": {
+      "price": 15000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹15,000–₹40,000"
+    },
+    "billing": "Project / monthly",
+    "market": "₹5,000–₹40,000",
+    "notes": ""
+  },
+  "ASC-0066": {
+    "id": "ASC-0066",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 7999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹7,999"
+    },
+    "mid": {
+      "price": 35000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹35,000–₹1,00,000"
+    },
+    "billing": "Setup",
+    "market": "₹10,000–₹1,00,000",
+    "notes": ""
+  },
+  "ASC-0067": {
+    "id": "ASC-0067",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 5999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹5,999"
+    },
+    "mid": {
+      "price": 30000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹30,000–₹75,000"
+    },
+    "billing": "Setup",
+    "market": "₹10,000–₹75,000",
+    "notes": ""
+  },
+  "ASC-0068": {
+    "id": "ASC-0068",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 9999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹9,999"
+    },
+    "mid": {
+      "price": 50000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹50,000–₹1,50,000"
+    },
+    "billing": "Project / monthly",
+    "market": "₹15,000–₹1,50,000",
+    "notes": ""
+  },
+  "ASC-0069": {
+    "id": "ASC-0069",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 6999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹6,999 (Looker Studio)"
+    },
+    "mid": {
+      "price": 25000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹25,000–₹75,000 (Power BI)"
+    },
+    "billing": "Per dashboard",
+    "market": "₹10,000–₹75,000 per dashboard",
+    "notes": ""
+  },
+  "ASC-0070": {
+    "id": "ASC-0070",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "per workflow",
+      "detail": "₹4,999/workflow"
+    },
+    "mid": {
+      "price": 20000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹20,000–₹50,000"
+    },
+    "billing": "Per workflow",
+    "market": "₹5,000–₹50,000 per workflow",
+    "notes": ""
+  },
+  "ASC-0071": {
+    "id": "ASC-0071",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 7999,
+      "text": "",
+      "unit": "one-time setup + monthly fee",
+      "detail": "₹7,999 setup + ₹1,499/mo"
+    },
+    "mid": {
+      "price": 35000,
+      "text": "",
+      "unit": "one-time setup + monthly fee",
+      "detail": "₹35,000–₹75,000 + ₹7,999/mo"
+    },
+    "billing": "Setup + monthly",
+    "market": "₹10k–₹75k setup + ₹1k–₹15k/mo BSP",
+    "notes": "Meta conversation fees extra"
+  },
+  "ASC-0072": {
+    "id": "ASC-0072",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 3999,
+      "text": "",
+      "unit": "one-time setup",
+      "detail": "₹3,999 setup"
+    },
+    "mid": {
+      "price": 20000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹20,000–₹50,000"
+    },
+    "billing": "Setup",
+    "market": "₹5,000–₹40,000",
+    "notes": ""
+  },
+  "ASC-0073": {
+    "id": "ASC-0073",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 5999,
+      "text": "",
+      "unit": "one-time setup + monthly fee",
+      "detail": "₹5,999 setup + ₹999/mo"
+    },
+    "mid": {
+      "price": 30000,
+      "text": "",
+      "unit": "one-time setup + monthly fee",
+      "detail": "₹30,000 + ₹4,999/mo"
+    },
+    "billing": "Setup + monthly",
+    "market": "₹10k–₹50k + ₹1k–₹10k/mo",
+    "notes": ""
+  },
+  "ASC-0074": {
+    "id": "ASC-0074",
+    "status": "open",
+    "type": "package",
+    "small": {
+      "price": 9999,
+      "text": "",
+      "unit": "Starter package (5 packages)",
+      "detail": "5 packages from ₹9,999 (see Development Packages tab)"
+    },
+    "mid": {
+      "price": 89999,
+      "text": "",
+      "unit": "Premium package; custom work on quote",
+      "detail": "Premium package ₹89,999; anything more is a custom quote from the support team"
+    },
+    "billing": "One-time project",
+    "market": "₹40,000–₹3,00,000",
+    "notes": "",
+    "packages": [
+      {
+        "key": "starter",
+        "name": "Starter",
+        "price": 9999,
+        "includes": "Up to 25 products, cart, UPI/Razorpay checkout, WhatsApp orders",
+        "delivery": "5 days",
+        "notes": ""
+      },
+      {
+        "key": "basic",
+        "name": "Basic",
+        "price": 17999,
+        "includes": "Up to 100 products, categories, coupons, Shiprocket shipping integration",
+        "delivery": "10 days",
+        "notes": ""
+      },
+      {
+        "key": "business",
+        "name": "Business",
+        "price": 29999,
+        "includes": "Up to 500 products, customer accounts, COD, GST invoices, order tracking",
+        "delivery": "15–20 days",
+        "notes": ""
+      },
+      {
+        "key": "professional",
+        "name": "Professional",
+        "price": 49999,
+        "includes": "Unlimited products, custom design, inventory, abandoned-cart recovery, reviews, SEO",
+        "delivery": "3–4 weeks",
+        "notes": ""
+      },
+      {
+        "key": "premium",
+        "name": "Premium",
+        "price": 89999,
+        "includes": "Custom features, multi-vendor or B2B wholesale, installable mobile web app",
+        "delivery": "5–6 weeks",
+        "notes": ""
+      },
+      {
+        "key": "custom",
+        "name": "Custom",
+        "price": null,
+        "includes": "Need more than the Premium package? Our team will scope extra features and quote a price.",
+        "delivery": "On quote",
+        "notes": ""
+      }
+    ]
+  },
+  "ASC-0075": {
+    "id": "ASC-0075",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 1999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹1,999"
+    },
+    "mid": {
+      "price": 1999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹1,999"
+    },
+    "billing": "One-time",
+    "market": "₹1,500–₹10,000 (Amazon itself charges no joining fee)",
+    "notes": ""
+  },
+  "ASC-0076": {
+    "id": "ASC-0076",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 1999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹1,999"
+    },
+    "mid": {
+      "price": 1999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹1,999"
+    },
+    "billing": "One-time",
+    "market": "₹1,500–₹8,000",
+    "notes": ""
+  },
+  "ASC-0077": {
+    "id": "ASC-0077",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹999"
+    },
+    "mid": {
+      "price": 999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹999"
+    },
+    "billing": "One-time",
+    "market": "₹1,000–₹5,000",
+    "notes": ""
+  },
+  "ASC-0078": {
+    "id": "ASC-0078",
+    "status": "open",
+    "type": "package",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "Starter package (5 packages)",
+      "detail": "5 packages from ₹4,999 (see Development Packages tab)"
+    },
+    "mid": {
+      "price": 49999,
+      "text": "",
+      "unit": "Premium package; custom work on quote",
+      "detail": "Premium package ₹49,999; anything more is a custom quote from the support team"
+    },
+    "billing": "One-time",
+    "market": "₹15,000–₹1,50,000",
+    "notes": "Shopify subscription & apps extra",
+    "packages": [
+      {
+        "key": "starter",
+        "name": "Starter",
+        "price": 4999,
+        "includes": "Theme setup, up to 20 products, payment and shipping setup",
+        "delivery": "3 days",
+        "notes": "Shopify plan and paid apps extra"
+      },
+      {
+        "key": "basic",
+        "name": "Basic",
+        "price": 9999,
+        "includes": "Up to 75 products, custom pages, app setup",
+        "delivery": "1 week",
+        "notes": ""
+      },
+      {
+        "key": "business",
+        "name": "Business",
+        "price": 17999,
+        "includes": "Up to 200 products, theme edits, WhatsApp, reviews, basic SEO",
+        "delivery": "2 weeks",
+        "notes": ""
+      },
+      {
+        "key": "professional",
+        "name": "Professional",
+        "price": 29999,
+        "includes": "Premium theme customisation, up to 500 products, COD tools",
+        "delivery": "3 weeks",
+        "notes": ""
+      },
+      {
+        "key": "premium",
+        "name": "Premium",
+        "price": 49999,
+        "includes": "Custom theme, B2B/wholesale, multi-currency",
+        "delivery": "4–5 weeks",
+        "notes": ""
+      },
+      {
+        "key": "custom",
+        "name": "Custom",
+        "price": null,
+        "includes": "Need more than the Premium package? Our team will scope extra features and quote a price.",
+        "delivery": "On quote",
+        "notes": ""
+      }
+    ]
+  },
+  "ASC-0079": {
+    "id": "ASC-0079",
+    "status": "soon",
+    "type": "package",
+    "small": {
+      "price": 5999,
+      "text": "",
+      "unit": "Starter package (5 packages)",
+      "detail": "5 packages from ₹5,999 (see Development Packages tab)"
+    },
+    "mid": {
+      "price": 54999,
+      "text": "",
+      "unit": "Premium package; custom work on quote",
+      "detail": "Premium package ₹54,999; anything more is a custom quote from the support team"
+    },
+    "billing": "One-time",
+    "market": "₹15,000–₹1,00,000",
+    "notes": "Hosting extra",
+    "packages": [
+      {
+        "key": "starter",
+        "name": "Starter",
+        "price": 5999,
+        "includes": "Theme setup, up to 20 products, payment and shipping setup",
+        "delivery": "3 days",
+        "notes": "Hosting and paid plugins extra"
+      },
+      {
+        "key": "basic",
+        "name": "Basic",
+        "price": 11999,
+        "includes": "Up to 75 products, custom pages, plugin setup",
+        "delivery": "1 week",
+        "notes": ""
+      },
+      {
+        "key": "business",
+        "name": "Business",
+        "price": 19999,
+        "includes": "Up to 200 products, theme edits, WhatsApp, reviews, basic SEO",
+        "delivery": "2 weeks",
+        "notes": ""
+      },
+      {
+        "key": "professional",
+        "name": "Professional",
+        "price": 32999,
+        "includes": "Custom design, up to 500 products, COD, speed optimisation",
+        "delivery": "3 weeks",
+        "notes": ""
+      },
+      {
+        "key": "premium",
+        "name": "Premium",
+        "price": 54999,
+        "includes": "Custom theme, B2B/wholesale, multi-vendor",
+        "delivery": "4–5 weeks",
+        "notes": ""
+      },
+      {
+        "key": "custom",
+        "name": "Custom",
+        "price": null,
+        "includes": "Need more than the Premium package? Our team will scope extra features and quote a price.",
+        "delivery": "On quote",
+        "notes": ""
+      }
+    ]
+  },
+  "ASC-0080": {
+    "id": "ASC-0080",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 99,
+      "text": "",
+      "unit": "per SKU",
+      "detail": "₹99/SKU (min 20)"
+    },
+    "mid": {
+      "price": 199,
+      "text": "",
+      "unit": "per SKU",
+      "detail": "₹199/SKU incl. A+ content"
+    },
+    "billing": "Per SKU",
+    "market": "₹50–₹300 per SKU",
+    "notes": ""
+  },
+  "ASC-0081": {
+    "id": "ASC-0081",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 149,
+      "text": "",
+      "unit": "per SKU",
+      "detail": "₹149/SKU"
+    },
+    "mid": {
+      "price": 14999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹14,999/mo"
+    },
+    "billing": "Per SKU / monthly",
+    "market": "₹100–₹500 per SKU",
+    "notes": ""
+  },
+  "ASC-0082": {
+    "id": "ASC-0082",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 3999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹3,999/mo per marketplace"
+    },
+    "mid": {
+      "price": 14999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹14,999–₹34,999/mo or 2–5% of sales"
+    },
+    "billing": "Monthly per marketplace",
+    "market": "₹2,000–₹6,000/mo (freelancers/IndiaMART) · ₹20k+ (agencies)",
+    "notes": ""
+  },
+  "ASC-0083": {
+    "id": "ASC-0083",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 2999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹2,999/mo"
+    },
+    "mid": {
+      "price": 9999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹9,999–₹24,999/mo"
+    },
+    "billing": "Monthly",
+    "market": "₹2,000–₹15,000/mo",
+    "notes": ""
+  },
+  "ASC-0084": {
+    "id": "ASC-0084",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "one-time setup",
+      "detail": "₹4,999 setup"
+    },
+    "mid": {
+      "price": 20000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹20,000–₹50,000"
+    },
+    "billing": "Setup + monthly",
+    "market": "₹5,000–₹30,000 + tool cost",
+    "notes": ""
+  },
+  "ASC-0085": {
+    "id": "ASC-0085",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹4,999/mo"
+    },
+    "mid": {
+      "price": null,
+      "text": "10–15% of ad spend",
+      "unit": "per month",
+      "detail": "10–15% of ad spend"
+    },
+    "billing": "Monthly mgmt fee",
+    "market": "₹5k–₹30k/mo or 10–20% of ad spend",
+    "notes": ""
+  },
+  "ASC-0086": {
+    "id": "ASC-0086",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹4,999/mo"
+    },
+    "mid": {
+      "price": 20000,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹20,000–₹50,000/mo"
+    },
+    "billing": "Monthly",
+    "market": "₹5,000–₹40,000/mo",
+    "notes": ""
+  },
+  "ASC-0087": {
+    "id": "ASC-0087",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 249,
+      "text": "",
+      "unit": "per image",
+      "detail": "₹249/image (white bg)"
+    },
+    "mid": {
+      "price": 799,
+      "text": "",
+      "unit": "per image",
+      "detail": "₹799/image (lifestyle)"
+    },
+    "billing": "Per image",
+    "market": "₹150–₹1,500 per image",
+    "notes": ""
+  },
+  "ASC-0088": {
+    "id": "ASC-0088",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 1999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹1,999/mo"
+    },
+    "mid": {
+      "price": 9999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹9,999/mo"
+    },
+    "billing": "Monthly",
+    "market": "₹3,000–₹20,000/mo",
+    "notes": ""
+  },
+  "ASC-0089": {
+    "id": "ASC-0089",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 1999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹1,999/mo"
+    },
+    "mid": {
+      "price": 7999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹7,999–₹19,999/mo"
+    },
+    "billing": "Monthly",
+    "market": "₹2,000–₹15,000/mo",
+    "notes": ""
+  },
+  "ASC-0090": {
+    "id": "ASC-0090",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 1499,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹1,499"
+    },
+    "mid": {
+      "price": 1499,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹1,499"
+    },
+    "billing": "One-time",
+    "market": "₹1,000–₹5,000 (consultant)",
+    "notes": "Platform fees + 15–30% commission charged by Swiggy"
+  },
+  "ASC-0091": {
+    "id": "ASC-0091",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 1499,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹1,499"
+    },
+    "mid": {
+      "price": 1499,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹1,499"
+    },
+    "billing": "One-time",
+    "market": "₹1,000–₹5,000 (consultant)",
+    "notes": "Platform fees + commission charged by Zomato"
+  },
+  "ASC-0092": {
+    "id": "ASC-0092",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 999,
+      "text": "",
+      "unit": "one-time setup",
+      "detail": "Fixed price ₹999 setup"
+    },
+    "mid": {
+      "price": 999,
+      "text": "",
+      "unit": "one-time setup",
+      "detail": "Fixed price ₹999 setup"
+    },
+    "billing": "Setup + monthly",
+    "market": "₹2k–₹10k setup · ₹2k–₹8k/mo",
+    "notes": ""
+  },
+  "ASC-0093": {
+    "id": "ASC-0093",
+    "status": "open",
+    "type": "package",
+    "small": {
+      "price": 2999,
+      "text": "",
+      "unit": "Starter package (5 packages)",
+      "detail": "5 packages from ₹2,999 (see Development Packages tab)"
+    },
+    "mid": {
+      "price": 34999,
+      "text": "",
+      "unit": "Premium package; custom work on quote",
+      "detail": "Premium package ₹34,999; anything more is a custom quote from the support team"
+    },
+    "billing": "One-time",
+    "market": "₹10,000–₹60,000",
+    "notes": "",
+    "packages": [
+      {
+        "key": "starter",
+        "name": "Starter",
+        "price": 2999,
+        "includes": "One-page site: menu, location, call/WhatsApp buttons",
+        "delivery": "2 days",
+        "notes": "Domain + hosting extra"
+      },
+      {
+        "key": "basic",
+        "name": "Basic",
+        "price": 6999,
+        "includes": "Up to 5 pages, digital menu, gallery, Google Maps",
+        "delivery": "5 days",
+        "notes": ""
+      },
+      {
+        "key": "business",
+        "name": "Business",
+        "price": 12999,
+        "includes": "Adds table reservation, Swiggy/Zomato links, Google Business Profile",
+        "delivery": "1–2 weeks",
+        "notes": ""
+      },
+      {
+        "key": "professional",
+        "name": "Professional",
+        "price": 21999,
+        "includes": "Adds commission-free online ordering with UPI payments",
+        "delivery": "2–3 weeks",
+        "notes": ""
+      },
+      {
+        "key": "premium",
+        "name": "Premium",
+        "price": 34999,
+        "includes": "Multi-outlet, loyalty programme, ordering + admin dashboard",
+        "delivery": "3–4 weeks",
+        "notes": ""
+      },
+      {
+        "key": "custom",
+        "name": "Custom",
+        "price": null,
+        "includes": "Need more than the Premium package? Our team will scope extra features and quote a price.",
+        "delivery": "On quote",
+        "notes": ""
+      }
+    ]
+  },
+  "ASC-0094": {
+    "id": "ASC-0094",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 1999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹1,999"
+    },
+    "mid": {
+      "price": 1999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹1,999"
+    },
+    "billing": "One-time",
+    "market": "₹2,000–₹15,000",
+    "notes": ""
+  },
+  "ASC-0095": {
+    "id": "ASC-0095",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 999,
+      "text": "",
+      "unit": "per year",
+      "detail": "Fixed price ₹999 per year"
+    },
+    "mid": {
+      "price": 999,
+      "text": "",
+      "unit": "per year",
+      "detail": "Fixed price ₹999 per year"
+    },
+    "billing": "Yearly",
+    "market": "₹1,000–₹6,000/yr",
+    "notes": ""
+  },
+  "ASC-0096": {
+    "id": "ASC-0096",
+    "status": "open",
+    "type": "package",
+    "small": {
+      "price": 2999,
+      "text": "",
+      "unit": "Starter package (5 packages)",
+      "detail": "5 packages from ₹2,999 (see Development Packages tab)"
+    },
+    "mid": {
+      "price": 44999,
+      "text": "",
+      "unit": "Premium package; custom work on quote",
+      "detail": "Premium package ₹44,999; anything more is a custom quote from the support team"
+    },
+    "billing": "Setup + monthly",
+    "market": "₹15k–₹1L setup or 1–3% commission",
+    "notes": "",
+    "packages": [
+      {
+        "key": "starter",
+        "name": "Starter",
+        "price": 2999,
+        "includes": "WhatsApp ordering catalogue + QR code",
+        "delivery": "2 days",
+        "notes": "Hosting from ₹499/mo"
+      },
+      {
+        "key": "basic",
+        "name": "Basic",
+        "price": 7999,
+        "includes": "Ordering page with UPI payments",
+        "delivery": "5 days",
+        "notes": ""
+      },
+      {
+        "key": "business",
+        "name": "Business",
+        "price": 14999,
+        "includes": "Full ordering website, admin panel, delivery zones",
+        "delivery": "1–2 weeks",
+        "notes": ""
+      },
+      {
+        "key": "professional",
+        "name": "Professional",
+        "price": 27999,
+        "includes": "Adds POS/kitchen display integration, coupons, loyalty",
+        "delivery": "3 weeks",
+        "notes": ""
+      },
+      {
+        "key": "premium",
+        "name": "Premium",
+        "price": 44999,
+        "includes": "Branded Android app + website, multi-outlet",
+        "delivery": "4–6 weeks",
+        "notes": ""
+      },
+      {
+        "key": "custom",
+        "name": "Custom",
+        "price": null,
+        "includes": "Need more than the Premium package? Our team will scope extra features and quote a price.",
+        "delivery": "On quote",
+        "notes": ""
+      }
+    ]
+  },
+  "ASC-0097": {
+    "id": "ASC-0097",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 3999,
+      "text": "",
+      "unit": "one-time setup",
+      "detail": "₹3,999 setup"
+    },
+    "mid": {
+      "price": 14999,
+      "text": "",
+      "unit": "per outlet",
+      "detail": "₹14,999 per outlet"
+    },
+    "billing": "Setup",
+    "market": "₹3k–₹10k setup + POS software (Petpooja ~₹10k–₹12k/yr est.)",
+    "notes": "POS licence & hardware extra"
+  },
+  "ASC-0098": {
+    "id": "ASC-0098",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 6999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹6,999 (15 dishes)"
+    },
+    "mid": {
+      "price": 24999,
+      "text": "",
+      "unit": "per shoot",
+      "detail": "₹24,999 per shoot"
+    },
+    "billing": "Per shoot",
+    "market": "₹500–₹2,500 per dish · ₹8k–₹40k per shoot",
+    "notes": ""
+  },
+  "ASC-0099": {
+    "id": "ASC-0099",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 14999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹14,999"
+    },
+    "mid": {
+      "price": 50000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹50,000–₹1,50,000"
+    },
+    "billing": "Project",
+    "market": "₹20,000–₹2,00,000",
+    "notes": ""
+  },
+  "ASC-0100": {
+    "id": "ASC-0100",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 3999,
+      "text": "",
+      "unit": "per SKU",
+      "detail": "₹3,999/SKU"
+    },
+    "mid": {
+      "price": 11999,
+      "text": "",
+      "unit": "per SKU",
+      "detail": "₹11,999/SKU"
+    },
+    "billing": "Per SKU",
+    "market": "₹3,000–₹30,000 per SKU",
+    "notes": ""
+  },
+  "ASC-0101": {
+    "id": "ASC-0101",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 7999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹7,999/mo"
+    },
+    "mid": {
+      "price": 19999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹19,999–₹39,999/mo"
+    },
+    "billing": "Monthly",
+    "market": "₹8,000–₹40,000/mo",
+    "notes": ""
+  },
+  "ASC-0102": {
+    "id": "ASC-0102",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹4,999/mo"
+    },
+    "mid": {
+      "price": 14999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹14,999/mo"
+    },
+    "billing": "Monthly + ad spend",
+    "market": "₹5,000–₹25,000/mo + spend",
+    "notes": ""
+  },
+  "ASC-0103": {
+    "id": "ASC-0103",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 1999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹1,999/mo"
+    },
+    "mid": {
+      "price": 7999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹7,999/mo"
+    },
+    "billing": "Monthly",
+    "market": "₹2,000–₹15,000/mo",
+    "notes": ""
+  },
+  "ASC-0104": {
+    "id": "ASC-0104",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "one-time setup + monthly fee",
+      "detail": "₹4,999 + ₹499/mo"
+    },
+    "mid": {
+      "price": 19999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹19,999"
+    },
+    "billing": "Setup + monthly",
+    "market": "₹5,000–₹30,000",
+    "notes": ""
+  },
+  "ASC-0105": {
+    "id": "ASC-0105",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "one-time setup + monthly fee",
+      "detail": "₹4,999 + ₹999/mo"
+    },
+    "mid": {
+      "price": 19999,
+      "text": "",
+      "unit": "one-time setup + monthly fee",
+      "detail": "₹19,999 + ₹3,999/mo"
+    },
+    "billing": "Setup + monthly",
+    "market": "₹5k–₹40k + ₹1k–₹5k/mo",
+    "notes": ""
+  },
+  "ASC-0106": {
+    "id": "ASC-0106",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹4,999"
+    },
+    "mid": {
+      "price": 14999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹14,999–₹29,999"
+    },
+    "billing": "Setup",
+    "market": "₹5,000–₹30,000",
+    "notes": ""
+  },
+  "ASC-0107": {
+    "id": "ASC-0107",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 6999,
+      "text": "",
+      "unit": "one-time setup",
+      "detail": "₹6,999 setup (+ tablet)"
+    },
+    "mid": {
+      "price": 24999,
+      "text": "",
+      "unit": "per outlet",
+      "detail": "₹24,999 per outlet"
+    },
+    "billing": "Setup",
+    "market": "₹10,000–₹50,000 incl. hardware",
+    "notes": ""
+  },
+  "ASC-0108": {
+    "id": "ASC-0108",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹4,999 (recipe costing)"
+    },
+    "mid": {
+      "price": 14999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹14,999–₹29,999"
+    },
+    "billing": "Project / monthly",
+    "market": "₹5,000–₹25,000",
+    "notes": ""
+  },
+  "ASC-0109": {
+    "id": "ASC-0109",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹4,999"
+    },
+    "mid": {
+      "price": 19999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹19,999"
+    },
+    "billing": "Setup + monthly",
+    "market": "₹5,000–₹30,000",
+    "notes": ""
+  },
+  "ASC-0110": {
+    "id": "ASC-0110",
+    "status": "open",
+    "type": "package",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "Starter package (5 packages)",
+      "detail": "5 packages from ₹4,999 (see Development Packages tab)"
+    },
+    "mid": {
+      "price": 59999,
+      "text": "",
+      "unit": "Premium package; custom work on quote",
+      "detail": "Premium package ₹59,999; anything more is a custom quote from the support team"
+    },
+    "billing": "Setup + monthly",
+    "market": "₹35k–₹3L setup · ₹5k–₹25k/mo (small biz)",
+    "notes": "LLM API usage at actuals",
+    "packages": [
+      {
+        "key": "starter",
+        "name": "Starter",
+        "price": 4999,
+        "includes": "Ready AI chatbot added to your website",
+        "delivery": "2 days",
+        "notes": "AI/Meta usage fees extra"
+      },
+      {
+        "key": "basic",
+        "name": "Basic",
+        "price": 9999,
+        "includes": "AI chatbot trained on your FAQs and documents",
+        "delivery": "1 week",
+        "notes": ""
+      },
+      {
+        "key": "business",
+        "name": "Business",
+        "price": 19999,
+        "includes": "Website + WhatsApp AI chatbot with lead capture",
+        "delivery": "2 weeks",
+        "notes": ""
+      },
+      {
+        "key": "professional",
+        "name": "Professional",
+        "price": 34999,
+        "includes": "Connected to CRM/store, bookings, Hindi + English",
+        "delivery": "3 weeks",
+        "notes": ""
+      },
+      {
+        "key": "premium",
+        "name": "Premium",
+        "price": 59999,
+        "includes": "Multi-channel AI chatbot, human handover, analytics",
+        "delivery": "4–5 weeks",
+        "notes": ""
+      },
+      {
+        "key": "custom",
+        "name": "Custom",
+        "price": null,
+        "includes": "Need more than the Premium package? Our team will scope extra features and quote a price.",
+        "delivery": "On quote",
+        "notes": ""
+      }
+    ]
+  },
+  "ASC-0111": {
+    "id": "ASC-0111",
+    "status": "open",
+    "type": "package",
+    "small": {
+      "price": 9999,
+      "text": "",
+      "unit": "Starter package (5 packages)",
+      "detail": "5 packages from ₹9,999 (see Development Packages tab)"
+    },
+    "mid": {
+      "price": 119999,
+      "text": "",
+      "unit": "Premium package; custom work on quote",
+      "detail": "Premium package ₹119,999; anything more is a custom quote from the support team"
+    },
+    "billing": "Setup + monthly",
+    "market": "₹50,000–₹5,00,000",
+    "notes": "",
+    "packages": [
+      {
+        "key": "starter",
+        "name": "Starter",
+        "price": 9999,
+        "includes": "AI support agent for your website, trained on FAQs/docs",
+        "delivery": "1 week",
+        "notes": "AI/Meta usage fees extra"
+      },
+      {
+        "key": "basic",
+        "name": "Basic",
+        "price": 19999,
+        "includes": "Adds WhatsApp, lead capture, handover to a human",
+        "delivery": "2 weeks",
+        "notes": ""
+      },
+      {
+        "key": "business",
+        "name": "Business",
+        "price": 39999,
+        "includes": "Adds order-status and ticket lookup from your CRM/store",
+        "delivery": "3 weeks",
+        "notes": ""
+      },
+      {
+        "key": "professional",
+        "name": "Professional",
+        "price": 69999,
+        "includes": "Multi-channel agent that takes actions (bookings, refunds), multilingual",
+        "delivery": "4–6 weeks",
+        "notes": ""
+      },
+      {
+        "key": "premium",
+        "name": "Premium",
+        "price": 119999,
+        "includes": "Sales + support agents, analytics dashboard, 3 months tuning",
+        "delivery": "6–8 weeks",
+        "notes": ""
+      },
+      {
+        "key": "custom",
+        "name": "Custom",
+        "price": null,
+        "includes": "Need more than the Premium package? Our team will scope extra features and quote a price.",
+        "delivery": "On quote",
+        "notes": ""
+      }
+    ]
+  },
+  "ASC-0112": {
+    "id": "ASC-0112",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 9999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹9,999/mo"
+    },
+    "mid": {
+      "price": 35000,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹35,000–₹75,000/mo"
+    },
+    "billing": "Monthly",
+    "market": "₹15,000–₹75,000/mo",
+    "notes": ""
+  },
+  "ASC-0113": {
+    "id": "ASC-0113",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹4,999/mo (20 pieces)"
+    },
+    "mid": {
+      "price": 19999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹19,999–₹39,999/mo"
+    },
+    "billing": "Monthly",
+    "market": "₹5,000–₹40,000/mo",
+    "notes": ""
+  },
+  "ASC-0114": {
+    "id": "ASC-0114",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 19999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹19,999"
+    },
+    "mid": {
+      "price": 100000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹1,00,000–₹3,00,000"
+    },
+    "billing": "Project",
+    "market": "₹25,000–₹3,00,000",
+    "notes": ""
+  },
+  "ASC-0115": {
+    "id": "ASC-0115",
+    "status": "open",
+    "type": "package",
+    "small": {
+      "price": 2999,
+      "text": "",
+      "unit": "Starter package (5 packages)",
+      "detail": "5 packages from ₹2,999 (see Development Packages tab)"
+    },
+    "mid": {
+      "price": 49999,
+      "text": "",
+      "unit": "Premium package; custom work on quote",
+      "detail": "Premium package ₹49,999; anything more is a custom quote from the support team"
+    },
+    "billing": "Setup + monthly",
+    "market": "₹25k–₹5.5L setup + ₹5k–₹25k/mo",
+    "notes": "Meta + LLM fees at actuals",
+    "packages": [
+      {
+        "key": "starter",
+        "name": "Starter",
+        "price": 2999,
+        "includes": "WhatsApp Business setup, catalogue, auto and quick replies",
+        "delivery": "2 days",
+        "notes": "Meta conversation fees extra"
+      },
+      {
+        "key": "basic",
+        "name": "Basic",
+        "price": 6999,
+        "includes": "WhatsApp API setup, verification help, menu bot",
+        "delivery": "5 days",
+        "notes": ""
+      },
+      {
+        "key": "business",
+        "name": "Business",
+        "price": 14999,
+        "includes": "AI replies, lead capture to Sheets/CRM, broadcast templates",
+        "delivery": "1–2 weeks",
+        "notes": ""
+      },
+      {
+        "key": "professional",
+        "name": "Professional",
+        "price": 29999,
+        "includes": "Orders, bookings and payments inside WhatsApp, abandoned-cart flows",
+        "delivery": "3 weeks",
+        "notes": ""
+      },
+      {
+        "key": "premium",
+        "name": "Premium",
+        "price": 49999,
+        "includes": "Full AI sales and support agent, shared team inbox, analytics",
+        "delivery": "4 weeks",
+        "notes": ""
+      },
+      {
+        "key": "custom",
+        "name": "Custom",
+        "price": null,
+        "includes": "Need more than the Premium package? Our team will scope extra features and quote a price.",
+        "delivery": "On quote",
+        "notes": ""
+      }
+    ]
+  },
+  "ASC-0116": {
+    "id": "ASC-0116",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 5999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹5,999"
+    },
+    "mid": {
+      "price": 24999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹24,999–₹49,999"
+    },
+    "billing": "Setup",
+    "market": "₹8,000–₹50,000",
+    "notes": ""
+  },
+  "ASC-0117": {
+    "id": "ASC-0117",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 6999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹6,999"
+    },
+    "mid": {
+      "price": 29999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹29,999–₹59,999"
+    },
+    "billing": "Setup",
+    "market": "₹10,000–₹60,000",
+    "notes": ""
+  },
+  "ASC-0118": {
+    "id": "ASC-0118",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 7999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹7,999"
+    },
+    "mid": {
+      "price": 39999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹39,999–₹74,999"
+    },
+    "billing": "Setup",
+    "market": "₹10,000–₹75,000",
+    "notes": ""
+  },
+  "ASC-0119": {
+    "id": "ASC-0119",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 9999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹9,999"
+    },
+    "mid": {
+      "price": 50000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹50,000–₹1,50,000"
+    },
+    "billing": "Setup",
+    "market": "₹15,000–₹1,50,000",
+    "notes": ""
+  },
+  "ASC-0120": {
+    "id": "ASC-0120",
+    "status": "open",
+    "type": "package",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "Starter package (5 packages)",
+      "detail": "5 packages from ₹4,999 (see Development Packages tab)"
+    },
+    "mid": {
+      "price": 59999,
+      "text": "",
+      "unit": "Premium package; custom work on quote",
+      "detail": "Premium package ₹59,999; anything more is a custom quote from the support team"
+    },
+    "billing": "Project",
+    "market": "₹20,000–₹3,00,000",
+    "notes": "",
+    "packages": [
+      {
+        "key": "starter",
+        "name": "Starter",
+        "price": 4999,
+        "includes": "Simple app, form or automation (Glide/Softr/Zapier)",
+        "delivery": "3 days",
+        "notes": "Tool subscriptions extra"
+      },
+      {
+        "key": "basic",
+        "name": "Basic",
+        "price": 9999,
+        "includes": "Internal tool up to 5 screens",
+        "delivery": "1 week",
+        "notes": ""
+      },
+      {
+        "key": "business",
+        "name": "Business",
+        "price": 19999,
+        "includes": "Client portal or database app with logins",
+        "delivery": "2 weeks",
+        "notes": ""
+      },
+      {
+        "key": "professional",
+        "name": "Professional",
+        "price": 34999,
+        "includes": "Multi-role app with automations and payments",
+        "delivery": "3–4 weeks",
+        "notes": ""
+      },
+      {
+        "key": "premium",
+        "name": "Premium",
+        "price": 59999,
+        "includes": "Complex no-code system with documentation and training",
+        "delivery": "5–6 weeks",
+        "notes": ""
+      },
+      {
+        "key": "custom",
+        "name": "Custom",
+        "price": null,
+        "includes": "Need more than the Premium package? Our team will scope extra features and quote a price.",
+        "delivery": "On quote",
+        "notes": ""
+      }
+    ]
+  },
+  "ASC-0121": {
+    "id": "ASC-0121",
+    "status": "open",
+    "type": "package",
+    "small": {
+      "price": 14999,
+      "text": "",
+      "unit": "Starter package (5 packages)",
+      "detail": "5 packages from ₹14,999 (see Development Packages tab)"
+    },
+    "mid": {
+      "price": 124999,
+      "text": "",
+      "unit": "Premium package; custom work on quote",
+      "detail": "Premium package ₹124,999; anything more is a custom quote from the support team"
+    },
+    "billing": "Setup + per minute",
+    "market": "₹50k–₹5L + ₹5–₹15 per minute",
+    "notes": "Telephony/voice usage at actuals",
+    "packages": [
+      {
+        "key": "starter",
+        "name": "Starter",
+        "price": 14999,
+        "includes": "AI that answers inbound calls with your FAQs, 1 language",
+        "delivery": "1–2 weeks",
+        "notes": "Call minutes / telephony at actuals"
+      },
+      {
+        "key": "basic",
+        "name": "Basic",
+        "price": 24999,
+        "includes": "Adds appointment booking, call summaries to WhatsApp/email",
+        "delivery": "2 weeks",
+        "notes": ""
+      },
+      {
+        "key": "business",
+        "name": "Business",
+        "price": 44999,
+        "includes": "Hindi + English, CRM logging, outbound reminder calls",
+        "delivery": "3–4 weeks",
+        "notes": ""
+      },
+      {
+        "key": "professional",
+        "name": "Professional",
+        "price": 74999,
+        "includes": "Sales qualification calls, multiple call flows, integrations",
+        "delivery": "5–6 weeks",
+        "notes": ""
+      },
+      {
+        "key": "premium",
+        "name": "Premium",
+        "price": 124999,
+        "includes": "High-volume setup, custom voice, analytics",
+        "delivery": "6–8 weeks",
+        "notes": ""
+      },
+      {
+        "key": "custom",
+        "name": "Custom",
+        "price": null,
+        "includes": "Need more than the Premium package? Our team will scope extra features and quote a price.",
+        "delivery": "On quote",
+        "notes": ""
+      }
+    ]
+  },
+  "ASC-0122": {
+    "id": "ASC-0122",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 14999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹14,999"
+    },
+    "mid": {
+      "price": 75000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹75,000–₹2,00,000"
+    },
+    "billing": "Setup + usage",
+    "market": "₹25,000–₹2,00,000",
+    "notes": ""
+  },
+  "ASC-0123": {
+    "id": "ASC-0123",
+    "status": "open",
+    "type": "package",
+    "small": {
+      "price": 14999,
+      "text": "",
+      "unit": "Starter package (5 packages)",
+      "detail": "5 packages from ₹14,999 (see Development Packages tab)"
+    },
+    "mid": {
+      "price": 249999,
+      "text": "",
+      "unit": "Premium package; custom work on quote",
+      "detail": "Premium package ₹249,999; anything more is a custom quote from the support team"
+    },
+    "billing": "Project",
+    "market": "₹1,00,000–₹15,00,000",
+    "notes": "",
+    "packages": [
+      {
+        "key": "starter",
+        "name": "Starter",
+        "price": 14999,
+        "includes": "Single-purpose AI web tool (e.g. caption or quote generator)",
+        "delivery": "1–2 weeks",
+        "notes": "AI usage fees at actuals"
+      },
+      {
+        "key": "basic",
+        "name": "Basic",
+        "price": 34999,
+        "includes": "AI tool with login, history, up to 3 features",
+        "delivery": "3 weeks",
+        "notes": ""
+      },
+      {
+        "key": "business",
+        "name": "Business",
+        "price": 69999,
+        "includes": "AI tool with payments and admin panel",
+        "delivery": "5–6 weeks",
+        "notes": ""
+      },
+      {
+        "key": "professional",
+        "name": "Professional",
+        "price": 129999,
+        "includes": "AI agents/RAG, integrations, team accounts",
+        "delivery": "8–10 weeks",
+        "notes": ""
+      },
+      {
+        "key": "premium",
+        "name": "Premium",
+        "price": 249999,
+        "includes": "Complex AI product",
+        "delivery": "12–16 weeks",
+        "notes": ""
+      },
+      {
+        "key": "custom",
+        "name": "Custom",
+        "price": null,
+        "includes": "Need more than the Premium package? Our team will scope extra features and quote a price.",
+        "delivery": "On quote",
+        "notes": ""
+      }
+    ]
+  },
+  "ASC-0124": {
+    "id": "ASC-0124",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 14999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹14,999"
+    },
+    "mid": {
+      "price": 60000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹60,000–₹2,00,000"
+    },
+    "billing": "Project",
+    "market": "₹20,000–₹2,00,000",
+    "notes": ""
+  },
+  "ASC-0125": {
+    "id": "ASC-0125",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 19999,
+      "text": "",
+      "unit": "one-time setup + monthly fee",
+      "detail": "₹19,999 + ₹2,999/mo"
+    },
+    "mid": {
+      "price": 100000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹1,00,000–₹3,00,000"
+    },
+    "billing": "Setup + monthly",
+    "market": "₹30,000–₹3,00,000",
+    "notes": ""
+  },
+  "ASC-0126": {
+    "id": "ASC-0126",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 299,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹299"
+    },
+    "mid": {
+      "price": 299,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹299"
+    },
+    "billing": "One-time",
+    "market": "₹500–₹2,000 (govt fee ₹0)",
+    "notes": "Free on official portal — beware fake paid sites"
+  },
+  "ASC-0127": {
+    "id": "ASC-0127",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹999"
+    },
+    "mid": {
+      "price": 999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹999"
+    },
+    "billing": "One-time",
+    "market": "₹1,000–₹5,000",
+    "notes": ""
+  },
+  "ASC-0128": {
+    "id": "ASC-0128",
+    "status": "soon",
+    "type": "fixed",
+    "small": {
+      "price": 1999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹1,999 + govt fee"
+    },
+    "mid": {
+      "price": 1999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹1,999 + govt fee"
+    },
+    "billing": "One-time",
+    "market": "₹2,000–₹8,000 + stamp duty",
+    "notes": "Stamp duty varies by state"
+  },
+  "ASC-0129": {
+    "id": "ASC-0129",
+    "status": "soon",
+    "type": "fixed",
+    "small": {
+      "price": 2999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹2,999 + govt fee"
+    },
+    "mid": {
+      "price": 2999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹2,999 + govt fee"
+    },
+    "billing": "One-time",
+    "market": "₹799–₹8,000 professional + govt fees",
+    "notes": ""
+  },
+  "ASC-0130": {
+    "id": "ASC-0130",
+    "status": "soon",
+    "type": "fixed",
+    "small": {
+      "price": 3999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹3,999 + govt fee"
+    },
+    "mid": {
+      "price": 3999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹3,999 + govt fee"
+    },
+    "billing": "One-time",
+    "market": "₹7,000–₹25,000 all-in · platforms advertise ₹799–₹999 + govt",
+    "notes": "Govt fee & stamp duty vary by state/capital"
+  },
+  "ASC-0131": {
+    "id": "ASC-0131",
+    "status": "soon",
+    "type": "fixed",
+    "small": {
+      "price": 3499,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹3,499 + govt fee"
+    },
+    "mid": {
+      "price": 3499,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹3,499 + govt fee"
+    },
+    "billing": "One-time",
+    "market": "₹999–₹7,000 + govt fees",
+    "notes": ""
+  },
+  "ASC-0132": {
+    "id": "ASC-0132",
+    "status": "soon",
+    "type": "fixed",
+    "small": {
+      "price": 1999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹1,999"
+    },
+    "mid": {
+      "price": 1999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹1,999"
+    },
+    "billing": "One-time",
+    "market": "₹2,000–₹10,000",
+    "notes": "DPIIT recognition itself is free"
+  },
+  "ASC-0133": {
+    "id": "ASC-0133",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹999"
+    },
+    "mid": {
+      "price": 999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹999"
+    },
+    "billing": "One-time",
+    "market": "₹650–₹3,600 (Class 3, by validity)",
+    "notes": ""
+  },
+  "ASC-0134": {
+    "id": "ASC-0134",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 499,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹499"
+    },
+    "mid": {
+      "price": 499,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹499"
+    },
+    "billing": "One-time",
+    "market": "₹500–₹2,000",
+    "notes": ""
+  },
+  "ASC-0135": {
+    "id": "ASC-0135",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 199,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹199"
+    },
+    "mid": {
+      "price": 199,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹199"
+    },
+    "billing": "One-time",
+    "market": "₹200–₹500",
+    "notes": ""
+  },
+  "ASC-0136": {
+    "id": "ASC-0136",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 199,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹199"
+    },
+    "mid": {
+      "price": 199,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹199"
+    },
+    "billing": "One-time",
+    "market": "₹300–₹800",
+    "notes": ""
+  },
+  "ASC-0137": {
+    "id": "ASC-0137",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 499,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹499"
+    },
+    "mid": {
+      "price": 499,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹499"
+    },
+    "billing": "One-time",
+    "market": "₹299–₹2,999 (govt fee ₹0)",
+    "notes": ""
+  },
+  "ASC-0138": {
+    "id": "ASC-0138",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 499,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹499"
+    },
+    "mid": {
+      "price": 499,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹499"
+    },
+    "billing": "One-time",
+    "market": "₹500–₹2,000",
+    "notes": ""
+  },
+  "ASC-0139": {
+    "id": "ASC-0139",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 799,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹799/mo (QRMP ₹1,999/qtr)"
+    },
+    "mid": {
+      "price": 2499,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹2,499–₹4,999/mo"
+    },
+    "billing": "Monthly",
+    "market": "₹500–₹1,500/mo (small) · ₹1,500–₹5,000/mo (Pvt Ltd) · nil ₹200–₹500",
+    "notes": ""
+  },
+  "ASC-0140": {
+    "id": "ASC-0140",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹999 (ITR-4)"
+    },
+    "mid": {
+      "price": 4999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹4,999+ (ITR-5/6)"
+    },
+    "billing": "Per return",
+    "market": "₹500–₹2,000 (salaried) · ₹2,000–₹10,000 (business)",
+    "notes": ""
+  },
+  "ASC-0141": {
+    "id": "ASC-0141",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 199,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹199"
+    },
+    "mid": {
+      "price": 199,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹199"
+    },
+    "billing": "One-time",
+    "market": "₹300–₹800",
+    "notes": ""
+  },
+  "ASC-0142": {
+    "id": "ASC-0142",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 999,
+      "text": "",
+      "unit": "per quarter",
+      "detail": "₹999/qtr"
+    },
+    "mid": {
+      "price": 2499,
+      "text": "",
+      "unit": "per quarter",
+      "detail": "₹2,499/qtr"
+    },
+    "billing": "Per quarter",
+    "market": "₹1,000–₹3,000 per quarter",
+    "notes": ""
+  },
+  "ASC-0143": {
+    "id": "ASC-0143",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹999 + govt fee"
+    },
+    "mid": {
+      "price": 999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹999 + govt fee"
+    },
+    "billing": "One-time",
+    "market": "₹1,500–₹5,000",
+    "notes": "State-specific — not levied in every state"
+  },
+  "ASC-0144": {
+    "id": "ASC-0144",
+    "status": "soon",
+    "type": "fixed",
+    "small": {
+      "price": 499,
+      "text": "",
+      "unit": "per year",
+      "detail": "Fixed price ₹499 per year"
+    },
+    "mid": {
+      "price": 499,
+      "text": "",
+      "unit": "per year",
+      "detail": "Fixed price ₹499 per year"
+    },
+    "billing": "Yearly",
+    "market": "₹500–₹2,000",
+    "notes": ""
+  },
+  "ASC-0145": {
+    "id": "ASC-0145",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 499,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹499/mo"
+    },
+    "mid": {
+      "price": 1999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹1,999/mo"
+    },
+    "billing": "Monthly",
+    "market": "₹500–₹3,000/mo",
+    "notes": ""
+  },
+  "ASC-0146": {
+    "id": "ASC-0146",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 1999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹1,999/mo"
+    },
+    "mid": {
+      "price": 6999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹6,999–₹14,999/mo"
+    },
+    "billing": "Monthly",
+    "market": "₹1,500–₹5,000/mo (small) · ₹5k–₹25k/mo (mid)",
+    "notes": ""
+  },
+  "ASC-0147": {
+    "id": "ASC-0147",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 699,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹699"
+    },
+    "mid": {
+      "price": 699,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹699"
+    },
+    "billing": "One-time",
+    "market": "₹500–₹2,000",
+    "notes": ""
+  },
+  "ASC-0148": {
+    "id": "ASC-0148",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹999/mo"
+    },
+    "mid": {
+      "price": 3999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹3,999/mo"
+    },
+    "billing": "Monthly",
+    "market": "₹1,000–₹5,000/mo",
+    "notes": ""
+  },
+  "ASC-0149": {
+    "id": "ASC-0149",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 1999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹1,999 + govt fee"
+    },
+    "mid": {
+      "price": 1999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹1,999 + govt fee"
+    },
+    "billing": "One-time",
+    "market": "₹2,000–₹7,000 + govt fees",
+    "notes": ""
+  },
+  "ASC-0150": {
+    "id": "ASC-0150",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 1499,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹1,499 + govt fee"
+    },
+    "mid": {
+      "price": 1499,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹1,499 + govt fee"
+    },
+    "billing": "One-time",
+    "market": "₹1,500–₹5,000 + govt fees",
+    "notes": ""
+  },
+  "ASC-0151": {
+    "id": "ASC-0151",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 9999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "₹9,999 + govt fees"
+    },
+    "mid": {
+      "price": 24999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹24,999+"
+    },
+    "billing": "One-time",
+    "market": "₹10,000–₹50,000 (consulting)",
+    "notes": ""
+  },
+  "ASC-0152": {
+    "id": "ASC-0152",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 12999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "₹12,999 + govt fees"
+    },
+    "mid": {
+      "price": 29999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹29,999+"
+    },
+    "billing": "One-time",
+    "market": "₹10,000–₹60,000",
+    "notes": ""
+  },
+  "ASC-0153": {
+    "id": "ASC-0153",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 14999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "₹14,999 + govt fees"
+    },
+    "mid": {
+      "price": 34999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹34,999+"
+    },
+    "billing": "One-time",
+    "market": "₹15,000–₹60,000",
+    "notes": ""
+  },
+  "ASC-0154": {
+    "id": "ASC-0154",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 2999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "₹2,999 + govt fees"
+    },
+    "mid": {
+      "price": 5999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹5,999"
+    },
+    "billing": "One-time",
+    "market": "₹2,000–₹10,000",
+    "notes": ""
+  },
+  "ASC-0155": {
+    "id": "ASC-0155",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 2999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "₹2,999 + govt fees"
+    },
+    "mid": {
+      "price": 4999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹4,999"
+    },
+    "billing": "One-time",
+    "market": "₹2,000–₹8,000",
+    "notes": ""
+  },
+  "ASC-0156": {
+    "id": "ASC-0156",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 1499,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹1,499"
+    },
+    "mid": {
+      "price": 3999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹3,999"
+    },
+    "billing": "One-time",
+    "market": "₹1,000–₹5,000",
+    "notes": ""
+  },
+  "ASC-0157": {
+    "id": "ASC-0157",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 299,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹299"
+    },
+    "mid": {
+      "price": 299,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹299"
+    },
+    "billing": "One-time",
+    "market": "₹0–₹1,000",
+    "notes": ""
+  },
+  "ASC-0158": {
+    "id": "ASC-0158",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 1999,
+      "text": "",
+      "unit": "per class + govt fee",
+      "detail": "Fixed price ₹1,999 per class + govt fee"
+    },
+    "mid": {
+      "price": 1999,
+      "text": "",
+      "unit": "per class + govt fee",
+      "detail": "Fixed price ₹1,999 per class + govt fee"
+    },
+    "billing": "Per class",
+    "market": "₹2,999–₹6,000 professional + govt ₹4,500 (individual/MSME) or ₹9,000 (others)",
+    "notes": ""
+  },
+  "ASC-0159": {
+    "id": "ASC-0159",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 3999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹3,999"
+    },
+    "mid": {
+      "price": 6999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹6,999"
+    },
+    "billing": "One-time",
+    "market": "₹3,000–₹8,000",
+    "notes": ""
+  },
+  "ASC-0160": {
+    "id": "ASC-0160",
+    "status": "soon",
+    "type": "fixed",
+    "small": {
+      "price": 1999,
+      "text": "",
+      "unit": "per class + govt fee",
+      "detail": "Fixed price ₹1,999 per class + govt fee"
+    },
+    "mid": {
+      "price": 1999,
+      "text": "",
+      "unit": "per class + govt fee",
+      "detail": "Fixed price ₹1,999 per class + govt fee"
+    },
+    "billing": "One-time",
+    "market": "₹2,000–₹5,000 + govt fees",
+    "notes": ""
+  },
+  "ASC-0161": {
+    "id": "ASC-0161",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 2499,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹2,499 + govt fee"
+    },
+    "mid": {
+      "price": 2499,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹2,499 + govt fee"
+    },
+    "billing": "One-time",
+    "market": "₹3,000–₹8,000 + govt fees",
+    "notes": ""
+  },
+  "ASC-0162": {
+    "id": "ASC-0162",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 14999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹14,999 (provisional)"
+    },
+    "mid": {
+      "price": 49999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹49,999+"
+    },
+    "billing": "One-time",
+    "market": "₹15k–₹75k (provisional) · ₹50k–₹2L (complete) + govt",
+    "notes": ""
+  },
+  "ASC-0163": {
+    "id": "ASC-0163",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 6999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "₹6,999 + govt fee"
+    },
+    "mid": {
+      "price": 12999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "₹12,999 + govt fee"
+    },
+    "billing": "One-time",
+    "market": "₹6,000–₹15,000 + govt fees",
+    "notes": ""
+  },
+  "ASC-0164": {
+    "id": "ASC-0164",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 5999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹5,999"
+    },
+    "mid": {
+      "price": 9999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹9,999"
+    },
+    "billing": "One-time",
+    "market": "₹5,000–₹15,000",
+    "notes": ""
+  },
+  "ASC-0165": {
+    "id": "ASC-0165",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹999/mo (TM watch)"
+    },
+    "mid": {
+      "price": 5999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹5,999/mo"
+    },
+    "billing": "Monthly",
+    "market": "₹2,000–₹15,000/mo",
+    "notes": ""
+  },
+  "ASC-0166": {
+    "id": "ASC-0166",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 599,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹599 + govt fee"
+    },
+    "mid": {
+      "price": 599,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹599 + govt fee"
+    },
+    "billing": "One-time / yearly",
+    "market": "Prof ₹999–₹5,000 + govt ₹100/yr",
+    "notes": "Basic now covers turnover up to ₹1.5 Cr (from 1 Apr 2026)"
+  },
+  "ASC-0167": {
+    "id": "ASC-0167",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 2999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹2,999 + govt fee"
+    },
+    "mid": {
+      "price": 2999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹2,999 + govt fee"
+    },
+    "billing": "One-time / yearly",
+    "market": "Prof ₹3,000–₹10,000 + govt ₹2,000–₹5,000/yr",
+    "notes": "State licence: ₹1.5 Cr–₹50 Cr turnover"
+  },
+  "ASC-0168": {
+    "id": "ASC-0168",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 5999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹5,999 + govt fee"
+    },
+    "mid": {
+      "price": 5999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹5,999 + govt fee"
+    },
+    "billing": "One-time / yearly",
+    "market": "Prof ₹7,000–₹20,000 + govt ₹7,500/yr",
+    "notes": "Central: above ₹50 Cr / import-export / multi-state"
+  },
+  "ASC-0169": {
+    "id": "ASC-0169",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 599,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹599 + govt fee"
+    },
+    "mid": {
+      "price": 599,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹599 + govt fee"
+    },
+    "billing": "Yearly",
+    "market": "₹999–₹4,000",
+    "notes": ""
+  },
+  "ASC-0170": {
+    "id": "ASC-0170",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 799,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹799"
+    },
+    "mid": {
+      "price": 799,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹799"
+    },
+    "billing": "One-time",
+    "market": "₹1,000–₹4,000",
+    "notes": ""
+  },
+  "ASC-0171": {
+    "id": "ASC-0171",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 999,
+      "text": "",
+      "unit": "per year",
+      "detail": "Fixed price ₹999 per year"
+    },
+    "mid": {
+      "price": 999,
+      "text": "",
+      "unit": "per year",
+      "detail": "Fixed price ₹999 per year"
+    },
+    "billing": "Yearly",
+    "market": "₹1,000–₹5,000",
+    "notes": ""
+  },
+  "ASC-0172": {
+    "id": "ASC-0172",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 299,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹299"
+    },
+    "mid": {
+      "price": 299,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹299"
+    },
+    "billing": "One-time",
+    "market": "₹500–₹3,000",
+    "notes": ""
+  },
+  "ASC-0173": {
+    "id": "ASC-0173",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 999,
+      "text": "",
+      "unit": "per person",
+      "detail": "₹999/person"
+    },
+    "mid": {
+      "price": 799,
+      "text": "",
+      "unit": "per person",
+      "detail": "₹799/person (batch)"
+    },
+    "billing": "Per person",
+    "market": "₹1,000–₹3,000 per person",
+    "notes": ""
+  },
+  "ASC-0174": {
+    "id": "ASC-0174",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 1999,
+      "text": "",
+      "unit": "one-time + lab fee",
+      "detail": "₹1,999 + lab fee"
+    },
+    "mid": {
+      "price": 4999,
+      "text": "",
+      "unit": "one-time + lab fee",
+      "detail": "₹4,999 + lab fee"
+    },
+    "billing": "Per test",
+    "market": "₹2,000–₹15,000 + lab fee",
+    "notes": ""
+  },
+  "ASC-0175": {
+    "id": "ASC-0175",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 1999,
+      "text": "",
+      "unit": "per SKU",
+      "detail": "Fixed price ₹1,999 per SKU"
+    },
+    "mid": {
+      "price": 1999,
+      "text": "",
+      "unit": "per SKU",
+      "detail": "Fixed price ₹1,999 per SKU"
+    },
+    "billing": "Per SKU",
+    "market": "₹3,000–₹15,000 per SKU",
+    "notes": ""
+  },
+  "ASC-0176": {
+    "id": "ASC-0176",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 1999,
+      "text": "",
+      "unit": "one-time + lab fee",
+      "detail": "₹1,999 + lab fee"
+    },
+    "mid": {
+      "price": 4999,
+      "text": "",
+      "unit": "one-time + lab fee",
+      "detail": "₹4,999 + lab fee"
+    },
+    "billing": "Per SKU",
+    "market": "₹2,000–₹10,000 + lab fee",
+    "notes": ""
+  },
+  "ASC-0177": {
+    "id": "ASC-0177",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹999"
+    },
+    "mid": {
+      "price": 999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹999"
+    },
+    "billing": "One-time",
+    "market": "₹1,000–₹5,000",
+    "notes": ""
+  },
+  "ASC-0178": {
+    "id": "ASC-0178",
+    "status": "soon",
+    "type": "fixed",
+    "small": {
+      "price": 999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹999 + govt fee"
+    },
+    "mid": {
+      "price": 999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹999 + govt fee"
+    },
+    "billing": "One-time",
+    "market": "Prof ₹1,000–₹3,000 + govt ₹500",
+    "notes": ""
+  },
+  "ASC-0179": {
+    "id": "ASC-0179",
+    "status": "soon",
+    "type": "fixed",
+    "small": {
+      "price": 2999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹2,999 + govt fee"
+    },
+    "mid": {
+      "price": 2999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹2,999 + govt fee"
+    },
+    "billing": "One-time",
+    "market": "₹3,000–₹10,000 + govt fees",
+    "notes": ""
+  },
+  "ASC-0180": {
+    "id": "ASC-0180",
+    "status": "soon",
+    "type": "fixed",
+    "small": {
+      "price": 2999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹2,999 + govt fee"
+    },
+    "mid": {
+      "price": 2999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹2,999 + govt fee"
+    },
+    "billing": "One-time",
+    "market": "₹3,000–₹10,000 + govt fees",
+    "notes": ""
+  },
+  "ASC-0181": {
+    "id": "ASC-0181",
+    "status": "soon",
+    "type": "fixed",
+    "small": {
+      "price": 1999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹1,999"
+    },
+    "mid": {
+      "price": 1999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹1,999"
+    },
+    "billing": "One-time",
+    "market": "₹2,000–₹6,000",
+    "notes": ""
+  },
+  "ASC-0182": {
+    "id": "ASC-0182",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 1499,
+      "text": "",
+      "unit": "per shipment",
+      "detail": "₹1,499/shipment"
+    },
+    "mid": {
+      "price": 3999,
+      "text": "",
+      "unit": "per shipment",
+      "detail": "₹3,999/shipment"
+    },
+    "billing": "Per shipment",
+    "market": "₹1,000–₹5,000 per shipment",
+    "notes": ""
+  },
+  "ASC-0183": {
+    "id": "ASC-0183",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 1499,
+      "text": "",
+      "unit": "per shipment",
+      "detail": "₹1,499/shipment"
+    },
+    "mid": {
+      "price": 3999,
+      "text": "",
+      "unit": "per shipment",
+      "detail": "₹3,999/shipment"
+    },
+    "billing": "Per shipment",
+    "market": "₹1,000–₹5,000 per shipment",
+    "notes": ""
+  },
+  "ASC-0184": {
+    "id": "ASC-0184",
+    "status": "soon",
+    "type": "fixed",
+    "small": {
+      "price": 1499,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹1,499"
+    },
+    "mid": {
+      "price": 1499,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹1,499"
+    },
+    "billing": "One-time",
+    "market": "₹1,000–₹4,500",
+    "notes": ""
+  },
+  "ASC-0185": {
+    "id": "ASC-0185",
+    "status": "soon",
+    "type": "fixed",
+    "small": {
+      "price": 1499,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹1,499"
+    },
+    "mid": {
+      "price": 1499,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹1,499"
+    },
+    "billing": "One-time",
+    "market": "₹1,000–₹4,000 (govt fee ₹0)",
+    "notes": ""
+  },
+  "ASC-0186": {
+    "id": "ASC-0186",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 3999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "₹3,999 + govt fees"
+    },
+    "mid": {
+      "price": 9999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "₹9,999 + govt fees"
+    },
+    "billing": "One-time",
+    "market": "₹3,000–₹15,000",
+    "notes": ""
+  },
+  "ASC-0187": {
+    "id": "ASC-0187",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹4,999"
+    },
+    "mid": {
+      "price": 9999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹9,999"
+    },
+    "billing": "One-time",
+    "market": "₹5,000–₹15,000",
+    "notes": ""
+  },
+  "ASC-0188": {
+    "id": "ASC-0188",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 1499,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹1,499/mo (up to 10 staff)"
+    },
+    "mid": {
+      "price": 99,
+      "text": "",
+      "unit": "per employee / month",
+      "detail": "₹99/employee/mo"
+    },
+    "billing": "Monthly",
+    "market": "₹500–₹1,000 per return/mo · ₹50–₹150 per employee",
+    "notes": ""
+  },
+  "ASC-0189": {
+    "id": "ASC-0189",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 9999,
+      "text": "",
+      "unit": "per year",
+      "detail": "₹9,999 (policy + IC setup)"
+    },
+    "mid": {
+      "price": 34999,
+      "text": "",
+      "unit": "per year",
+      "detail": "₹34,999–₹74,999 (with training)"
+    },
+    "billing": "Yearly",
+    "market": "₹10,000–₹75,000",
+    "notes": ""
+  },
+  "ASC-0190": {
+    "id": "ASC-0190",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 2999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹2,999"
+    },
+    "mid": {
+      "price": 14999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹14,999"
+    },
+    "billing": "Project",
+    "market": "₹3,000–₹25,000",
+    "notes": ""
+  },
+  "ASC-0191": {
+    "id": "ASC-0191",
+    "status": "soon",
+    "type": "fixed",
+    "small": {
+      "price": 1999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹1,999"
+    },
+    "mid": {
+      "price": 1999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹1,999"
+    },
+    "billing": "One-time",
+    "market": "₹2,000–₹10,000",
+    "notes": ""
+  },
+  "ASC-0192": {
+    "id": "ASC-0192",
+    "status": "soon",
+    "type": "fixed",
+    "small": {
+      "price": 3999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹3,999 + govt fee"
+    },
+    "mid": {
+      "price": 3999,
+      "text": "",
+      "unit": "one-time + govt fee",
+      "detail": "Fixed price ₹3,999 + govt fee"
+    },
+    "billing": "One-time",
+    "market": "₹3,000–₹15,000 + govt fees",
+    "notes": ""
+  },
+  "ASC-0193": {
+    "id": "ASC-0193",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 14999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹14,999 + certification body fee"
+    },
+    "mid": {
+      "price": 39999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹39,999–₹99,999"
+    },
+    "billing": "One-time + yearly",
+    "market": "₹15,000–₹1,50,000 (by company size, incl. audit)",
+    "notes": "MSME subsidy may apply"
+  },
+  "ASC-0194": {
+    "id": "ASC-0194",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 24999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "From ₹24,999"
+    },
+    "mid": {
+      "price": 74999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹74,999+"
+    },
+    "billing": "One-time",
+    "market": "₹25,000–₹2,00,000",
+    "notes": ""
+  },
+  "ASC-0195": {
+    "id": "ASC-0195",
+    "status": "soon",
+    "type": "fixed",
+    "small": {
+      "price": 3999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹3,999"
+    },
+    "mid": {
+      "price": 3999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹3,999"
+    },
+    "billing": "One-time",
+    "market": "₹3,000–₹15,000",
+    "notes": ""
+  },
+  "ASC-0196": {
+    "id": "ASC-0196",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 1999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹1,999"
+    },
+    "mid": {
+      "price": 1999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "Fixed price ₹1,999"
+    },
+    "billing": "One-time / success fee",
+    "market": "₹2,000–₹25,000 or 1–3% success fee",
+    "notes": ""
+  },
+  "ASC-0197": {
+    "id": "ASC-0197",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹4,999"
+    },
+    "mid": {
+      "price": 19999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹19,999"
+    },
+    "billing": "One-time",
+    "market": "₹5,000–₹50,000",
+    "notes": ""
+  },
+  "ASC-0198": {
+    "id": "ASC-0198",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 9999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹9,999 (agent)"
+    },
+    "mid": {
+      "price": 49999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹49,999+ (project)"
+    },
+    "billing": "One-time",
+    "market": "₹10,000–₹75,000",
+    "notes": ""
+  },
+  "ASC-0199": {
+    "id": "ASC-0199",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 9999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹9,999"
+    },
+    "mid": {
+      "price": 24999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹24,999"
+    },
+    "billing": "One-time",
+    "market": "₹10,000–₹40,000",
+    "notes": ""
+  },
+  "ASC-0200": {
+    "id": "ASC-0200",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 7999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹7,999"
+    },
+    "mid": {
+      "price": 19999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹19,999"
+    },
+    "billing": "One-time",
+    "market": "₹5,000–₹30,000",
+    "notes": ""
+  },
+  "ASC-0201": {
+    "id": "ASC-0201",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 19999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "From ₹19,999"
+    },
+    "mid": {
+      "price": 100000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹1,00,000–₹5,00,000"
+    },
+    "billing": "Project",
+    "market": "₹25,000–₹5,00,000",
+    "notes": ""
+  },
+  "ASC-0202": {
+    "id": "ASC-0202",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 2999,
+      "text": "",
+      "unit": "per server / month",
+      "detail": "₹2,999/server/mo"
+    },
+    "mid": {
+      "price": 7999,
+      "text": "",
+      "unit": "per server / month",
+      "detail": "₹7,999/server/mo"
+    },
+    "billing": "Monthly per server",
+    "market": "₹2,000–₹10,000 per server/mo",
+    "notes": ""
+  },
+  "ASC-0203": {
+    "id": "ASC-0203",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹999/mo"
+    },
+    "mid": {
+      "price": 5999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹5,999/mo"
+    },
+    "billing": "Monthly",
+    "market": "₹1,000–₹10,000/mo",
+    "notes": ""
+  },
+  "ASC-0204": {
+    "id": "ASC-0204",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹4,999/mo"
+    },
+    "mid": {
+      "price": 24999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹24,999–₹59,999/mo"
+    },
+    "billing": "Monthly",
+    "market": "₹5,000–₹50,000/mo",
+    "notes": ""
+  },
+  "ASC-0205": {
+    "id": "ASC-0205",
+    "status": "open",
+    "type": "fixed",
+    "small": {
+      "price": 999,
+      "text": "",
+      "unit": "one-time (up to 10 users)",
+      "detail": "Fixed price ₹999 (up to 10 users)"
+    },
+    "mid": {
+      "price": 999,
+      "text": "",
+      "unit": "one-time (up to 10 users)",
+      "detail": "Fixed price ₹999 (up to 10 users)"
+    },
+    "billing": "One-time",
+    "market": "₹1,000–₹10,000 + licences",
+    "notes": "Email licences at actuals"
+  },
+  "ASC-0206": {
+    "id": "ASC-0206",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 3999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹3,999"
+    },
+    "mid": {
+      "price": 14999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹14,999–₹39,999"
+    },
+    "billing": "One-time",
+    "market": "₹5,000–₹50,000",
+    "notes": "Licences at actuals"
+  },
+  "ASC-0207": {
+    "id": "ASC-0207",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 3999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹3,999"
+    },
+    "mid": {
+      "price": 14999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹14,999–₹39,999"
+    },
+    "billing": "One-time",
+    "market": "₹5,000–₹50,000",
+    "notes": "Licences at actuals"
+  },
+  "ASC-0208": {
+    "id": "ASC-0208",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 7999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹7,999 + hardware"
+    },
+    "mid": {
+      "price": 39999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹39,999+"
+    },
+    "billing": "One-time",
+    "market": "₹10,000–₹1,00,000",
+    "notes": ""
+  },
+  "ASC-0209": {
+    "id": "ASC-0209",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹999/mo (up to 5 devices)"
+    },
+    "mid": {
+      "price": 17999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹17,999–₹39,999/mo (managed IT)"
+    },
+    "billing": "Yearly AMC / monthly",
+    "market": "₹8k–₹25k/yr (5–10 systems) · ₹3,500–₹6,500 per device/yr",
+    "notes": ""
+  },
+  "ASC-0210": {
+    "id": "ASC-0210",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "per hire (flat)",
+      "detail": "₹4,999 flat or 5% of CTC"
+    },
+    "mid": {
+      "price": null,
+      "text": "8.33% of annual CTC",
+      "unit": "per hire",
+      "detail": "8.33% of CTC"
+    },
+    "billing": "Per hire",
+    "market": "Typically 8.33% of annual CTC (range 5–15%)",
+    "notes": ""
+  },
+  "ASC-0211": {
+    "id": "ASC-0211",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 2999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹2,999/mo"
+    },
+    "mid": {
+      "price": 9999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹9,999/mo"
+    },
+    "billing": "Monthly",
+    "market": "₹3,000–₹15,000/mo",
+    "notes": "Job portal subscription extra"
+  },
+  "ASC-0212": {
+    "id": "ASC-0212",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 1999,
+      "text": "",
+      "unit": "per role",
+      "detail": "₹1,999/role (up to 100 CVs, AI)"
+    },
+    "mid": {
+      "price": 4999,
+      "text": "",
+      "unit": "per role",
+      "detail": "₹4,999/role"
+    },
+    "billing": "Per role",
+    "market": "₹50–₹200 per profile",
+    "notes": ""
+  },
+  "ASC-0213": {
+    "id": "ASC-0213",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 7999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹7,999"
+    },
+    "mid": {
+      "price": 24999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹24,999"
+    },
+    "billing": "Per campaign",
+    "market": "₹10,000–₹50,000",
+    "notes": "LinkedIn ad spend extra"
+  },
+  "ASC-0214": {
+    "id": "ASC-0214",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 1999,
+      "text": "",
+      "unit": "one-time setup",
+      "detail": "₹1,999 setup"
+    },
+    "mid": {
+      "price": 9999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹9,999"
+    },
+    "billing": "Setup",
+    "market": "₹2,000–₹20,000",
+    "notes": ""
+  },
+  "ASC-0215": {
+    "id": "ASC-0215",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 14999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹14,999"
+    },
+    "mid": {
+      "price": 60000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹60,000–₹2,00,000"
+    },
+    "billing": "Project",
+    "market": "₹20,000–₹2,00,000",
+    "notes": "HRMS licence extra"
+  },
+  "ASC-0216": {
+    "id": "ASC-0216",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 9999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹9,999/session"
+    },
+    "mid": {
+      "price": 39999,
+      "text": "",
+      "unit": "per day",
+      "detail": "₹39,999/day"
+    },
+    "billing": "Per session / day",
+    "market": "₹15,000–₹1,00,000 per day",
+    "notes": ""
+  },
+  "ASC-0217": {
+    "id": "ASC-0217",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 499,
+      "text": "",
+      "unit": "per participant",
+      "detail": "₹499/participant"
+    },
+    "mid": {
+      "price": 39999,
+      "text": "",
+      "unit": "per day",
+      "detail": "₹39,999/day"
+    },
+    "billing": "Per participant / day",
+    "market": "₹500–₹3,000 per participant · ₹20k–₹75k/day",
+    "notes": ""
+  },
+  "ASC-0218": {
+    "id": "ASC-0218",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 999,
+      "text": "",
+      "unit": "per participant",
+      "detail": "₹999/participant"
+    },
+    "mid": {
+      "price": 39999,
+      "text": "",
+      "unit": "per day",
+      "detail": "₹39,999/day"
+    },
+    "billing": "Per participant / day",
+    "market": "₹500–₹3,000 per participant · ₹20k–₹75k/day",
+    "notes": ""
+  },
+  "ASC-0219": {
+    "id": "ASC-0219",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 999,
+      "text": "",
+      "unit": "per participant",
+      "detail": "₹999/participant"
+    },
+    "mid": {
+      "price": 49999,
+      "text": "",
+      "unit": "per day",
+      "detail": "₹49,999/day"
+    },
+    "billing": "Per participant / day",
+    "market": "₹500–₹3,000 per participant · ₹25k–₹1L/day",
+    "notes": ""
+  },
+  "ASC-0220": {
+    "id": "ASC-0220",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 14999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹14,999/session"
+    },
+    "mid": {
+      "price": 59999,
+      "text": "",
+      "unit": "per day",
+      "detail": "₹59,999/day"
+    },
+    "billing": "Per session / day",
+    "market": "₹20,000–₹1,00,000 per day",
+    "notes": ""
+  },
+  "ASC-0221": {
+    "id": "ASC-0221",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 499,
+      "text": "",
+      "unit": "per participant",
+      "detail": "₹499/participant (colleges)"
+    },
+    "mid": {
+      "price": 39999,
+      "text": "",
+      "unit": "per day",
+      "detail": "₹39,999/day"
+    },
+    "billing": "Per participant / day",
+    "market": "₹500–₹3,000 per participant",
+    "notes": ""
+  },
+  "ASC-0222": {
+    "id": "ASC-0222",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 9999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹9,999"
+    },
+    "mid": {
+      "price": 34999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹34,999"
+    },
+    "billing": "One-time",
+    "market": "₹10,000–₹75,000",
+    "notes": ""
+  },
+  "ASC-0223": {
+    "id": "ASC-0223",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 9999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹9,999 (desk research)"
+    },
+    "mid": {
+      "price": 49999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹49,999–₹1,49,999"
+    },
+    "billing": "One-time",
+    "market": "₹15,000–₹2,00,000",
+    "notes": ""
+  },
+  "ASC-0224": {
+    "id": "ASC-0224",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹4,999"
+    },
+    "mid": {
+      "price": 24999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹24,999"
+    },
+    "billing": "One-time",
+    "market": "₹5,000–₹50,000",
+    "notes": ""
+  },
+  "ASC-0225": {
+    "id": "ASC-0225",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 14999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹14,999"
+    },
+    "mid": {
+      "price": 74999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹74,999"
+    },
+    "billing": "One-time",
+    "market": "₹25,000–₹2,00,000",
+    "notes": ""
+  },
+  "ASC-0226": {
+    "id": "ASC-0226",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 9999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹9,999"
+    },
+    "mid": {
+      "price": 29999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹29,999"
+    },
+    "billing": "One-time",
+    "market": "₹10,000–₹50,000",
+    "notes": ""
+  },
+  "ASC-0227": {
+    "id": "ASC-0227",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 14999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹14,999 (digital audit)"
+    },
+    "mid": {
+      "price": 100000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹1,00,000–₹5,00,000"
+    },
+    "billing": "Project / hourly",
+    "market": "₹25,000–₹5,00,000 or ₹2,000–₹8,000/hr",
+    "notes": ""
+  },
+  "ASC-0228": {
+    "id": "ASC-0228",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": 14999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹14,999"
+    },
+    "mid": {
+      "price": 74999,
+      "text": "",
+      "unit": "one-time",
+      "detail": "₹74,999"
+    },
+    "billing": "One-time",
+    "market": "₹20,000–₹2,00,000",
+    "notes": ""
+  },
+  "ASC-0229": {
+    "id": "ASC-0229",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": null,
+      "text": "N/A (enterprise only)",
+      "unit": "—",
+      "detail": "Not for SMB tier"
+    },
+    "mid": {
+      "price": 500000,
+      "text": "",
+      "unit": "per project",
+      "detail": "From ₹5,00,000"
+    },
+    "billing": "Project",
+    "market": "₹5,00,000–₹50,00,000+",
+    "notes": ""
+  },
+  "ASC-0230": {
+    "id": "ASC-0230",
+    "status": "open",
+    "type": "package",
+    "small": {
+      "price": 9999,
+      "text": "",
+      "unit": "Starter package (5 packages)",
+      "detail": "5 packages from ₹9,999 (see Development Packages tab)"
+    },
+    "mid": {
+      "price": 79999,
+      "text": "",
+      "unit": "Premium package; custom work on quote",
+      "detail": "Premium package ₹79,999; anything more is a custom quote from the support team"
+    },
+    "billing": "One-time project",
+    "market": "₹50,000–₹3,00,000",
+    "notes": "",
+    "packages": [
+      {
+        "key": "starter",
+        "name": "Starter",
+        "price": 9999,
+        "includes": "Up to 8 pages company profile site",
+        "delivery": "1 week",
+        "notes": "Domain + hosting extra"
+      },
+      {
+        "key": "basic",
+        "name": "Basic",
+        "price": 17999,
+        "includes": "Up to 15 pages, CMS, careers page",
+        "delivery": "2 weeks",
+        "notes": ""
+      },
+      {
+        "key": "business",
+        "name": "Business",
+        "price": 29999,
+        "includes": "Up to 25 pages, custom design, blog, SEO setup",
+        "delivery": "3 weeks",
+        "notes": ""
+      },
+      {
+        "key": "professional",
+        "name": "Professional",
+        "price": 49999,
+        "includes": "Multilingual, investor/CSR sections, integrations",
+        "delivery": "4–5 weeks",
+        "notes": ""
+      },
+      {
+        "key": "premium",
+        "name": "Premium",
+        "price": 79999,
+        "includes": "Enterprise site, headless CMS, security hardening, 12 months support",
+        "delivery": "6–8 weeks",
+        "notes": ""
+      },
+      {
+        "key": "custom",
+        "name": "Custom",
+        "price": null,
+        "includes": "Need more than the Premium package? Our team will scope extra features and quote a price.",
+        "delivery": "On quote",
+        "notes": ""
+      }
+    ]
+  },
+  "ASC-0231": {
+    "id": "ASC-0231",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 4999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹4,999/mo"
+    },
+    "mid": {
+      "price": 19999,
+      "text": "",
+      "unit": "per month",
+      "detail": "₹19,999–₹49,999/mo"
+    },
+    "billing": "Monthly",
+    "market": "₹15,000–₹65,000/mo (managed IT)",
+    "notes": ""
+  },
+  "ASC-0232": {
+    "id": "ASC-0232",
+    "status": "soon",
+    "type": "starting",
+    "small": {
+      "price": null,
+      "text": "N/A (enterprise only)",
+      "unit": "—",
+      "detail": "Not for SMB tier"
+    },
+    "mid": {
+      "price": 500000,
+      "text": "",
+      "unit": "per project",
+      "detail": "From ₹5,00,000"
+    },
+    "billing": "Project",
+    "market": "₹3,00,000–₹50,00,000",
+    "notes": ""
+  }
+}
