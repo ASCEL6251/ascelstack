@@ -143,5 +143,6 @@ The website is a static site with real-time 3D and scroll-driven motion.
 
 - **Prices** come from `SSTech_Price_List_v2.xlsx`. Export the *Price List* tab to `data/pricing.csv` and the *Development Packages* tab to `data/packages.csv`, then run `npm run data` to regenerate `src/data/pricing.json`. Internal sales notes and competitor names are filtered out because that file ships to the browser.
 - **Cart / estimate** (`/cart`): any service card can be added; package services open a 5-package picker. Totals split into one-time / monthly / yearly, with 18% GST, for small or mid-size pricing. Stored in `localStorage` (`src/lib/cart.ts`).
-- **Accounts** (`/sign-up`, `/sign-in`, `/account`): mock only (`src/lib/auth.ts`), no passwords stored. To be replaced by Clerk.
+- **Accounts** (`/sign-up`, `/sign-in`, `/account`): mock only (`src/lib/auth.ts`), no passwords stored or checked. To be replaced by Clerk.
+- **Demo account**: sign in with `demo@ascelstack.test` and any password. It is created automatically in every browser.
 - **Backend**: `src/lib/api.ts` fakes the API with `localStorage`. `db/schema.sql` is a draft Neon schema for later.

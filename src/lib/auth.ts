@@ -36,6 +36,21 @@ const write = (k: string, v: unknown) => {
 const emit = () => window.dispatchEvent(new CustomEvent(AUTH_EVENT));
 const norm = (e: string) => e.trim().toLowerCase();
 
+/** Demo account present in every browser so the flow can be tested without signing up. */
+export const DEMO_USER: User = {
+  id: 'usr_demo',
+  name: 'Demo Customer',
+  email: 'demo@ascelstack.test',
+  phone: '+91 90000 00000',
+  company: 'Demo Cafe Pvt Ltd',
+  createdAt: 0,
+};
+(() => {
+  if (typeof localStorage === 'undefined') return;
+  const users = read<User[]>(USERS, []);
+  if (!users.some((u) => u.id === DEMO_USER.id)) write(USERS, [...users, DEMO_USER]);
+})();
+
 export function getUser(): User | null {
   const id = read<string | null>(SESSION, null);
   if (!id) return null;
