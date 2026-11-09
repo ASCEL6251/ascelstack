@@ -212,7 +212,7 @@ import { showcase } from '../../data/workflows';
   const addLog = (name: string) => {
     const li = document.createElement('li');
     const ms = 8 + Math.round(Math.random() * 140);
-    li.innerHTML = `<span class="ok">✓</span><span>${stamp()}</span><span class="name"></span><span class="ms">${ms} ms</span>`;
+    li.innerHTML = `<span class="ok"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span><span>${stamp()}</span><span class="name"></span><span class="ms">${ms} ms</span>`;
     li.querySelector('.name')!.textContent = name;
     log.appendChild(li);
     gsap.from(li, { autoAlpha: 0, y: 6, duration: 0.4, ease: 'power3.out' });

@@ -6,3 +6,5 @@ dist/
 .env
 .env.local
 .neon
+.claude/
+skills-lock.json

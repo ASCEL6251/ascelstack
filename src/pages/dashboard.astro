@@ -54,7 +54,7 @@ const customerRequests = await db
   .where(eq(serviceRequests.userId, user.id))
   .orderBy(desc(serviceRequests.requestedAt));
 
-// 4. Fetch all catalog services for exploration
+// 4. Fetch all catalog services for exploration and the estimation planner
 const allServices = await db
   .select()
   .from(services)
@@ -98,6 +98,7 @@ const initialData = {
   },
   requests: customerRequests,
   activities: recentActivities,
+  allServices,
   stats: {
     total: totalServicesCount,
     active: activeServicesCount,
@@ -113,7 +114,7 @@ const initialData = {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Customer Dashboard · Ascelstack</title>
-    <meta name="description" content="Manage your Ascelstack services, business profile, and requests." />
+    <meta name="description" content="Manage your Ascelstack services, project estimation planner, business profile, and requests." />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -123,14 +124,23 @@ const initialData = {
     />
   </head>
   <body class="dash-body">
+    <!-- Blueprint grid background canvas overlay -->
+    <div class="dash-bg-canvas" aria-hidden="true"></div>
+
     <div class="dash-layout">
-      <!-- Sidebar Navigation -->
+      <!-- ============================================================== -->
+      <!-- LEFT SIDE DASHBOARD / SIDEBAR NAVIGATION -->
+      <!-- ============================================================== -->
       <aside class="dash-sidebar" data-sidebar>
         <div class="sidebar-top">
-          <a href="/" class="sidebar-logo" aria-label="Ascelstack home">
+          <a href="/" class="sidebar-logo" aria-label="Ascelstack home" title="Ascelstack Home">
             <Logo tone="light" size={26} />
           </a>
-          <button class="sidebar-close-btn" data-close-sidebar aria-label="Close sidebar">✕</button>
+          <button class="sidebar-close-btn" data-close-sidebar aria-label="Close sidebar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
         </div>
 
         <div class="sidebar-biz-badge">
@@ -147,12 +157,12 @@ const initialData = {
             <span>Overview</span>
           </button>
 
-          <button class="nav-item" data-tab="business">
+          <button class="nav-item nav-item-highlight" data-tab="planner">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 21h18" /><path d="M5 21V7l8-4v18" /><path d="M19 21V11l-6-4" />
-              <path d="M9 9v.01" /><path d="M9 12v.01" /><path d="M9 15v.01" /><path d="M9 18v.01" />
+              <path d="M12 2v20" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
             </svg>
-            <span>My Business</span>
+            <span>Estimation Planner</span>
+            <span class="pill-chip-new">AI</span>
           </button>
 
           <button class="nav-item" data-tab="my-services">
@@ -171,11 +181,12 @@ const initialData = {
             <span class="badge-pill badge-accent">232</span>
           </button>
 
-          <button class="nav-item" data-tab="projects">
+          <button class="nav-item" data-tab="business">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2v20" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+              <path d="M3 21h18" /><path d="M5 21V7l8-4v18" /><path d="M19 21V11l-6-4" />
+              <path d="M9 9v.01" /><path d="M9 12v.01" /><path d="M9 15v.01" /><path d="M9 18v.01" />
             </svg>
-            <span>Projects</span>
+            <span>My Business</span>
           </button>
 
           <button class="nav-item" data-tab="support">
@@ -188,33 +199,38 @@ const initialData = {
 
           <button class="nav-item" data-tab="settings">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
               <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
             </svg>
             <span>Settings</span>
           </button>
         </nav>
 
+        <!-- Left bottom corner: Logout option with Stay / Logout confirmation dialog -->
         <div class="sidebar-footer">
-          <SignOutButton redirectUrl="/login">
-            <button class="nav-item nav-logout" type="button">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" />
-                <line x1="21" x2="9" y1="12" y2="12" />
-              </svg>
-              <span>Logout</span>
-            </button>
-          </SignOutButton>
+          <button class="nav-item nav-logout" type="button" data-action="open-logout-modal" aria-label="Sign out">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" />
+              <line x1="21" x2="9" y1="12" y2="12" />
+            </svg>
+            <span>Logout</span>
+          </button>
         </div>
       </aside>
 
-      <!-- Main Dashboard Content Container -->
+      <!-- ============================================================== -->
+      <!-- MAIN CONTAINER: TOPBAR & DYNAMIC CONTENT -->
+      <!-- ============================================================== -->
       <div class="dash-main-container">
-        <!-- Top App Bar -->
+        <!-- Top App Bar (without 'sync with neon' sentence) -->
         <header class="dash-topbar">
           <div class="topbar-left">
             <button class="topbar-toggle-btn" data-open-sidebar aria-label="Open sidebar menu">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
             </button>
             <div class="dash-breadcrumbs">
               <span class="mono bread-root">Ascelstack</span>
@@ -224,22 +240,21 @@ const initialData = {
           </div>
 
           <div class="topbar-right">
-            <!-- Sync Status Indicator -->
-            <div class="sync-indicator" title="Connected to Neon PostgreSQL">
-              <span class="sync-dot"></span>
-              <span class="mono sync-label">Synced</span>
-            </div>
+            <!-- Return to Website Link -->
+            <a href="/" class="btn-text-link mono" title="Return to public website">
+              <span>← Site</span>
+            </a>
 
             <!-- Notifications Trigger -->
-            <button class="topbar-icon-btn" data-open-notifications aria-label="View notifications">
+            <button class="topbar-icon-btn" data-open-notifications aria-label="View activity logs" title="Activity Feed">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
               </svg>
-              <span class="notif-badge" data-bind-notif-count>{recentActivities.length > 0 ? recentActivities.length : ''}</span>
+              {recentActivities.length > 0 && <span class="notif-badge">{recentActivities.length}</span>}
             </button>
 
-            <!-- Clerk User Button for Profile & Account Settings -->
-            <div class="clerk-user-slot" title="Clerk Account">
+            <!-- Clerk User Profile Button -->
+            <div class="clerk-user-slot" title="Clerk Profile">
               <UserButton afterSignOutUrl="/login" />
             </div>
           </div>
@@ -247,18 +262,25 @@ const initialData = {
 
         <!-- Dynamic Views Area -->
         <main class="dash-content">
+          <!-- ============================================================== -->
           <!-- VIEW 1: OVERVIEW -->
+          <!-- ============================================================== -->
           <section class="dash-view is-active" id="view-overview" data-view="overview">
+            <!-- Hero Welcome Card styled with Bacasime Antique -->
             <div class="dash-welcome-card">
-              <div class="welcome-text">
-                <span class="eyebrow">Client Portal · Neon DB Connected</span>
+              <div class="welcome-copy">
+                <p class="eyebrow">Client Portal · Active Business</p>
                 <h1 class="display welcome-title">Welcome back, <em data-bind-user-name>{user.fullName || 'Partner'}</em></h1>
                 <p class="welcome-desc">
-                  Managing operations for <strong data-bind-biz-name>{defaultBusinessName}</strong>. All requests and scopes are synchronized with your dedicated team.
+                  Managing operations for <strong data-bind-biz-name>{defaultBusinessName}</strong>. All requests, scopes, and estimates are synchronized with your dedicated team.
                 </p>
               </div>
               <div class="welcome-actions">
-                <button class="btn btn-primary" data-action="go-explore">
+                <button class="btn btn-primary" data-action="go-planner">
+                  <span>Project Estimation Planner</span>
+                  <span class="arrow">→</span>
+                </button>
+                <button class="btn btn-ghost" data-action="go-explore">
                   <span>+ Explore Services</span>
                   <span class="arrow">→</span>
                 </button>
@@ -268,53 +290,96 @@ const initialData = {
               </div>
             </div>
 
-            <!-- Real Database Metrics Grid -->
+            <!-- 4 Metrics Grid with large Bacasime display typography -->
             <div class="metrics-grid">
-              <div class="metric-card">
-                <span class="mono metric-label">TOTAL REQUESTED</span>
+              <div class="metric-card metric-card--total">
+                <div class="metric-meta">
+                  <span class="mono metric-label">TOTAL REQUESTED</span>
+                  <span class="metric-dot"></span>
+                </div>
                 <div class="metric-value" data-bind-total>{totalServicesCount}</div>
                 <span class="metric-hint">Across all 3 layers</span>
               </div>
-              <div class="metric-card">
-                <span class="mono metric-label">ACTIVE SERVICES</span>
+
+              <div class="metric-card metric-card--active">
+                <div class="metric-meta">
+                  <span class="mono metric-label">ACTIVE SERVICES</span>
+                  <span class="metric-dot dot-accent"></span>
+                </div>
                 <div class="metric-value text-accent" data-bind-active>{activeServicesCount}</div>
                 <span class="metric-hint">In active execution</span>
               </div>
-              <div class="metric-card">
-                <span class="mono metric-label">PENDING / REVIEW</span>
+
+              <div class="metric-card metric-card--pending">
+                <div class="metric-meta">
+                  <span class="mono metric-label">PENDING / REVIEW</span>
+                  <span class="metric-dot dot-warn"></span>
+                </div>
                 <div class="metric-value text-warn" data-bind-pending>{pendingServicesCount}</div>
                 <span class="metric-hint">Awaiting team confirmation</span>
               </div>
-              <div class="metric-card">
-                <span class="mono metric-label">COMPLETED</span>
+
+              <div class="metric-card metric-card--completed">
+                <div class="metric-meta">
+                  <span class="mono metric-label">COMPLETED</span>
+                  <span class="metric-dot dot-success"></span>
+                </div>
                 <div class="metric-value text-success" data-bind-completed>{completedServicesCount}</div>
                 <span class="metric-hint">Delivered & verified</span>
               </div>
             </div>
 
-            <!-- Overview Content Columns -->
+            <!-- Quick Planner Callout Banner -->
+            <div class="planner-teaser-card">
+              <div class="planner-teaser-copy">
+                <span class="eyebrow">Scoping & Cost Engine</span>
+                <h2 class="display h3">Plan & estimate your next project with <em>exact accuracy.</em></h2>
+                <p class="lead" style="font-size: 0.95rem; margin-top: 0.4rem;">
+                  Select custom software, marketing, or compliance services to instantly model costs, milestones, and sprint timelines.
+                </p>
+              </div>
+              <button class="btn btn-primary" data-action="go-planner">
+                <span>Launch Estimation Planner</span>
+                <span class="arrow">→</span>
+              </button>
+            </div>
+
+            <!-- Two Column Lower Grid -->
             <div class="overview-columns">
-              <!-- Left Column: Recently Added Services -->
+              <!-- Left Column: Requested Services -->
               <div class="card-panel">
                 <div class="panel-header">
                   <div>
-                    <h2 class="panel-title">Requested Services</h2>
-                    <p class="panel-subtitle">Your active pipeline and pending requests</p>
+                    <h2 class="panel-title display h3">Requested Services</h2>
+                    <p class="panel-subtitle">Your active pipeline and pending scopes</p>
                   </div>
                   <button class="text-link mono" data-action="go-my-services">View All ({totalServicesCount}) →</button>
                 </div>
 
-                <div class="requests-table-wrap" data-container="overview-requests">
+                <div class="requests-table-wrap">
                   {customerRequests.length === 0 ? (
                     <div class="empty-state">
-                      <div class="empty-icon">📦</div>
+                      <div class="empty-icon">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="m7.5 4.27 9 5.15"></path>
+                          <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
+                          <path d="m3.3 7 8.7 5 8.7-5"></path>
+                          <path d="M12 22V12"></path>
+                        </svg>
+                      </div>
                       <h3 class="display empty-title">No services requested yet</h3>
                       <p class="empty-desc">
-                        Explore Ascelstack's 232 services across Software, Marketing, Operations, and Compliance to add your first service request.
+                        Build your stack using our interactive Estimation Planner or browse 232 services across Software, Marketing, and Operations.
                       </p>
-                      <button class="btn btn-primary" data-action="go-explore">
-                        Browse Service Catalogue →
-                      </button>
+                      <div class="empty-actions">
+                        <button class="btn btn-primary" data-action="go-planner">
+                          <span>Open Estimation Planner</span>
+                          <span class="arrow">→</span>
+                        </button>
+                        <button class="btn btn-ghost" data-action="go-explore">
+                          Browse 232 Services
+                        </button>
+                      </div>
                     </div>
                   ) : (
                     <table class="data-table">
@@ -356,12 +421,12 @@ const initialData = {
               <div class="card-panel">
                 <div class="panel-header">
                   <div>
-                    <h2 class="panel-title">Recent Activity</h2>
-                    <p class="panel-subtitle">Audit trail & timeline from Neon</p>
+                    <h2 class="panel-title display h3">Recent Activity</h2>
+                    <p class="panel-subtitle">Audit trail & real-time timeline</p>
                   </div>
                 </div>
 
-                <div class="activity-feed" data-container="overview-activity">
+                <div class="activity-feed">
                   {recentActivities.length === 0 ? (
                     <p class="empty-subtext">No activity recorded yet.</p>
                   ) : (
@@ -387,282 +452,505 @@ const initialData = {
             </div>
           </section>
 
-          <!-- VIEW 2: MY BUSINESS -->
-          <section class="dash-view" id="view-business" data-view="business">
-            <div class="card-panel max-form-panel">
-              <div class="panel-header">
-                <div>
-                  <span class="eyebrow">Company Details</span>
-                  <h2 class="display h3">Business Profile</h2>
-                  <p class="panel-subtitle">
-                    Configure your business identity. These details are used to prepare service requests and compliance filings.
-                  </p>
+          <!-- ============================================================== -->
+          <!-- VIEW 2: PROJECT ESTIMATION PLANNER -->
+          <!-- ============================================================== -->
+          <section class="dash-view" id="view-planner" data-view="planner">
+            <!-- Planner Hero Banner -->
+            <div class="planner-hero-card">
+              <div class="planner-hero-copy">
+                <p class="eyebrow">Interactive Scoping Engine · 232 Services Supported</p>
+                <h1 class="display h2">Project Estimation <em>Planner</em></h1>
+                <p class="lead">
+                  Configure your project stack across Build, Grow, and Run layers. Get instant, transparent budgets, timeline roadmaps, and milestone projections calibrated to Ascelstack's unified engineering team.
+                </p>
+              </div>
+
+              <!-- Quick Presets (without emojis) -->
+              <div class="preset-stacks-box">
+                <span class="mono preset-title">PRE-CONFIGURED STACK TEMPLATES:</span>
+                <div class="preset-buttons-row">
+                  <button type="button" class="preset-btn" data-preset="mvp">
+                    <span class="preset-tag mono">01 · MVP</span>
+                    <span class="preset-name">MVP Launchpad</span>
+                    <span class="preset-sub">Web + Brand + Compliance</span>
+                  </button>
+                  <button type="button" class="preset-btn" data-preset="ai-ops">
+                    <span class="preset-tag mono">02 · AI</span>
+                    <span class="preset-name">AI Automation Core</span>
+                    <span class="preset-sub">AI Agent + Workflows + CRM</span>
+                  </button>
+                  <button type="button" class="preset-btn" data-preset="ecommerce">
+                    <span class="preset-tag mono">03 · D2C</span>
+                    <span class="preset-name">Omnichannel Commerce</span>
+                    <span class="preset-sub">Store + Marketplaces + Ads</span>
+                  </button>
+                  <button type="button" class="preset-btn" data-preset="enterprise">
+                    <span class="preset-tag mono">04 · SCALE</span>
+                    <span class="preset-name">Full Enterprise Stack</span>
+                    <span class="preset-sub">SaaS + App + Infra + SLA</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Planner Workspace (2 Columns) -->
+            <div class="planner-workspace-grid">
+              <!-- Left Column: Scope Parameters & Service Matrix -->
+              <div class="planner-left-pane">
+                <!-- Parameters Card -->
+                <div class="card-panel">
+                  <div class="panel-header">
+                    <div>
+                      <span class="eyebrow">Step 01</span>
+                      <h3 class="display h3">Project Parameters</h3>
+                      <p class="panel-subtitle">Define scale, urgency, and ongoing operations tier</p>
+                    </div>
+                    <!-- Currency Switcher -->
+                    <div class="currency-switch">
+                      <span class="mono switch-label">Currency:</span>
+                      <button type="button" class="curr-pill is-active" data-curr="INR">₹ INR</button>
+                      <button type="button" class="curr-pill" data-curr="USD">$ USD</button>
+                    </div>
+                  </div>
+
+                  <div class="planner-params-form">
+                    <div class="field">
+                      <span class="mono">Project Name / Reference</span>
+                      <input type="text" id="planner-project-name" value="Ascelstack Custom Growth Stack" placeholder="e.g. NextGen Web App & AI Operations" />
+                    </div>
+
+                    <!-- Scope Tier -->
+                    <div class="field">
+                      <span class="mono">Project Scope & Scale Tier</span>
+                      <div class="tier-options-grid">
+                        <label class="tier-card is-checked" data-tier="starter">
+                          <input type="radio" name="project-tier" value="starter" checked />
+                          <div class="tier-content">
+                            <span class="tier-badge mono">1.0x Scale</span>
+                            <strong class="tier-title">Starter / MVP</strong>
+                            <span class="tier-desc">Lean architecture, core features, fast time-to-market.</span>
+                          </div>
+                        </label>
+
+                        <label class="tier-card" data-tier="growth">
+                          <input type="radio" name="project-tier" value="growth" />
+                          <div class="tier-content">
+                            <span class="tier-badge mono">1.5x Scale</span>
+                            <strong class="tier-title">Growth / Scale</strong>
+                            <span class="tier-desc">Multi-tenant, automated workflows, complete design system.</span>
+                          </div>
+                        </label>
+
+                        <label class="tier-card" data-tier="enterprise">
+                          <input type="radio" name="project-tier" value="enterprise" />
+                          <div class="tier-content">
+                            <span class="tier-badge mono">2.2x Scale</span>
+                            <strong class="tier-title">Enterprise</strong>
+                            <span class="tier-desc">High concurrency, custom security/compliance, dedicated guild.</span>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div class="form-row">
+                      <!-- Velocity -->
+                      <label class="field">
+                        <span class="mono">Delivery Velocity</span>
+                        <select id="planner-urgency">
+                          <option value="standard" selected>Standard Pace (Balanced cadence, best value)</option>
+                          <option value="sprint">Fast-Track Sprint (+20% rush fee, -30% time)</option>
+                          <option value="phased">Phased Milestones (-5% bundle discount, +30% time)</option>
+                        </select>
+                      </label>
+
+                      <!-- Support Tier -->
+                      <label class="field">
+                        <span class="mono">Post-Launch Operations SLA</span>
+                        <select id="planner-support">
+                          <option value="none" selected>Standard Handover (Included 14-day warranty)</option>
+                          <option value="hypercare">3 Months Hypercare (+₹35,000 / $410)</option>
+                          <option value="retainer">Ongoing Managed SLA Retainer (+₹75,000/mo / $880/mo)</option>
+                        </select>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Service Selector Card -->
+                <div class="card-panel">
+                  <div class="panel-header">
+                    <div>
+                      <span class="eyebrow">Step 02</span>
+                      <h3 class="display h3">Select Services on the Stack</h3>
+                      <p class="panel-subtitle">Pick components across Build, Grow, and Run. Live synergy discounts applied.</p>
+                    </div>
+                    <span class="mono selected-counter" id="planner-selected-count">0 selected</span>
+                  </div>
+
+                  <!-- Matrix Filter Toolbar -->
+                  <div class="matrix-filter-bar">
+                    <div class="matrix-search">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+                      </svg>
+                      <input type="text" id="planner-service-search" placeholder="Search 232 services by name, keyword or discipline..." />
+                    </div>
+
+                    <div class="matrix-layer-pills">
+                      <button type="button" class="mlp-btn is-on" data-layer-filter="all">All Layers</button>
+                      <button type="button" class="mlp-btn mlp-build" data-layer-filter="build">Build Layer</button>
+                      <button type="button" class="mlp-btn mlp-grow" data-layer-filter="grow">Grow Layer</button>
+                      <button type="button" class="mlp-btn mlp-run" data-layer-filter="run">Run Layer</button>
+                    </div>
+                  </div>
+
+                  <!-- Scrollable Service Cards List -->
+                  <div class="planner-services-list" id="planner-services-container">
+                    {allServices.map((svc) => (
+                      <label
+                        class="svc-select-item"
+                        data-svc-id={svc.id}
+                        data-svc-code={svc.code || ''}
+                        data-svc-name={svc.name}
+                        data-svc-layer={svc.layer}
+                        data-svc-discipline={svc.discipline}
+                        data-svc-desc={svc.description}
+                        data-search={`${svc.name.toLowerCase()} ${svc.discipline.toLowerCase()} ${(svc.code || '').toLowerCase()} ${svc.description.toLowerCase()}`}
+                      >
+                        <input type="checkbox" class="planner-svc-checkbox" value={svc.id} />
+                        <div class="svc-select-body">
+                          <div class="svc-select-top">
+                            <span class="mono svc-select-code">{svc.code}</span>
+                            <span class={`layer-tag layer-${svc.layer}`}>{svc.layer}</span>
+                            <span class="svc-select-disc">{svc.discipline}</span>
+                            <span class="mono svc-select-base-price" data-base-price>Est. Base</span>
+                          </div>
+                          <strong class="svc-select-title">{svc.name}</strong>
+                          <p class="svc-select-desc">{svc.description}</p>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              <form class="business-form" id="business-form" novalidate>
-                <input type="hidden" name="id" value={business?.id || ''} />
+              <!-- Right Column: Live Sticky Estimation Board -->
+              <div class="planner-right-pane">
+                <div class="sticky-estimate-card" id="planner-estimate-summary">
+                  <div class="est-header">
+                    <span class="eyebrow">Real-Time Scope Projection</span>
+                    <span class="est-badge mono" id="est-status-badge">Ready</span>
+                  </div>
 
-                <div class="form-row">
-                  <label class="field">
-                    <span class="mono">Business Name *</span>
-                    <input name="businessName" required value={business?.businessName || defaultBusinessName} placeholder="e.g. Acme Tech Innovations Pvt Ltd" />
-                  </label>
-                  <label class="field">
-                    <span class="mono">Business Type</span>
-                    <select name="businessType">
-                      <option value="">Select structure...</option>
-                      <option value="Private Limited" selected={business?.businessType === 'Private Limited'}>Private Limited Company</option>
-                      <option value="LLP" selected={business?.businessType === 'LLP'}>Limited Liability Partnership (LLP)</option>
-                      <option value="Sole Proprietorship" selected={business?.businessType === 'Sole Proprietorship'}>Sole Proprietorship</option>
-                      <option value="Partnership" selected={business?.businessType === 'Partnership'}>Partnership Firm</option>
-                      <option value="Startup / Early Stage" selected={business?.businessType === 'Startup / Early Stage'}>Startup / Early Stage</option>
-                      <option value="Individual / Creator" selected={business?.businessType === 'Individual / Creator'}>Individual / Creator</option>
-                    </select>
-                  </label>
+                  <div class="est-price-block">
+                    <span class="mono est-price-label">ESTIMATED INVESTMENT</span>
+                    <div class="display est-price-value" id="est-total-price">₹0</div>
+                    <div class="est-synergy-pill" id="est-synergy-banner" hidden>
+                      <span>Stack Synergy Savings Applied</span>
+                      <span class="mono" id="est-synergy-amount">-₹0</span>
+                    </div>
+                  </div>
+
+                  <!-- Metrics Row -->
+                  <div class="est-metrics-row">
+                    <div class="est-metric">
+                      <span class="mono est-m-label">TIMELINE</span>
+                      <span class="est-m-val" id="est-duration">0 Weeks</span>
+                    </div>
+                    <div class="est-metric">
+                      <span class="mono est-m-label">HOURS</span>
+                      <span class="est-m-val" id="est-hours">0 Hrs</span>
+                    </div>
+                    <div class="est-metric">
+                      <span class="mono est-m-label">SERVICES</span>
+                      <span class="est-m-val" id="est-service-count">0 Stacked</span>
+                    </div>
+                  </div>
+
+                  <!-- Layer Distribution Bar -->
+                  <div class="est-breakdown-box">
+                    <span class="mono est-subhead">LAYER ALLOCATION</span>
+                    <div class="est-progress-bar">
+                      <div class="epb-segment epb-build" id="bar-build" style="width: 33.3%;"></div>
+                      <div class="epb-segment epb-grow" id="bar-grow" style="width: 33.3%;"></div>
+                      <div class="epb-segment epb-run" id="bar-run" style="width: 33.4%;"></div>
+                    </div>
+                    <div class="est-legend">
+                      <span class="leg-item"><i class="leg-dot leg-build"></i> Build: <strong id="pct-build">0%</strong></span>
+                      <span class="leg-item"><i class="leg-dot leg-grow"></i> Grow: <strong id="pct-grow">0%</strong></span>
+                      <span class="leg-item"><i class="leg-dot leg-run"></i> Run: <strong id="pct-run">0%</strong></span>
+                    </div>
+                  </div>
+
+                  <!-- Milestone Delivery Schedule -->
+                  <div class="est-milestones-box">
+                    <span class="mono est-subhead">PROJECTED SPRINT MILESTONES</span>
+                    <div class="milestone-timeline">
+                      <div class="ms-node">
+                        <div class="ms-dot">1</div>
+                        <div class="ms-body">
+                          <strong>Architecture & Systems Design</strong>
+                          <span class="mono text-muted" id="ms-time-1">Weeks 1–2</span>
+                        </div>
+                      </div>
+                      <div class="ms-node">
+                        <div class="ms-dot">2</div>
+                        <div class="ms-body">
+                          <strong>Core Development & Brand Production</strong>
+                          <span class="mono text-muted" id="ms-time-2">Weeks 2–4</span>
+                        </div>
+                      </div>
+                      <div class="ms-node">
+                        <div class="ms-dot">3</div>
+                        <div class="ms-body">
+                          <strong>AI Integration, Automated Handshake & QA</strong>
+                          <span class="mono text-muted" id="ms-time-3">Weeks 4–5</span>
+                        </div>
+                      </div>
+                      <div class="ms-node">
+                        <div class="ms-dot">4</div>
+                        <div class="ms-body">
+                          <strong>Compliance Filings & Production Go-Live</strong>
+                          <span class="mono text-muted" id="ms-time-4">Weeks 5–6</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Selected Basket Items -->
+                  <div class="est-basket-box">
+                    <div class="est-basket-header">
+                      <span class="mono est-subhead">SELECTED SCOPE ITEMS</span>
+                      <span class="mono text-muted text-xs" id="est-basket-count">0 items</span>
+                    </div>
+                    <ul class="est-basket-list" id="est-basket-items">
+                      <li class="basket-empty-msg text-muted">No services selected. Pick services from the catalog list to model your project.</li>
+                    </ul>
+                  </div>
+
+                  <!-- Planner Actions (without emojis) -->
+                  <div class="est-actions">
+                    <button type="button" class="btn btn-primary btn-block" id="btn-submit-estimate" disabled>
+                      <span>Submit as Project Requests</span>
+                      <span class="arrow">→</span>
+                    </button>
+                    <div class="est-sub-actions">
+                      <button type="button" class="btn btn-ghost btn-sm" id="btn-export-sow">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                        <span>Export SOW Estimate</span>
+                      </button>
+                      <button type="button" class="btn btn-ghost btn-sm" id="btn-reset-planner">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                        <span>Reset</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
-
-                <div class="form-row">
-                  <label class="field">
-                    <span class="mono">Industry</span>
-                    <select name="industry">
-                      <option value="">Select industry...</option>
-                      <option value="Technology & Software" selected={business?.industry === 'Technology & Software'}>Technology & Software</option>
-                      <option value="E-commerce & Retail" selected={business?.industry === 'E-commerce & Retail'}>E-commerce & Retail</option>
-                      <option value="Restaurant & Food" selected={business?.industry === 'Restaurant & Food'}>Restaurant, Cafe & Food</option>
-                      <option value="Healthcare & Wellness" selected={business?.industry === 'Healthcare & Wellness'}>Healthcare & Wellness</option>
-                      <option value="Manufacturing & Logistics" selected={business?.industry === 'Manufacturing & Logistics'}>Manufacturing & Logistics</option>
-                      <option value="Finance & Professional Services" selected={business?.industry === 'Finance & Professional Services'}>Finance & Professional Services</option>
-                      <option value="Other" selected={business?.industry === 'Other'}>Other</option>
-                    </select>
-                  </label>
-                  <label class="field">
-                    <span class="mono">Business Email</span>
-                    <input name="email" type="email" value={business?.email || defaultBusinessEmail} placeholder="contact@company.com" />
-                  </label>
-                </div>
-
-                <div class="form-row">
-                  <label class="field">
-                    <span class="mono">Contact Number / WhatsApp</span>
-                    <input name="phone" type="tel" value={business?.phone || ''} placeholder="+91 98765 43210" />
-                  </label>
-                  <label class="field">
-                    <span class="mono">Website URL</span>
-                    <input name="website" type="url" value={business?.website || ''} placeholder="https://yourcompany.com" />
-                  </label>
-                </div>
-
-                <label class="field">
-                  <span class="mono">Business Address</span>
-                  <input name="address" value={business?.address || ''} placeholder="Registered office address or facility" />
-                </label>
-
-                <div class="form-row form-row-3">
-                  <label class="field">
-                    <span class="mono">City</span>
-                    <input name="city" value={business?.city || ''} placeholder="City" />
-                  </label>
-                  <label class="field">
-                    <span class="mono">State</span>
-                    <input name="state" value={business?.state || ''} placeholder="State" />
-                  </label>
-                  <label class="field">
-                    <span class="mono">Country</span>
-                    <input name="country" value={business?.country || 'India'} placeholder="Country" />
-                  </label>
-                </div>
-
-                <div class="form-row">
-                  <label class="field">
-                    <span class="mono">GSTIN <em>(Optional)</em></span>
-                    <input name="gstin" value={business?.gstin || ''} placeholder="22AAAAA0000A1Z5" />
-                  </label>
-                  <label class="field">
-                    <span class="mono">Company Short Description</span>
-                    <input name="description" value={business?.description || ''} placeholder="What does your company do?" />
-                  </label>
-                </div>
-
-                <div class="form-footer">
-                  <button class="btn btn-primary" type="submit" id="btn-save-biz">
-                    <span>Save Business Profile</span>
-                    <span class="arrow">→</span>
-                  </button>
-                  <span class="mono text-muted save-status" id="biz-save-status"></span>
-                </div>
-              </form>
+              </div>
             </div>
           </section>
 
+          <!-- ============================================================== -->
           <!-- VIEW 3: MY SERVICES -->
+          <!-- ============================================================== -->
           <section class="dash-view" id="view-my-services" data-view="my-services">
             <div class="card-panel">
               <div class="panel-header-flex">
                 <div>
                   <span class="eyebrow">Service Portfolio</span>
-                  <h2 class="display h3">My Services</h2>
-                  <p class="panel-subtitle">All active, pending, and completed services for your business</p>
+                  <h2 class="display h3">My Subscribed Services</h2>
+                  <p class="panel-subtitle">Review active pipelines, review pending requirements, or submit change scopes</p>
                 </div>
                 <button class="btn btn-primary" data-action="go-explore">
                   <span>+ Request New Service</span>
+                  <span class="arrow">→</span>
                 </button>
               </div>
 
-              <!-- Filter tabs for My Services -->
+              <!-- Filter tabs within My Services -->
               <div class="my-services-filter-bar">
-                <button class="tab is-on" data-my-filter="all">All Services (<span data-bind-total>{totalServicesCount}</span>)</button>
-                <button class="tab" data-my-filter="build">Build</button>
-                <button class="tab" data-my-filter="grow">Grow</button>
-                <button class="tab" data-my-filter="run">Run</button>
+                <button class="tab-pill is-on" data-my-filter="all">All Layers ({totalServicesCount})</button>
+                <button class="tab-pill" data-my-filter="build">Build Layer</button>
+                <button class="tab-pill" data-my-filter="grow">Grow Layer</button>
+                <button class="tab-pill" data-my-filter="run">Run Layer</button>
               </div>
 
-              <!-- Grid of Requested Services -->
-              <div class="my-services-grid" id="my-services-list">
-                {customerRequests.length === 0 ? (
-                  <div class="empty-state">
-                    <div class="empty-icon">✨</div>
-                    <h3 class="display empty-title">No services in your stack yet</h3>
-                    <p class="empty-desc">
-                      Add services from our catalogue to build software, grow your brand, or run day-to-day operations seamlessly.
-                    </p>
-                    <button class="btn btn-primary" data-action="go-explore">Explore Catalogue →</button>
+              {customerRequests.length === 0 ? (
+                <div class="empty-state">
+                  <div class="empty-icon">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path></svg>
                   </div>
-                ) : (
-                  customerRequests.map((req) => (
+                  <h3 class="display empty-title">Your portfolio is currently empty</h3>
+                  <p class="empty-desc">
+                    Start by using the Project Estimation Planner or exploring 232 services in the catalogue to request your first service.
+                  </p>
+                  <div class="empty-actions">
+                    <button class="btn btn-primary" data-action="go-planner">
+                      <span>Project Estimation Planner</span>
+                      <span class="arrow">→</span>
+                    </button>
+                    <button class="btn btn-ghost" data-action="go-explore">
+                      Explore All 232 Services
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div class="my-services-grid" id="my-services-grid">
+                  {customerRequests.map((req) => (
                     <article class="my-service-card" data-my-layer={req.service.layer} data-request-id={req.id}>
                       <div class="card-header-line">
                         <span class={`layer-tag layer-${req.service.layer}`}>{req.service.layer}</span>
                         <span class={`status-tag status-${req.status}`}>{req.status}</span>
                       </div>
 
-                      <h3 class="my-service-title">{req.service.name}</h3>
-                      <p class="my-service-desc">{req.service.description}</p>
+                      <div class="my-service-info">
+                        <span class="mono table-code">{req.service.code}</span>
+                        <h3 class="my-service-title">{req.service.name}</h3>
+                        <p class="my-service-desc">{req.service.description}</p>
+                      </div>
 
                       <div class="my-service-meta">
                         <div>
-                          <span class="mono meta-k">DISCIPLINE</span>
+                          <span class="meta-k">Discipline</span>
                           <span class="meta-v">{req.service.discipline}</span>
                         </div>
                         <div>
-                          <span class="mono meta-k">REQUESTED</span>
-                          <span class="mono meta-v">
-                            {new Date(req.requestedAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          <span class="meta-k">Requested On</span>
+                          <span class="meta-v mono">
+                            {new Date(req.requestedAt).toLocaleDateString('en-IN', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                            })}
                           </span>
                         </div>
                       </div>
 
-                      {req.requirements && (
-                        <div class="my-service-req-box">
-                          <span class="mono req-box-title">Requirements Note:</span>
-                          <p class="req-box-text">{req.requirements}</p>
-                        </div>
-                      )}
+                      <div class="my-service-req-box">
+                        <span class="req-box-title mono">Scope & Requirements</span>
+                        <p class="req-box-text">
+                          {req.requirements ? req.requirements : 'Standard baseline scope agreed upon onboarding.'}
+                        </p>
+                      </div>
 
                       <div class="my-service-actions">
-                        <button class="btn-sm btn-ghost" data-action="edit-req" data-id={req.id} data-req={req.requirements || ''} data-name={req.service.name}>
-                          Update Requirements
+                        <button
+                          class="btn-sm btn-ghost"
+                          data-action="edit-req"
+                          data-id={req.id}
+                          data-req={req.requirements || ''}
+                          data-name={req.service.name}
+                        >
+                          Update Scope
                         </button>
-                        {req.status !== 'cancelled' && (
-                          <button class="btn-sm btn-danger-ghost" data-action="cancel-req" data-id={req.id} data-name={req.service.name} data-status={req.status}>
-                            {req.status === 'active' ? 'Request Cancellation' : 'Cancel Request'}
+                        {req.status !== 'completed' && (
+                          <button
+                            class="btn-sm btn-danger-ghost"
+                            data-action="cancel-req"
+                            data-id={req.id}
+                            data-name={req.service.name}
+                            data-status={req.status}
+                          >
+                            Cancel
                           </button>
                         )}
                       </div>
                     </article>
-                  ))
-                )}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </section>
 
+          <!-- ============================================================== -->
           <!-- VIEW 4: EXPLORE SERVICES -->
+          <!-- ============================================================== -->
           <section class="dash-view" id="view-explore" data-view="explore">
             <div class="card-panel">
-              <div class="panel-header">
+              <div class="panel-header-flex">
                 <div>
-                  <span class="eyebrow">Full Stack Catalogue</span>
+                  <span class="eyebrow">Catalogue Browser</span>
                   <h2 class="display h3">Explore Ascelstack Services</h2>
-                  <p class="panel-subtitle">Browse all 232 services across Build, Grow, and Run. Request services directly into your stack.</p>
+                  <p class="panel-subtitle">232 production services ready to attach to your business contract</p>
                 </div>
+                <button class="btn btn-primary" data-action="go-planner">
+                  <span>Open Estimation Planner</span>
+                  <span class="arrow">→</span>
+                </button>
               </div>
 
-              <!-- Search and Filter Bar -->
+              <!-- Toolbar: Search + Discipline + Layer Pills -->
               <div class="explore-toolbar">
                 <div class="search-box">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
-                  <input type="search" id="explore-search-input" placeholder="Search by service name, discipline, or keyword (e.g. GST, AI, Website)..." autocomplete="off" />
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+                  </svg>
+                  <input
+                    type="search"
+                    id="explore-search-input"
+                    placeholder="Search 232 services by keyword, tech, or discipline (e.g., 'GST', 'React', 'Agent', 'SEO')..."
+                  />
                 </div>
 
                 <div class="filter-pills-row">
-                  <span class="mono text-muted filter-label">LAYER:</span>
-                  <button class="tab is-on" data-layer-filter="all">All Layers</button>
-                  <button class="tab" data-layer-filter="build">Build</button>
-                  <button class="tab" data-layer-filter="grow">Grow</button>
-                  <button class="tab" data-layer-filter="run">Run</button>
+                  <span class="mono filter-label">FILTER LAYER:</span>
+                  <button class="tab-pill is-on" data-layer-filter="all">All</button>
+                  <button class="tab-pill" data-layer-filter="build">Build</button>
+                  <button class="tab-pill" data-layer-filter="grow">Grow</button>
+                  <button class="tab-pill" data-layer-filter="run">Run</button>
 
-                  <span class="mono text-muted filter-label filter-label-sep">DISCIPLINE:</span>
+                  <span class="mono filter-label filter-label-sep">DISCIPLINE:</span>
                   <select id="explore-discipline-filter" class="discipline-select">
-                    <option value="all">All Disciplines (13)</option>
-                    <option value="Software & Web">Software & Web (Build)</option>
-                    <option value="AI & Automation">AI & Automation (Build)</option>
-                    <option value="IT Infrastructure">IT Infrastructure (Build)</option>
-                    <option value="Corporate">Corporate (Build)</option>
-                    <option value="Marketing">Marketing (Grow)</option>
-                    <option value="Brand & Creative">Brand & Creative (Grow)</option>
-                    <option value="E-commerce">E-commerce (Grow)</option>
-                    <option value="Training">Training (Grow)</option>
-                    <option value="Consulting">Consulting (Grow)</option>
-                    <option value="Operations">Operations (Run)</option>
-                    <option value="Restaurants">Restaurants (Run)</option>
-                    <option value="Compliance">Compliance (Run)</option>
-                    <option value="HR & Hiring">HR & Hiring (Run)</option>
+                    <option value="all">All Disciplines (8)</option>
+                    <option value="Technology & Software Development">Software & Web</option>
+                    <option value="AI, Automation & Emerging Technologies">AI & Automation</option>
+                    <option value="Digital Marketing & Online Growth">Marketing & SEO</option>
+                    <option value="Branding, Graphics & Creative Studio">Brand & Creative</option>
+                    <option value="E-commerce & Marketplace Management">E-commerce</option>
+                    <option value="Business Management & Digital Operations">Operations</option>
+                    <option value="Restaurant, Cafe & Food Business Solutions">Restaurants</option>
+                    <option value="Business Registration, Licensing & Compliance">Compliance & GST</option>
                   </select>
                 </div>
               </div>
 
-              <!-- Services Catalog Grid -->
-              <div class="explore-grid" id="explore-services-grid">
+              <!-- Services Cards Grid -->
+              <div class="explore-grid" id="explore-cards-grid">
                 {allServices.map((svc) => {
-                  const existingReq = customerRequests.find((r) => r.serviceId === svc.id);
-                  const isPendingOrActive = existingReq && ['pending', 'reviewing', 'approved', 'active'].includes(existingReq.status);
-
+                  const isRequested = customerRequests.some((r) => r.serviceId === svc.id);
                   return (
                     <article
                       class="explore-card"
+                      data-id={svc.id}
                       data-layer={svc.layer}
                       data-discipline={svc.discipline}
-                      data-search={`${svc.name} ${svc.description} ${svc.discipline} ${svc.code}`.toLowerCase()}
+                      data-search={`${svc.name.toLowerCase()} ${svc.discipline.toLowerCase()} ${(svc.code || '').toLowerCase()} ${svc.description.toLowerCase()}`}
                     >
                       <div class="explore-card-top">
-                        <span class="mono explore-code">{svc.code}</span>
                         <span class={`layer-tag layer-${svc.layer}`}>{svc.layer}</span>
-                        {svc.availabilityStatus === 'coming_soon' && (
-                          <span class="card-badge-soft">Coming soon</span>
-                        )}
+                        <span class="mono explore-code">{svc.code}</span>
+                        <span class="card-badge-soft">{svc.availabilityStatus === 'live' ? 'Live' : 'Coming Soon'}</span>
                       </div>
 
-                      <h3 class="explore-card-name">{svc.name}</h3>
+                      <h3 class="display explore-card-name">{svc.name}</h3>
                       <p class="explore-card-desc">{svc.description}</p>
                       <span class="mono explore-discipline-tag">{svc.discipline}</span>
 
                       <div class="explore-card-footer">
-                        {isPendingOrActive ? (
-                          <div class="already-added-badge">
-                            <span class="mono">✓ {existingReq.status.toUpperCase()}</span>
-                          </div>
+                        {isRequested ? (
+                          <div class="already-added-badge mono">Active in Pipeline</div>
                         ) : (
                           <button
-                            class="btn-sm btn-primary-pill"
+                            class="btn btn-sm btn-primary-pill"
                             data-action="open-add-service-modal"
                             data-id={svc.id}
                             data-name={svc.name}
                             data-code={svc.code}
                             data-layer={svc.layer}
-                            data-discipline={svc.discipline}
                             data-desc={svc.description}
                           >
-                            + Add Service
+                            Request Service →
                           </button>
                         )}
                       </div>
@@ -671,89 +959,156 @@ const initialData = {
                 })}
               </div>
 
+              <!-- No Results Message -->
               <div class="empty-state" id="explore-no-results" hidden>
-                <div class="empty-icon">🔍</div>
+                <div class="empty-icon">
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                </div>
                 <h3 class="display empty-title">No services match your filters</h3>
                 <p class="empty-desc">Try resetting your search query or choosing another discipline.</p>
               </div>
             </div>
           </section>
 
-          <!-- VIEW 5: PROJECTS -->
-          <section class="dash-view" id="view-projects" data-view="projects">
-            <div class="card-panel">
+          <!-- ============================================================== -->
+          <!-- VIEW 5: MY BUSINESS -->
+          <!-- ============================================================== -->
+          <section class="dash-view" id="view-business" data-view="business">
+            <div class="card-panel max-form-panel">
               <div class="panel-header">
                 <div>
-                  <span class="eyebrow">Execution Pipeline</span>
-                  <h2 class="display h3">Projects & Milestones</h2>
-                  <p class="panel-subtitle">Tracking the unified delivery of your connected stack</p>
+                  <span class="eyebrow">Company Profile</span>
+                  <h2 class="display h3">Business Identity</h2>
+                  <p class="panel-subtitle">
+                    Configure your company specifications. These details are used to prepare service requests and compliance filings.
+                  </p>
                 </div>
               </div>
 
-              <div class="projects-container">
-                <div class="project-phase-card">
-                  <div class="phase-header">
-                    <span class="mono phase-num">STAGE 01</span>
-                    <h3 class="phase-title">Discover & Architecture</h3>
-                  </div>
-                  <p class="phase-desc">Mapping existing handoffs, spreadsheets, domain setup, and requirements.</p>
-                  <span class="mono phase-status">Status: Active upon service approval</span>
+              <form class="business-form" id="business-form">
+                <input type="hidden" name="id" value={business?.id || ''} />
+
+                <div class="form-row">
+                  <label class="field">
+                    <span class="mono">Business Legal / Trade Name</span>
+                    <input name="businessName" value={business?.businessName || defaultBusinessName} required />
+                  </label>
+                  <label class="field">
+                    <span class="mono">Business Type</span>
+                    <select name="businessType">
+                      <option value="">Select type</option>
+                      <option value="Private Limited" selected={business?.businessType === 'Private Limited'}>Private Limited (Pvt Ltd)</option>
+                      <option value="LLP" selected={business?.businessType === 'LLP'}>Limited Liability Partnership (LLP)</option>
+                      <option value="Sole Proprietorship" selected={business?.businessType === 'Sole Proprietorship'}>Sole Proprietorship</option>
+                      <option value="Partnership" selected={business?.businessType === 'Partnership'}>Partnership Firm</option>
+                      <option value="OPC" selected={business?.businessType === 'OPC'}>One Person Company (OPC)</option>
+                      <option value="Other" selected={business?.businessType === 'Other'}>Other Enterprise</option>
+                    </select>
+                  </label>
                 </div>
 
-                <div class="project-phase-card">
-                  <div class="phase-header">
-                    <span class="mono phase-num">STAGE 02</span>
-                    <h3 class="phase-title">Build & Implement</h3>
-                  </div>
-                  <p class="phase-desc">Software development, integrations, and branding deliverables built in sprint cycles.</p>
-                  <span class="mono phase-status">Status: Dependent on Stage 01</span>
+                <div class="form-row">
+                  <label class="field">
+                    <span class="mono">Industry</span>
+                    <input name="industry" value={business?.industry || ''} placeholder="e.g. E-commerce, Healthcare, SaaS" />
+                  </label>
+                  <label class="field">
+                    <span class="mono">GSTIN / Tax ID <em>(Optional)</em></span>
+                    <input name="gstin" value={business?.gstin || ''} placeholder="22AAAAA0000A1Z5" />
+                  </label>
                 </div>
 
-                <div class="project-phase-card">
-                  <div class="phase-header">
-                    <span class="mono phase-num">STAGE 03</span>
-                    <h3 class="phase-title">Automate & Scale</h3>
-                  </div>
-                  <p class="phase-desc">AI agent deployment, compliance filings, and automated workflows switched on.</p>
-                  <span class="mono phase-status">Status: Scheduled</span>
+                <div class="form-row">
+                  <label class="field">
+                    <span class="mono">Business Email</span>
+                    <input name="email" type="email" value={business?.email || defaultBusinessEmail} required />
+                  </label>
+                  <label class="field">
+                    <span class="mono">Official Phone</span>
+                    <input name="phone" value={business?.phone || ''} placeholder="+91 98765 43210" />
+                  </label>
                 </div>
-              </div>
+
+                <div class="field">
+                  <span class="mono">Website URL</span>
+                  <input name="website" type="url" value={business?.website || ''} placeholder="https://example.com" />
+                </div>
+
+                <div class="form-row-3">
+                  <label class="field">
+                    <span class="mono">City</span>
+                    <input name="city" value={business?.city || ''} placeholder="Bengaluru" />
+                  </label>
+                  <label class="field">
+                    <span class="mono">State</span>
+                    <input name="state" value={business?.state || ''} placeholder="Karnataka" />
+                  </label>
+                  <label class="field">
+                    <span class="mono">Country</span>
+                    <input name="country" value={business?.country || 'India'} />
+                  </label>
+                </div>
+
+                <label class="field">
+                  <span class="mono">Company Mission & Scope Description</span>
+                  <textarea
+                    name="description"
+                    rows="3"
+                    placeholder="Provide a brief summary of what your business does and key requirements..."
+                  >{business?.description || ''}</textarea>
+                </label>
+
+                <div class="form-footer">
+                  <button class="btn btn-primary" type="submit" id="btn-save-biz">
+                    Save Business Changes
+                  </button>
+                  <span class="mono text-muted save-status" id="biz-save-status"></span>
+                </div>
+              </form>
             </div>
           </section>
 
+          <!-- ============================================================== -->
           <!-- VIEW 6: SUPPORT -->
+          <!-- ============================================================== -->
           <section class="dash-view" id="view-support" data-view="support">
             <div class="card-panel max-form-panel">
               <div class="panel-header">
                 <div>
-                  <span class="eyebrow">Dedicated Help</span>
-                  <h2 class="display h3">Client Support & Inquiries</h2>
+                  <span class="eyebrow">Dedicated Client Support</span>
+                  <h2 class="display h3">Support & Lead Contacts</h2>
                   <p class="panel-subtitle">Direct communication with your Ascelstack account lead</p>
                 </div>
               </div>
 
               <div class="support-grid">
                 <div class="support-card">
-                  <span class="mono text-muted">DIRECT EMAIL</span>
-                  <h4>hello@ascelstack.com</h4>
-                  <p>Guaranteed response within 1 business day for active customer accounts.</p>
+                  <span class="mono eyebrow">ACCOUNT LEAD</span>
+                  <h4>Technical Operations Guild</h4>
+                  <p>Support for ongoing builds, scope adjustments, and sprint milestones.</p>
+                  <a href="mailto:hello@ascelstack.com" class="text-link mono">hello@ascelstack.com →</a>
                 </div>
+
                 <div class="support-card">
-                  <span class="mono text-muted">BUSINESS HOURS</span>
-                  <h4>Mon – Sat, 10:00 – 19:00 IST</h4>
-                  <p>Direct communication via phone, WhatsApp, and Google Meet.</p>
+                  <span class="mono eyebrow">HOURS & SLA</span>
+                  <h4>Priority Enterprise SLA</h4>
+                  <p>Mon – Sat, 10:00 – 19:00 IST. Guaranteed 4-hour response window on active services.</p>
+                  <span class="mono text-muted">Response: &lt; 4 hours</span>
                 </div>
               </div>
 
               <div class="support-notice">
+                <span class="mono eyebrow">CUSTOM ARCHITECTURE</span>
                 <p>
-                  Need a custom integration, enterprise SLA, or immediate scope revision? Reach out directly and we will sync it straight into your dashboard.
+                  Need custom microservices, high-throughput cloud migration, or specialized compliance filings? Reach out directly and we will sync the specifications straight into your dashboard.
                 </p>
               </div>
             </div>
           </section>
 
+          <!-- ============================================================== -->
           <!-- VIEW 7: SETTINGS -->
+          <!-- ============================================================== -->
           <section class="dash-view" id="view-settings" data-view="settings">
             <div class="card-panel max-form-panel">
               <div class="panel-header">
@@ -800,6 +1155,10 @@ const initialData = {
       </div>
     </div>
 
+    <!-- ============================================================== -->
+    <!-- MODALS -->
+    <!-- ============================================================== -->
+
     <!-- MODAL 1: ADD SERVICE REQUEST -->
     <div class="modal-backdrop" id="modal-add-service" hidden>
       <div class="modal-dialog">
@@ -809,7 +1168,9 @@ const initialData = {
             <h3 class="display modal-title" id="modal-svc-name">Website Development</h3>
             <span class="mono modal-code" id="modal-svc-code">ASC-0001</span>
           </div>
-          <button class="modal-close-btn" data-close-modal aria-label="Close modal">✕</button>
+          <button class="modal-close-btn" data-close-modal aria-label="Close modal">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
         </div>
 
         <form id="form-add-service">
@@ -834,7 +1195,7 @@ const initialData = {
           <div class="modal-info-callout">
             <span class="mono">NOTE</span>
             <p>
-              Your request will be registered with status <strong>Pending</strong> in Neon PostgreSQL. Our team will review the specifications and assign engineers before activation.
+              Your request will be registered with status <strong>Pending</strong> in your service pipeline. Our team will review the specifications and assign engineers before activation.
             </p>
           </div>
 
@@ -849,7 +1210,7 @@ const initialData = {
       </div>
     </div>
 
-    <!-- MODAL 2: UPDATE REQUIREMENTS / CANCEL REQUEST -->
+    <!-- MODAL 2: UPDATE REQUIREMENTS -->
     <div class="modal-backdrop" id="modal-edit-req" hidden>
       <div class="modal-dialog">
         <div class="modal-header">
@@ -857,7 +1218,9 @@ const initialData = {
             <span class="eyebrow">Service Requirements</span>
             <h3 class="display modal-title" id="edit-req-title">Update Requirements</h3>
           </div>
-          <button class="modal-close-btn" data-close-modal aria-label="Close modal">✕</button>
+          <button class="modal-close-btn" data-close-modal aria-label="Close modal">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
         </div>
 
         <form id="form-edit-req">
@@ -879,21 +1242,208 @@ const initialData = {
       </div>
     </div>
 
-    <!-- TOAST NOTIFICATION POPUP -->
+    <!-- MODAL 3: SOW ESTIMATE PRINT & EXPORT MODAL -->
+    <div class="modal-backdrop" id="modal-sow-export" hidden>
+      <div class="modal-dialog modal-dialog-wide">
+        <div class="modal-header">
+          <div>
+            <span class="eyebrow">Statement of Work (SOW)</span>
+            <h3 class="display modal-title">Project Estimation Summary</h3>
+            <span class="mono text-muted">Ascelstack Unified Stack Architecture</span>
+          </div>
+          <button class="modal-close-btn" data-close-modal aria-label="Close modal">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+
+        <div class="sow-document" id="sow-printable-doc">
+          <div class="sow-doc-header">
+            <div>
+              <strong class="sow-brand-title">ASCELSTACK CLIENT PORTAL</strong>
+              <p class="mono text-muted">Document Ref: <span id="sow-doc-ref">EST-2026-0000</span></p>
+            </div>
+            <div class="text-right">
+              <span class="mono text-muted">Date: <span id="sow-doc-date">10 Nov 2026</span></span>
+              <p class="sow-client-target">Client: <strong data-bind-biz-name>{defaultBusinessName}</strong></p>
+            </div>
+          </div>
+
+          <div class="sow-summary-box">
+            <div class="sow-stat-col">
+              <span class="mono text-muted">Project Name</span>
+              <strong id="sow-proj-name">Ascelstack Custom Growth Stack</strong>
+            </div>
+            <div class="sow-stat-col">
+              <span class="mono text-muted">Estimated Investment</span>
+              <strong class="text-accent" id="sow-proj-cost">₹0</strong>
+            </div>
+            <div class="sow-stat-col">
+              <span class="mono text-muted">Projected Timeline</span>
+              <strong id="sow-proj-timeline">0 Weeks</strong>
+            </div>
+            <div class="sow-stat-col">
+              <span class="mono text-muted">Engineering Hours</span>
+              <strong id="sow-proj-hours">0 Hours</strong>
+            </div>
+          </div>
+
+          <div class="sow-services-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Service</th>
+                  <th>Layer</th>
+                  <th>Discipline</th>
+                  <th>Allocated Cost</th>
+                </tr>
+              </thead>
+              <tbody id="sow-services-rows"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn btn-ghost" type="button" data-close-modal>Close</button>
+          <button class="btn btn-primary" type="button" id="btn-print-sow">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect width="12" height="8" x="6" y="14"></rect></svg>
+            <span>Print / Save as PDF</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hidden canonical Clerk SignOut trigger -->
+    <div style="display: none;" aria-hidden="true">
+      <SignOutButton redirectUrl="/login">
+        <button id="native-clerk-signout-trigger" type="button">Sign Out</button>
+      </SignOutButton>
+    </div>
+
+    <!-- MODAL 4: CONFIRM LOGOUT (GIVES STAY AND LOGOUT OPTIONS) -->
+    <div class="modal-backdrop" id="modal-confirm-logout" hidden>
+      <div class="modal-dialog modal-dialog-sm">
+        <div class="modal-header">
+          <div>
+            <span class="eyebrow" style="color: #ef4444;">Session</span>
+            <h3 class="display modal-title">Sign Out</h3>
+          </div>
+          <button class="modal-close-btn" data-close-modal aria-label="Close modal">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+
+        <p class="modal-desc">
+          Are you sure you want to log out of your account? You will need to sign back in to access your business services and project estimates.
+        </p>
+
+        <div class="modal-actions modal-actions-logout">
+          <button class="btn btn-ghost" type="button" id="btn-logout-stay">
+            Stay
+          </button>
+          <button class="btn btn-danger" type="button" id="btn-logout-proceed">
+            <span>Logout</span>
+            <span class="arrow">→</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 5: SUBMIT PROJECT REQUESTS TO NEON PIPELINE -->
+    <div class="modal-backdrop" id="modal-confirm-submit-stack" hidden>
+      <div class="modal-dialog modal-dialog-submit">
+        <div class="modal-header">
+          <div>
+            <span class="eyebrow" style="color: var(--accent);">Project Scoping · Service Pipeline</span>
+            <h3 class="display modal-title">Submit Project Scope</h3>
+          </div>
+          <button class="modal-close-btn" data-close-modal aria-label="Close modal">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <p class="modal-desc">
+          Ready to submit your custom project stack? Your requirements will be registered in your Ascelstack pipeline for architecture review and kickoff scheduling.
+        </p>
+
+        <!-- Project Overview Box -->
+        <div class="submit-summary-box">
+          <div class="submit-summary-top">
+            <span class="mono submit-summary-label">PROJECT STACK NAME</span>
+            <div class="submit-proj-name-wrap">
+              <input type="text" id="modal-submit-proj-name" class="submit-proj-name-input" placeholder="Custom Project Stack" />
+            </div>
+          </div>
+
+          <div class="submit-metrics-strip">
+            <div class="submit-metric-cell">
+              <span class="mono cell-label">SERVICES</span>
+              <strong class="cell-val text-accent" id="modal-submit-count">0</strong>
+            </div>
+            <div class="submit-metric-cell">
+              <span class="mono cell-label">EST. INVESTMENT</span>
+              <strong class="cell-val" id="modal-submit-price">₹0</strong>
+            </div>
+            <div class="submit-metric-cell">
+              <span class="mono cell-label">TIMELINE</span>
+              <strong class="cell-val" id="modal-submit-timeline">Weeks 1–4</strong>
+            </div>
+            <div class="submit-metric-cell">
+              <span class="mono cell-label">ENGINEERING</span>
+              <strong class="cell-val" id="modal-submit-hours">0 hrs</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scope Items List -->
+        <div class="submit-scope-section">
+          <div class="submit-scope-header">
+            <span class="mono est-subhead">SERVICES IN SCOPE</span>
+            <span class="mono text-muted text-xs" id="modal-submit-services-count">0 items</span>
+          </div>
+          <ul class="submit-services-list" id="modal-submit-services-list">
+            <!-- Dynamically populated -->
+          </ul>
+        </div>
+
+        <!-- Technical callout -->
+        <div class="modal-info-callout">
+          <span class="mono">PIPELINE SYNCHRONIZATION</span>
+          <p>
+            Submitting will create pending service requests linked directly to your business profile. You will receive an immediate confirmation and roadmap timeline.
+          </p>
+        </div>
+
+        <div class="modal-actions modal-actions-submit">
+          <button class="btn btn-ghost" type="button" data-close-modal>
+            Back to Planner
+          </button>
+          <button class="btn btn-primary" type="button" id="btn-confirm-submit-pipeline">
+            <span>Submit</span>
+            <span class="arrow">→</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION HUB -->
     <div class="toast-hub" id="toast-hub" aria-live="polite"></div>
 
-    <!-- Pass server initial data into client script securely -->
+    <!-- Server data hydration -->
     <script is:inline define:vars={{ initialData }}>
       window.__ASC_DASH__ = initialData;
     </script>
 
-    <!-- Client-side Synchronization, Real-time Polling & UI Script -->
+    <!-- Client-side Interactive Script -->
     <script>
       interface SyncData {
         user: any;
         business: any;
         requests: any[];
         activities: any[];
+        allServices: any[];
         stats: {
           total: number;
           active: number;
@@ -904,22 +1454,28 @@ const initialData = {
 
       let state: SyncData = (window as any).__ASC_DASH__;
 
-      // Broadcast channel for multi-tab synchronization
-      const syncChannel = new BroadcastChannel('ascelstack_customer_sync');
-
-      // Toast notification helper
+      // Toast Notification Helper (clean SVGs, no emojis)
       function showToast(message: string, type: 'success' | 'error' | 'info' = 'success') {
         const hub = document.getElementById('toast-hub');
         if (!hub) return;
+
+        const iconSvg =
+          type === 'success'
+            ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>`
+            : type === 'error'
+              ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`
+              : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
 
         const toast = document.createElement('div');
         toast.className = `toast-item toast-${type}`;
         toast.innerHTML = `
           <div class="toast-content">
-            <span class="toast-icon">${type === 'success' ? '✓' : type === 'error' ? '⚠' : 'ℹ'}</span>
+            <span class="toast-icon">${iconSvg}</span>
             <span>${message}</span>
           </div>
-          <button class="toast-close" type="button">✕</button>
+          <button class="toast-close" type="button" aria-label="Close">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
         `;
 
         toast.querySelector('.toast-close')?.addEventListener('click', () => toast.remove());
@@ -931,45 +1487,7 @@ const initialData = {
         }, 4500);
       }
 
-      // Update UI elements from current state
-      function renderState(newState: SyncData) {
-        state = newState;
-
-        // Update counts
-        document.querySelectorAll('[data-bind-total]').forEach((el) => (el.textContent = String(state.stats.total)));
-        document.querySelectorAll('[data-bind-total-badge]').forEach((el) => (el.textContent = String(state.stats.total)));
-        document.querySelectorAll('[data-bind-active]').forEach((el) => (el.textContent = String(state.stats.active)));
-        document.querySelectorAll('[data-bind-pending]').forEach((el) => (el.textContent = String(state.stats.pending)));
-        document.querySelectorAll('[data-bind-completed]').forEach((el) => (el.textContent = String(state.stats.completed)));
-
-        // Update business names
-        if (state.business?.businessName) {
-          document.querySelectorAll('[data-bind-biz-name]').forEach((el) => (el.textContent = state.business.businessName));
-        }
-
-        // Update user name
-        if (state.user?.fullName) {
-          document.querySelectorAll('[data-bind-user-name]').forEach((el) => (el.textContent = state.user.fullName));
-        }
-      }
-
-      // Sync with server API
-      async function syncWithServer(silent = true) {
-        try {
-          const res = await fetch('/api/customer/sync');
-          if (!res.ok) return;
-          const data = await res.json();
-          renderState(data);
-          syncChannel.postMessage({ type: 'SYNC_UPDATE', state: data });
-          if (!silent) {
-            showToast('Synchronized with Neon database', 'info');
-          }
-        } catch (e) {
-          console.warn('Sync failed:', e);
-        }
-      }
-
-      // Tab navigation
+      // Sidebar Tab Navigation
       const navItems = document.querySelectorAll<HTMLButtonElement>('.sidebar-nav .nav-item');
       const views = document.querySelectorAll<HTMLElement>('.dash-view');
       const currentViewLabel = document.querySelector<HTMLElement>('[data-bind-current-view]');
@@ -980,34 +1498,37 @@ const initialData = {
 
         if (currentViewLabel) {
           const activeBtn = Array.from(navItems).find((b) => b.dataset.tab === targetTab);
-          currentViewLabel.textContent = activeBtn?.querySelector('span')?.textContent || 'Overview';
+          const rawText = activeBtn?.querySelector('span')?.textContent || 'Overview';
+          currentViewLabel.textContent = rawText;
         }
 
         history.replaceState(null, '', `#${targetTab}`);
         window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // Close sidebar on mobile after navigating
+        document.querySelector('[data-sidebar]')?.classList.remove('is-open');
       }
 
       navItems.forEach((btn) => {
         btn.addEventListener('click', () => {
           const tab = btn.dataset.tab;
           if (tab) switchTab(tab);
-          // Close sidebar on mobile after clicking
-          document.querySelector('[data-sidebar]')?.classList.remove('is-open');
         });
       });
 
-      // Quick action buttons
+      // Quick action button listeners
+      document.querySelectorAll('[data-action="go-planner"]').forEach((b) => b.addEventListener('click', () => switchTab('planner')));
       document.querySelectorAll('[data-action="go-explore"]').forEach((b) => b.addEventListener('click', () => switchTab('explore')));
       document.querySelectorAll('[data-action="go-business"]').forEach((b) => b.addEventListener('click', () => switchTab('business')));
       document.querySelectorAll('[data-action="go-my-services"]').forEach((b) => b.addEventListener('click', () => switchTab('my-services')));
 
-      // Initialize tab from hash
+      // Initialize from URL hash
       const hash = location.hash.replace('#', '');
       if (hash && document.querySelector(`[data-view="${hash}"]`)) {
         switchTab(hash);
       }
 
-      // Mobile sidebar toggle
+      // Mobile sidebar toggle listeners
       document.querySelector('[data-open-sidebar]')?.addEventListener('click', () => {
         document.querySelector('[data-sidebar]')?.classList.add('is-open');
       });
@@ -1015,87 +1536,727 @@ const initialData = {
         document.querySelector('[data-sidebar]')?.classList.remove('is-open');
       });
 
-      // Explore Services Filter & Search Logic
-      const exploreSearch = document.getElementById('explore-search-input') as HTMLInputElement;
-      const exploreCards = document.querySelectorAll<HTMLElement>('.explore-card');
-      const layerFilters = document.querySelectorAll<HTMLButtonElement>('[data-layer-filter]');
-      const disciplineFilter = document.getElementById('explore-discipline-filter') as HTMLSelectElement;
-      const noResults = document.getElementById('explore-no-results');
+      // ----------------------------------------------------------------------
+      // LOGOUT MODAL & FUNCTIONALITY (Stay / Logout options)
+      // ----------------------------------------------------------------------
+      const modalConfirmLogout = document.getElementById('modal-confirm-logout') as HTMLElement;
+      const btnLogoutProceed = document.getElementById('btn-logout-proceed') as HTMLButtonElement;
+      const btnLogoutStay = document.getElementById('btn-logout-stay') as HTMLButtonElement;
 
-      let currentLayer = 'all';
-      let currentDiscipline = 'all';
+      // Open logout confirmation dialog when clicking the bottom-left Logout button
+      document.querySelectorAll('[data-action="open-logout-modal"]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (modalConfirmLogout) {
+            modalConfirmLogout.hidden = false;
+            btnLogoutStay?.focus();
+          }
+        });
+      });
 
-      function filterExploreCatalog() {
-        const query = exploreSearch?.value.trim().toLowerCase() || '';
-        let visibleCount = 0;
+      // Option 1: Stay (cancel and close modal)
+      btnLogoutStay?.addEventListener('click', () => {
+        if (modalConfirmLogout) {
+          modalConfirmLogout.hidden = true;
+        }
+      });
 
-        exploreCards.forEach((card) => {
-          const matchesLayer = currentLayer === 'all' || card.dataset.layer === currentLayer;
-          const matchesDiscipline = currentDiscipline === 'all' || card.dataset.discipline === currentDiscipline;
-          const matchesSearch = !query || (card.dataset.search?.includes(query) ?? false);
+      // Close modal on backdrop click
+      modalConfirmLogout?.addEventListener('click', (e) => {
+        if (e.target === modalConfirmLogout) {
+          modalConfirmLogout.hidden = true;
+        }
+      });
 
-          const isMatch = matchesLayer && matchesDiscipline && matchesSearch;
-          card.hidden = !isMatch;
-          if (isMatch) visibleCount++;
+      // Option 2: Logout (cleanly sign out of Clerk & redirect to /login)
+      btnLogoutProceed?.addEventListener('click', async () => {
+        btnLogoutProceed.disabled = true;
+        btnLogoutProceed.innerHTML = '<span>Signing out...</span>';
+
+        // Set safety timer to force redirect if network hangs
+        const forceTimer = setTimeout(() => {
+          try {
+            document.cookie = '__session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            document.cookie = '__client_uat=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+          } catch {}
+          window.location.href = '/login';
+        }, 1200);
+
+        try {
+          // 1. Trigger Clerk's native button handler if available
+          const nativeTrigger = document.getElementById('native-clerk-signout-trigger') as HTMLButtonElement | null;
+          if (nativeTrigger) {
+            nativeTrigger.click();
+          }
+
+          // 2. Programmatically invoke window.Clerk.signOut
+          const clerk = (window as any).Clerk;
+          if (clerk && typeof clerk.signOut === 'function') {
+            await clerk.signOut({ redirectUrl: '/login' });
+          }
+        } catch (err) {
+          console.warn('Clerk signOut error, initiating fallback redirect:', err);
+        }
+
+        clearTimeout(forceTimer);
+
+        // 3. Clear session cookies & redirect
+        try {
+          document.cookie = '__session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+          document.cookie = '__client_uat=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+        } catch {}
+
+        window.location.href = '/login';
+      });
+
+      // ----------------------------------------------------------------------
+      // PROJECT ESTIMATION PLANNER ENGINE
+      // ----------------------------------------------------------------------
+      const DISCIPLINE_BASE_RATES: Record<string, { inr: number; hours: number; weeks: number }> = {
+        'Technology & Software Development': { inr: 60000, hours: 65, weeks: 3.5 },
+        'AI, Automation & Emerging Technologies': { inr: 70000, hours: 75, weeks: 3.5 },
+        'Digital Marketing & Online Growth': { inr: 40000, hours: 40, weeks: 2.0 },
+        'Branding, Graphics & Creative Studio': { inr: 38000, hours: 40, weeks: 2.0 },
+        'E-commerce & Marketplace Management': { inr: 48000, hours: 50, weeks: 2.5 },
+        'Business Management & Digital Operations': { inr: 45000, hours: 45, weeks: 2.5 },
+        'Restaurant, Cafe & Food Business Solutions': { inr: 38000, hours: 40, weeks: 2.0 },
+        'Business Registration, Licensing & Compliance': { inr: 22000, hours: 20, weeks: 1.5 },
+        'IT Infrastructure & Technical Support': { inr: 35000, hours: 35, weeks: 2.0 },
+      };
+
+      const USD_EXCHANGE_RATE = 85;
+      let plannerCurrency: 'INR' | 'USD' = 'INR';
+      let selectedServiceIds = new Set<string>();
+
+      function getServiceBaseMetrics(svc: any) {
+        const disciplineRate = DISCIPLINE_BASE_RATES[svc.discipline] || { inr: 42000, hours: 42, weeks: 2.5 };
+        let cost = disciplineRate.inr;
+        let hours = disciplineRate.hours;
+        let weeks = disciplineRate.weeks;
+
+        const nameLower = (svc.name || '').toLowerCase();
+        if (nameLower.includes('saas') || nameLower.includes('web application') || nameLower.includes('mobile app')) {
+          cost = 85000;
+          hours = 90;
+          weeks = 4.5;
+        } else if (nameLower.includes('agent') || nameLower.includes('ai') || nameLower.includes('automation')) {
+          cost = 70000;
+          hours = 75;
+          weeks = 3.5;
+        } else if (nameLower.includes('gst') || nameLower.includes('trademark') || nameLower.includes('registration')) {
+          cost = 22000;
+          hours = 20;
+          weeks = 1.5;
+        } else if (nameLower.includes('brand') || nameLower.includes('logo') || nameLower.includes('identity')) {
+          cost = 38000;
+          hours = 40;
+          weeks = 2.0;
+        }
+
+        return { cost, hours, weeks };
+      }
+
+      function formatMoney(amountInr: number) {
+        if (plannerCurrency === 'USD') {
+          const usd = Math.round(amountInr / USD_EXCHANGE_RATE);
+          return `$${usd.toLocaleString('en-US')}`;
+        }
+        return `₹${Math.round(amountInr).toLocaleString('en-IN')}`;
+      }
+
+      function recalculateEstimate() {
+        const selectedServices = state.allServices.filter((s) => selectedServiceIds.has(s.id));
+        const count = selectedServices.length;
+
+        const counterEl = document.getElementById('planner-selected-count');
+        if (counterEl) counterEl.textContent = `${count} selected`;
+
+        const tierInput = document.querySelector<HTMLInputElement>('input[name="project-tier"]:checked');
+        const tier = tierInput?.value || 'starter';
+        let tierMultiplier = 1.0;
+        if (tier === 'growth') tierMultiplier = 1.5;
+        if (tier === 'enterprise') tierMultiplier = 2.2;
+
+        const urgencySelect = document.getElementById('planner-urgency') as HTMLSelectElement;
+        const urgency = urgencySelect?.value || 'standard';
+        let urgencyCostMult = 1.0;
+        let urgencyTimeMult = 1.0;
+        if (urgency === 'sprint') {
+          urgencyCostMult = 1.2;
+          urgencyTimeMult = 0.7;
+        } else if (urgency === 'phased') {
+          urgencyCostMult = 0.95;
+          urgencyTimeMult = 1.3;
+        }
+
+        const supportSelect = document.getElementById('planner-support') as HTMLSelectElement;
+        const support = supportSelect?.value || 'none';
+        let supportAddonInr = 0;
+        if (support === 'hypercare') supportAddonInr = 35000;
+        if (support === 'retainer') supportAddonInr = 75000;
+
+        let rawCost = 0;
+        let totalHours = 0;
+        let maxWeeks = 0;
+        let buildCost = 0;
+        let growCost = 0;
+        let runCost = 0;
+
+        selectedServices.forEach((svc) => {
+          const { cost, hours, weeks } = getServiceBaseMetrics(svc);
+          const scaledCost = cost * tierMultiplier * urgencyCostMult;
+          rawCost += scaledCost;
+          totalHours += hours * (tierMultiplier > 1 ? tierMultiplier * 0.85 : 1);
+          if (weeks > maxWeeks) maxWeeks = weeks;
+
+          if (svc.layer === 'build') buildCost += scaledCost;
+          else if (svc.layer === 'grow') growCost += scaledCost;
+          else if (svc.layer === 'run') runCost += scaledCost;
         });
 
-        if (noResults) {
-          noResults.hidden = visibleCount > 0;
+        // Stack Synergy Savings
+        let synergyDiscount = 0;
+        const distinctLayers = new Set(selectedServices.map((s) => s.layer)).size;
+        if (count >= 5) {
+          synergyDiscount = rawCost * 0.15;
+        } else if (count >= 3 || distinctLayers >= 2) {
+          synergyDiscount = rawCost * 0.10;
+        }
+
+        const finalTotalInr = Math.max(0, rawCost - synergyDiscount + supportAddonInr);
+
+        let totalWeeks = 0;
+        if (count > 0) {
+          totalWeeks = Math.max(2, Math.round((maxWeeks + Math.sqrt(count) * 1.4) * urgencyTimeMult));
+        }
+
+        // Update UI
+        const priceEl = document.getElementById('est-total-price');
+        if (priceEl) priceEl.textContent = formatMoney(finalTotalInr);
+
+        const durationEl = document.getElementById('est-duration');
+        if (durationEl) durationEl.textContent = count > 0 ? `${totalWeeks}–${totalWeeks + 2} Wks` : '0 Weeks';
+
+        const hoursEl = document.getElementById('est-hours');
+        if (hoursEl) hoursEl.textContent = count > 0 ? `${Math.round(totalHours)} Hrs` : '0 Hrs';
+
+        const svcCountEl = document.getElementById('est-service-count');
+        if (svcCountEl) svcCountEl.textContent = `${count} Stacked`;
+
+        // Synergy Banner
+        const synergyBanner = document.getElementById('est-synergy-banner');
+        const synergyAmountEl = document.getElementById('est-synergy-amount');
+        if (synergyBanner && synergyAmountEl) {
+          if (synergyDiscount > 0) {
+            synergyBanner.hidden = false;
+            synergyAmountEl.textContent = `-${formatMoney(synergyDiscount)}`;
+          } else {
+            synergyBanner.hidden = true;
+          }
+        }
+
+        // Layer Allocation Bar
+        const totalLayerCost = buildCost + growCost + runCost || 1;
+        const pctBuild = count > 0 ? Math.round((buildCost / totalLayerCost) * 100) : 33;
+        const pctGrow = count > 0 ? Math.round((growCost / totalLayerCost) * 100) : 33;
+        const pctRun = count > 0 ? 100 - pctBuild - pctGrow : 34;
+
+        const barBuild = document.getElementById('bar-build');
+        const barGrow = document.getElementById('bar-grow');
+        const barRun = document.getElementById('bar-run');
+        if (barBuild) barBuild.style.width = `${pctBuild}%`;
+        if (barGrow) barGrow.style.width = `${pctGrow}%`;
+        if (barRun) barRun.style.width = `${pctRun}%`;
+
+        const pctBuildEl = document.getElementById('pct-build');
+        const pctGrowEl = document.getElementById('pct-grow');
+        const pctRunEl = document.getElementById('pct-run');
+        if (pctBuildEl) pctBuildEl.textContent = `${pctBuild}%`;
+        if (pctGrowEl) pctGrowEl.textContent = `${pctGrow}%`;
+        if (pctRunEl) pctRunEl.textContent = `${pctRun}%`;
+
+        // Milestones
+        const m1 = document.getElementById('ms-time-1');
+        const m2 = document.getElementById('ms-time-2');
+        const m3 = document.getElementById('ms-time-3');
+        const m4 = document.getElementById('ms-time-4');
+        if (count > 0 && totalWeeks > 0) {
+          const w1 = Math.max(1, Math.round(totalWeeks * 0.25));
+          const w2 = Math.max(w1 + 1, Math.round(totalWeeks * 0.6));
+          const w3 = Math.max(w2 + 1, Math.round(totalWeeks * 0.85));
+          const w4 = totalWeeks;
+          if (m1) m1.textContent = `Weeks 1–${w1}`;
+          if (m2) m2.textContent = `Weeks ${w1}–${w2}`;
+          if (m3) m3.textContent = `Weeks ${w2}–${w3}`;
+          if (m4) m4.textContent = `Weeks ${w3}–${w4}`;
+        } else {
+          if (m1) m1.textContent = 'Weeks 1–2';
+          if (m2) m2.textContent = 'Weeks 2–4';
+          if (m3) m3.textContent = 'Weeks 4–5';
+          if (m4) m4.textContent = 'Weeks 5–6';
+        }
+
+        // Update basket count indicator
+        const basketCountEl = document.getElementById('est-basket-count');
+        if (basketCountEl) basketCountEl.textContent = `${count} ${count === 1 ? 'item' : 'items'}`;
+
+        // Render basket list
+        const basketList = document.getElementById('est-basket-items');
+        if (basketList) {
+          if (count === 0) {
+            basketList.innerHTML = `<li class="basket-empty-msg text-muted">No services selected. Pick services from the catalog list to model your project.</li>`;
+          } else {
+            basketList.innerHTML = selectedServices
+              .map((svc) => {
+                const { cost } = getServiceBaseMetrics(svc);
+                const scaledCost = cost * tierMultiplier * urgencyCostMult;
+                return `
+                  <li class="basket-item">
+                    <div class="basket-item-info">
+                      <span class="basket-layer-pill layer-${svc.layer}">${svc.layer}</span>
+                      <span class="basket-item-name" title="${svc.name}">${svc.name}</span>
+                    </div>
+                    <div class="basket-item-right">
+                      <span class="mono basket-item-price">${formatMoney(scaledCost)}</span>
+                      <button type="button" class="basket-remove-btn" data-remove-id="${svc.id}" title="Remove ${svc.name} from scope" aria-label="Remove">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <line x1="18" y1="6" x2="6" y2="18"></line>
+                          <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                      </button>
+                    </div>
+                  </li>
+                `;
+              })
+              .join('');
+
+            basketList.querySelectorAll<HTMLButtonElement>('[data-remove-id]').forEach((btn) => {
+              btn.addEventListener('click', () => {
+                const id = btn.dataset.removeId;
+                if (id) {
+                  selectedServiceIds.delete(id);
+                  const checkbox = document.querySelector<HTMLInputElement>(`.planner-svc-checkbox[value="${id}"]`);
+                  if (checkbox) {
+                    checkbox.checked = false;
+                    checkbox.closest('.svc-select-item')?.classList.remove('is-selected');
+                  }
+                  recalculateEstimate();
+                }
+              });
+            });
+          }
+        }
+
+        const submitBtn = document.getElementById('btn-submit-estimate') as HTMLButtonElement;
+        if (submitBtn) {
+          submitBtn.disabled = count === 0;
         }
       }
 
-      exploreSearch?.addEventListener('input', filterExploreCatalog);
-      layerFilters.forEach((btn) => {
+      // Populate base prices
+      document.querySelectorAll<HTMLElement>('.svc-select-item').forEach((item) => {
+        const disc = item.dataset.svcDiscipline || '';
+        const name = item.dataset.svcName || '';
+        const { cost } = getServiceBaseMetrics({ discipline: disc, name });
+        const priceSpan = item.querySelector<HTMLElement>('[data-base-price]');
+        if (priceSpan) priceSpan.textContent = formatMoney(cost);
+      });
+
+      // Checkbox changes
+      const serviceCheckboxes = document.querySelectorAll<HTMLInputElement>('.planner-svc-checkbox');
+      serviceCheckboxes.forEach((checkbox) => {
+        checkbox.addEventListener('change', () => {
+          const id = checkbox.value;
+          const card = checkbox.closest('.svc-select-item');
+          if (checkbox.checked) {
+            selectedServiceIds.add(id);
+            card?.classList.add('is-selected');
+          } else {
+            selectedServiceIds.delete(id);
+            card?.classList.remove('is-selected');
+          }
+          recalculateEstimate();
+        });
+      });
+
+      // Tier Radio
+      document.querySelectorAll<HTMLInputElement>('input[name="project-tier"]').forEach((radio) => {
+        radio.addEventListener('change', () => {
+          document.querySelectorAll('.tier-card').forEach((tc) => tc.classList.remove('is-checked'));
+          radio.closest('.tier-card')?.classList.add('is-checked');
+          recalculateEstimate();
+        });
+      });
+
+      document.getElementById('planner-urgency')?.addEventListener('change', recalculateEstimate);
+      document.getElementById('planner-support')?.addEventListener('change', recalculateEstimate);
+
+      // Currency Switcher
+      document.querySelectorAll<HTMLButtonElement>('.curr-pill').forEach((btn) => {
         btn.addEventListener('click', () => {
-          layerFilters.forEach((b) => b.classList.remove('is-on'));
+          document.querySelectorAll('.curr-pill').forEach((b) => b.classList.remove('is-active'));
+          btn.classList.add('is-active');
+          plannerCurrency = (btn.dataset.curr as 'INR' | 'USD') || 'INR';
+
+          document.querySelectorAll<HTMLElement>('.svc-select-item').forEach((item) => {
+            const disc = item.dataset.svcDiscipline || '';
+            const name = item.dataset.svcName || '';
+            const { cost } = getServiceBaseMetrics({ discipline: disc, name });
+            const priceSpan = item.querySelector<HTMLElement>('[data-base-price]');
+            if (priceSpan) priceSpan.textContent = formatMoney(cost);
+          });
+
+          recalculateEstimate();
+        });
+      });
+
+      // Preset Stacks
+      function applyPreset(presetKey: string) {
+        selectedServiceIds.clear();
+        serviceCheckboxes.forEach((cb) => {
+          cb.checked = false;
+          cb.closest('.svc-select-item')?.classList.remove('is-selected');
+        });
+
+        let targetKeywords: string[] = [];
+        let targetTier = 'starter';
+
+        if (presetKey === 'mvp') {
+          targetKeywords = ['website development', 'brand identity', 'business registration'];
+          targetTier = 'starter';
+        } else if (presetKey === 'ai-ops') {
+          targetKeywords = ['web application', 'ai', 'automation', 'crm'];
+          targetTier = 'growth';
+        } else if (presetKey === 'ecommerce') {
+          targetKeywords = ['e-commerce', 'marketplace', 'seo'];
+          targetTier = 'growth';
+        } else if (presetKey === 'enterprise') {
+          targetKeywords = ['saas', 'mobile app', 'cloud', 'operations'];
+          targetTier = 'enterprise';
+        }
+
+        targetKeywords.forEach((kw) => {
+          const match = state.allServices.find((s) => s.name.toLowerCase().includes(kw));
+          if (match) {
+            selectedServiceIds.add(match.id);
+            const cb = document.querySelector<HTMLInputElement>(`.planner-svc-checkbox[value="${match.id}"]`);
+            if (cb) {
+              cb.checked = true;
+              cb.closest('.svc-select-item')?.classList.add('is-selected');
+            }
+          }
+        });
+
+        const tierRadio = document.querySelector<HTMLInputElement>(`input[name="project-tier"][value="${targetTier}"]`);
+        if (tierRadio) {
+          tierRadio.checked = true;
+          document.querySelectorAll('.tier-card').forEach((tc) => tc.classList.remove('is-checked'));
+          tierRadio.closest('.tier-card')?.classList.add('is-checked');
+        }
+
+        recalculateEstimate();
+        showToast(`Loaded ${presetKey.toUpperCase()} preset template`, 'info');
+      }
+
+      document.querySelectorAll<HTMLButtonElement>('[data-preset]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const preset = btn.dataset.preset;
+          if (preset) applyPreset(preset);
+        });
+      });
+
+      // Matrix Search Filter
+      const matrixSearch = document.getElementById('planner-service-search') as HTMLInputElement;
+      const matrixLayerPills = document.querySelectorAll<HTMLButtonElement>('.mlp-btn');
+      let currentMatrixLayer = 'all';
+
+      function filterPlannerMatrix() {
+        const query = matrixSearch?.value.trim().toLowerCase() || '';
+        document.querySelectorAll<HTMLElement>('.svc-select-item').forEach((item) => {
+          const layer = item.dataset.svcLayer;
+          const searchData = item.dataset.search || '';
+          const matchesLayer = currentMatrixLayer === 'all' || layer === currentMatrixLayer;
+          const matchesQuery = !query || searchData.includes(query);
+          item.hidden = !(matchesLayer && matchesQuery);
+        });
+      }
+
+      matrixSearch?.addEventListener('input', filterPlannerMatrix);
+      matrixLayerPills.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          matrixLayerPills.forEach((b) => b.classList.remove('is-on'));
           btn.classList.add('is-on');
-          currentLayer = btn.dataset.layerFilter || 'all';
-          filterExploreCatalog();
-        });
-      });
-      disciplineFilter?.addEventListener('change', () => {
-        currentDiscipline = disciplineFilter.value;
-        filterExploreCatalog();
-      });
-
-      // Add Service Modal Handling
-      const modalAddService = document.getElementById('modal-add-service') as HTMLElement;
-      const formAddService = document.getElementById('form-add-service') as HTMLFormElement;
-
-      document.querySelectorAll('[data-action="open-add-service-modal"]').forEach((btn) => {
-        btn.addEventListener('click', (e) => {
-          const target = e.currentTarget as HTMLElement;
-          const svcId = target.dataset.id;
-          const svcName = target.dataset.name;
-          const svcCode = target.dataset.code;
-          const svcLayer = target.dataset.layer;
-          const svcDesc = target.dataset.desc;
-
-          if (!modalAddService) return;
-
-          (document.getElementById('modal-svc-id') as HTMLInputElement).value = svcId || '';
-          document.getElementById('modal-svc-name')!.textContent = svcName || '';
-          document.getElementById('modal-svc-code')!.textContent = svcCode || '';
-          document.getElementById('modal-svc-layer')!.textContent = `${svcLayer?.toUpperCase()} LAYER`;
-          document.getElementById('modal-svc-desc')!.textContent = svcDesc || '';
-
-          modalAddService.hidden = false;
+          currentMatrixLayer = btn.dataset.layerFilter || 'all';
+          filterPlannerMatrix();
         });
       });
 
-      // Close modals
+      // Reset
+      document.getElementById('btn-reset-planner')?.addEventListener('click', () => {
+        selectedServiceIds.clear();
+        serviceCheckboxes.forEach((cb) => {
+          cb.checked = false;
+          cb.closest('.svc-select-item')?.classList.remove('is-selected');
+        });
+        recalculateEstimate();
+        showToast('Planner reset to empty state', 'info');
+      });
+
+      // Submit as Project Requests (Neon DB) Custom Modal Flow
+      const btnSubmitEstimate = document.getElementById('btn-submit-estimate') as HTMLButtonElement;
+      const modalSubmitStack = document.getElementById('modal-confirm-submit-stack') as HTMLElement;
+      const btnConfirmSubmitPipeline = document.getElementById('btn-confirm-submit-pipeline') as HTMLButtonElement;
+      const modalSubmitProjName = document.getElementById('modal-submit-proj-name') as HTMLInputElement;
+      const modalSubmitCount = document.getElementById('modal-submit-count') as HTMLElement;
+      const modalSubmitPrice = document.getElementById('modal-submit-price') as HTMLElement;
+      const modalSubmitTimeline = document.getElementById('modal-submit-timeline') as HTMLElement;
+      const modalSubmitHours = document.getElementById('modal-submit-hours') as HTMLElement;
+      const modalSubmitServicesCount = document.getElementById('modal-submit-services-count') as HTMLElement;
+      const modalSubmitServicesList = document.getElementById('modal-submit-services-list') as HTMLElement;
+
+      // When clicking "Submit as Project Requests" on the planner sticky board
+      btnSubmitEstimate?.addEventListener('click', () => {
+        const selectedServices = state.allServices.filter((s) => selectedServiceIds.has(s.id));
+        if (selectedServices.length === 0) {
+          showToast('Please select at least 1 service to submit a project scope.', 'warn');
+          return;
+        }
+
+        const projectName = (document.getElementById('planner-project-name') as HTMLInputElement)?.value.trim() || 'Ascelstack Custom Growth Stack';
+        if (modalSubmitProjName) modalSubmitProjName.value = projectName;
+
+        if (modalSubmitCount) modalSubmitCount.textContent = `${selectedServices.length}`;
+        if (modalSubmitPrice) modalSubmitPrice.textContent = document.getElementById('est-total-price')?.textContent || '₹0';
+        if (modalSubmitTimeline) modalSubmitTimeline.textContent = document.getElementById('est-duration')?.textContent || 'Weeks 1–4';
+        if (modalSubmitHours) modalSubmitHours.textContent = document.getElementById('est-hours')?.textContent || '0 hrs';
+        if (modalSubmitServicesCount) modalSubmitServicesCount.textContent = `${selectedServices.length} ${selectedServices.length === 1 ? 'service' : 'services'}`;
+
+        const tierInput = document.querySelector<HTMLInputElement>('input[name="project-tier"]:checked');
+        const tier = tierInput?.value || 'starter';
+        let tierMultiplier = 1.0;
+        if (tier === 'growth') tierMultiplier = 1.5;
+        if (tier === 'enterprise') tierMultiplier = 2.2;
+
+        const urgencySelect = document.getElementById('planner-urgency') as HTMLSelectElement;
+        let urgencyCostMult = 1.0;
+        if (urgencySelect?.value === 'sprint') urgencyCostMult = 1.2;
+        if (urgencySelect?.value === 'phased') urgencyCostMult = 0.95;
+
+        // Render services in the modal scope list
+        if (modalSubmitServicesList) {
+          modalSubmitServicesList.innerHTML = selectedServices
+            .map((svc) => {
+              const { cost } = getServiceBaseMetrics(svc);
+              const scaledCost = cost * tierMultiplier * urgencyCostMult;
+              return `
+                <li class="submit-svc-item">
+                  <div class="submit-svc-left">
+                    <span class="basket-layer-pill layer-${svc.layer}">${svc.layer}</span>
+                    <span class="mono submit-svc-code">${svc.code}</span>
+                    <strong class="submit-svc-name" title="${svc.name}">${svc.name}</strong>
+                  </div>
+                  <span class="mono submit-svc-price">${formatMoney(scaledCost)}</span>
+                </li>
+              `;
+            })
+            .join('');
+        }
+
+        if (modalSubmitStack) {
+          modalSubmitStack.hidden = false;
+        }
+      });
+
+      // Confirm button inside modal
+      btnConfirmSubmitPipeline?.addEventListener('click', async () => {
+        const selectedServices = state.allServices.filter((s) => selectedServiceIds.has(s.id));
+        if (selectedServices.length === 0) return;
+
+        const projectName = modalSubmitProjName?.value.trim() || 'Ascelstack Custom Growth Stack';
+        const tierInput = document.querySelector<HTMLInputElement>('input[name="project-tier"]:checked');
+        const tier = tierInput?.value || 'starter';
+        const urgency = (document.getElementById('planner-urgency') as HTMLSelectElement)?.value || 'standard';
+
+        btnConfirmSubmitPipeline.disabled = true;
+        btnConfirmSubmitPipeline.innerHTML = '<span>Submitting...</span>';
+
+        let successCount = 0;
+        let duplicateCount = 0;
+
+        for (const svc of selectedServices) {
+          try {
+            const requirements = `[Project Estimation Planner: ${projectName}] Scale: ${tier.toUpperCase()}, Urgency: ${urgency.toUpperCase()}. Configured via Client Portal Planner.`;
+            const res = await fetch('/api/customer/service-requests', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ serviceId: svc.id, requirements }),
+            });
+
+            if (res.ok) {
+              successCount++;
+            } else if (res.status === 409) {
+              duplicateCount++;
+            }
+          } catch (e) {
+            console.error('Failed to submit service:', svc.name, e);
+          }
+        }
+
+        btnConfirmSubmitPipeline.disabled = false;
+        btnConfirmSubmitPipeline.innerHTML = '<span>Submit</span><span class="arrow">→</span>';
+
+        if (modalSubmitStack) {
+          modalSubmitStack.hidden = true;
+        }
+
+        if (successCount > 0) {
+          showToast(`Successfully registered ${successCount} service requests!`, 'success');
+          setTimeout(() => location.reload(), 1200);
+        } else if (duplicateCount > 0) {
+          showToast('Selected services are already active or pending in your pipeline.', 'info');
+        } else {
+          showToast('Failed to submit requests. Please try again.', 'error');
+        }
+      });
+
+      // SOW Export Modal
+      const modalSow = document.getElementById('modal-sow-export') as HTMLElement;
+      document.getElementById('btn-export-sow')?.addEventListener('click', () => {
+        const selectedServices = state.allServices.filter((s) => selectedServiceIds.has(s.id));
+        if (selectedServices.length === 0) {
+          showToast('Select at least one service before exporting an estimate.', 'info');
+          return;
+        }
+
+        const projectName = (document.getElementById('planner-project-name') as HTMLInputElement)?.value.trim() || 'Ascelstack Project';
+        const totalPrice = document.getElementById('est-total-price')?.textContent || '₹0';
+        const duration = document.getElementById('est-duration')?.textContent || '0 Weeks';
+        const hours = document.getElementById('est-hours')?.textContent || '0 Hours';
+
+        document.getElementById('sow-proj-name')!.textContent = projectName;
+        document.getElementById('sow-proj-cost')!.textContent = totalPrice;
+        document.getElementById('sow-proj-timeline')!.textContent = duration;
+        document.getElementById('sow-proj-hours')!.textContent = hours;
+        document.getElementById('sow-doc-ref')!.textContent = `EST-${Date.now().toString().slice(-6)}`;
+        document.getElementById('sow-doc-date')!.textContent = new Date().toLocaleDateString('en-IN', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+        });
+
+        const rowsContainer = document.getElementById('sow-services-rows');
+        if (rowsContainer) {
+          rowsContainer.innerHTML = selectedServices
+            .map((svc) => {
+              const { cost } = getServiceBaseMetrics(svc);
+              return `
+                <tr>
+                  <td class="mono">${svc.code || 'ASC-0000'}</td>
+                  <td><strong>${svc.name}</strong></td>
+                  <td><span class="layer-tag layer-${svc.layer}">${svc.layer}</span></td>
+                  <td class="text-muted">${svc.discipline}</td>
+                  <td class="mono">${formatMoney(cost)}</td>
+                </tr>
+              `;
+            })
+            .join('');
+        }
+
+        if (modalSow) modalSow.hidden = false;
+      });
+
+      document.getElementById('btn-print-sow')?.addEventListener('click', () => {
+        window.print();
+      });
+
+      // Default preset
+      applyPreset('mvp');
+
+      // ----------------------------------------------------------------------
+      // EXPLORE CATALOG SEARCH & MODAL
+      // ----------------------------------------------------------------------
+      const exploreSearch = document.getElementById('explore-search-input') as HTMLInputElement;
+      const exploreCards = document.querySelectorAll<HTMLElement>('.explore-card');
+      const exploreLayerFilters = document.querySelectorAll<HTMLButtonElement>('[data-layer-filter]');
+      const exploreDiscipline = document.getElementById('explore-discipline-filter') as HTMLSelectElement;
+      const exploreNoResults = document.getElementById('explore-no-results');
+
+      let curExpLayer = 'all';
+      let curExpDisc = 'all';
+
+      function filterExplore() {
+        const query = exploreSearch?.value.trim().toLowerCase() || '';
+        let count = 0;
+        exploreCards.forEach((card) => {
+          const matchLayer = curExpLayer === 'all' || card.dataset.layer === curExpLayer;
+          const matchDisc = curExpDisc === 'all' || card.dataset.discipline === curExpDisc;
+          const matchQuery = !query || (card.dataset.search?.includes(query) ?? false);
+          const ok = matchLayer && matchDisc && matchQuery;
+          card.hidden = !ok;
+          if (ok) count++;
+        });
+        if (exploreNoResults) exploreNoResults.hidden = count > 0;
+      }
+
+      exploreSearch?.addEventListener('input', filterExplore);
+      exploreLayerFilters.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          exploreLayerFilters.forEach((b) => b.classList.remove('is-on'));
+          btn.classList.add('is-on');
+          curExpLayer = btn.dataset.layerFilter || 'all';
+          filterExplore();
+        });
+      });
+      exploreDiscipline?.addEventListener('change', () => {
+        curExpDisc = exploreDiscipline.value;
+        filterExplore();
+      });
+
+      // Modals
       document.querySelectorAll('[data-close-modal]').forEach((btn) => {
         btn.addEventListener('click', () => {
           document.querySelectorAll('.modal-backdrop').forEach((m) => ((m as HTMLElement).hidden = true));
         });
       });
 
-      // Submit Add Service Request
+      // Close modal on backdrop click
+      document.querySelectorAll('.modal-backdrop').forEach((backdrop) => {
+        backdrop.addEventListener('click', (e) => {
+          if (e.target === backdrop) {
+            (backdrop as HTMLElement).hidden = true;
+          }
+        });
+      });
+
+      // Close open modals on Escape key
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          document.querySelectorAll('.modal-backdrop').forEach((m) => ((m as HTMLElement).hidden = true));
+        }
+      });
+
+      // Add Service
+      const modalAddService = document.getElementById('modal-add-service') as HTMLElement;
+      const formAddService = document.getElementById('form-add-service') as HTMLFormElement;
+
+      document.querySelectorAll('[data-action="open-add-service-modal"]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          const target = e.currentTarget as HTMLElement;
+          (document.getElementById('modal-svc-id') as HTMLInputElement).value = target.dataset.id || '';
+          document.getElementById('modal-svc-name')!.textContent = target.dataset.name || '';
+          document.getElementById('modal-svc-code')!.textContent = target.dataset.code || '';
+          document.getElementById('modal-svc-layer')!.textContent = `${target.dataset.layer?.toUpperCase()} LAYER`;
+          document.getElementById('modal-svc-desc')!.textContent = target.dataset.desc || '';
+          if (modalAddService) modalAddService.hidden = false;
+        });
+      });
+
       formAddService?.addEventListener('submit', async (e) => {
         e.preventDefault();
         const submitBtn = document.getElementById('btn-submit-request') as HTMLButtonElement;
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Saving to Neon...';
+        submitBtn.textContent = 'Saving...';
 
         const formData = new FormData(formAddService);
         const serviceId = formData.get('serviceId') as string;
@@ -1109,16 +2270,11 @@ const initialData = {
           });
 
           const data = await res.json();
-          if (!res.ok) {
-            throw new Error(data.error || 'Failed to submit request');
-          }
+          if (!res.ok) throw new Error(data.error || 'Failed to submit request');
 
           modalAddService.hidden = true;
           formAddService.reset();
-          showToast(`Request submitted for ${data.request?.service?.name}! Status: Pending.`, 'success');
-
-          // Immediately sync and reload full dashboard
-          await syncWithServer();
+          showToast(`Request registered for ${data.request?.service?.name}! Status: Pending.`, 'success');
           location.reload();
         } catch (err: any) {
           showToast(err.message, 'error');
@@ -1128,101 +2284,16 @@ const initialData = {
         }
       });
 
-      // Save Business Profile
-      const formBusiness = document.getElementById('business-form') as HTMLFormElement;
-      formBusiness?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const saveBtn = document.getElementById('btn-save-biz') as HTMLButtonElement;
-        const statusSpan = document.getElementById('biz-save-status');
-
-        saveBtn.disabled = true;
-        if (statusSpan) statusSpan.textContent = 'Saving...';
-
-        const formData = new FormData(formBusiness);
-        const payload: Record<string, any> = {};
-        formData.forEach((val, key) => {
-          payload[key] = typeof val === 'string' ? val.trim() : val;
-        });
-
-        // Don't send empty ID
-        if (!payload.id) delete payload.id;
-
-        try {
-          const res = await fetch('/api/customer/business', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-          });
-
-          const data = await res.json();
-          if (!res.ok) {
-            throw new Error(data.error || 'Failed to update business profile');
-          }
-
-          if (data.business?.id) {
-            (formBusiness.querySelector('input[name="id"]') as HTMLInputElement).value = data.business.id;
-          }
-
-          showToast('Business profile persisted in Neon PostgreSQL', 'success');
-          if (statusSpan) statusSpan.textContent = 'Saved ✓';
-          await syncWithServer();
-        } catch (err: any) {
-          showToast(err.message, 'error');
-          if (statusSpan) statusSpan.textContent = 'Error';
-        } finally {
-          saveBtn.disabled = false;
-        }
-      });
-
-      // Save Customer Profile (Settings)
-      const formProfile = document.getElementById('profile-form') as HTMLFormElement;
-      formProfile?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const saveBtn = document.getElementById('btn-save-profile') as HTMLButtonElement;
-        const statusSpan = document.getElementById('profile-save-status');
-
-        saveBtn.disabled = true;
-        if (statusSpan) statusSpan.textContent = 'Saving...';
-
-        const formData = new FormData(formProfile);
-        const fullName = formData.get('fullName') as string;
-
-        try {
-          const res = await fetch('/api/customer/profile', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fullName }),
-          });
-
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || 'Failed to update profile');
-
-          showToast('Profile name updated successfully', 'success');
-          if (statusSpan) statusSpan.textContent = 'Saved ✓';
-          await syncWithServer();
-        } catch (err: any) {
-          showToast(err.message, 'error');
-          if (statusSpan) statusSpan.textContent = 'Error';
-        } finally {
-          saveBtn.disabled = false;
-        }
-      });
-
-      // Edit Requirements Modal
+      // Edit Requirements
       const modalEditReq = document.getElementById('modal-edit-req') as HTMLElement;
       const formEditReq = document.getElementById('form-edit-req') as HTMLFormElement;
 
       document.querySelectorAll('[data-action="edit-req"]').forEach((btn) => {
         btn.addEventListener('click', (e) => {
           const target = e.currentTarget as HTMLElement;
-          const id = target.dataset.id;
-          const req = target.dataset.req || '';
-          const name = target.dataset.name;
-
-          (document.getElementById('edit-req-id') as HTMLInputElement).value = id || '';
-          (document.getElementById('edit-req-text') as HTMLTextAreaElement).value = req;
-          document.getElementById('edit-req-title')!.textContent = `Update Scope: ${name}`;
-
+          (document.getElementById('edit-req-id') as HTMLInputElement).value = target.dataset.id || '';
+          (document.getElementById('edit-req-text') as HTMLTextAreaElement).value = target.dataset.req || '';
+          document.getElementById('edit-req-title')!.textContent = `Update Scope: ${target.dataset.name}`;
           if (modalEditReq) modalEditReq.hidden = false;
         });
       });
@@ -1248,7 +2319,6 @@ const initialData = {
 
           modalEditReq.hidden = true;
           showToast('Requirements saved in database', 'success');
-          await syncWithServer();
           location.reload();
         } catch (err: any) {
           showToast(err.message, 'error');
@@ -1257,7 +2327,7 @@ const initialData = {
         }
       });
 
-      // Cancel Service Request
+      // Cancel Request
       document.querySelectorAll('[data-action="cancel-req"]').forEach((btn) => {
         btn.addEventListener('click', async (e) => {
           const target = e.currentTarget as HTMLElement;
@@ -1280,10 +2350,9 @@ const initialData = {
             });
 
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Failed to cancel service request');
+            if (!res.ok) throw new Error(data.error || 'Failed to cancel request');
 
             showToast(`Cancelled service request for ${name}`, 'info');
-            await syncWithServer();
             location.reload();
           } catch (err: any) {
             showToast(err.message, 'error');
@@ -1291,41 +2360,124 @@ const initialData = {
         });
       });
 
-      // Filter tabs in My Services view
+      // Business Form
+      const formBusiness = document.getElementById('business-form') as HTMLFormElement;
+      formBusiness?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const saveBtn = document.getElementById('btn-save-biz') as HTMLButtonElement;
+        const statusSpan = document.getElementById('biz-save-status');
+
+        saveBtn.disabled = true;
+        if (statusSpan) statusSpan.textContent = 'Saving...';
+
+        const formData = new FormData(formBusiness);
+        const payload: Record<string, any> = {};
+        formData.forEach((val, key) => {
+          payload[key] = typeof val === 'string' ? val.trim() : val;
+        });
+        if (!payload.id) delete payload.id;
+
+        try {
+          const res = await fetch('/api/customer/business', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Failed to update business profile');
+
+          if (data.business?.id) {
+            (formBusiness.querySelector('input[name="id"]') as HTMLInputElement).value = data.business.id;
+          }
+
+          showToast('Business profile updated successfully', 'success');
+          if (statusSpan) statusSpan.textContent = 'Saved';
+        } catch (err: any) {
+          showToast(err.message, 'error');
+          if (statusSpan) statusSpan.textContent = 'Error';
+        } finally {
+          saveBtn.disabled = false;
+        }
+      });
+
+      // Profile Form
+      const formProfile = document.getElementById('profile-form') as HTMLFormElement;
+      formProfile?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const saveBtn = document.getElementById('btn-save-profile') as HTMLButtonElement;
+        const statusSpan = document.getElementById('profile-save-status');
+
+        saveBtn.disabled = true;
+        if (statusSpan) statusSpan.textContent = 'Saving...';
+
+        const formData = new FormData(formProfile);
+        const fullName = formData.get('fullName') as string;
+
+        try {
+          const res = await fetch('/api/customer/profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fullName }),
+          });
+
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Failed to update profile');
+
+          showToast('Profile name updated successfully', 'success');
+          if (statusSpan) statusSpan.textContent = 'Saved';
+        } catch (err: any) {
+          showToast(err.message, 'error');
+          if (statusSpan) statusSpan.textContent = 'Error';
+        } finally {
+          saveBtn.disabled = false;
+        }
+      });
+
+      // My Services layer filters
       const myTabs = document.querySelectorAll<HTMLButtonElement>('[data-my-filter]');
       const myCards = document.querySelectorAll<HTMLElement>('.my-service-card');
-
       myTabs.forEach((tab) => {
         tab.addEventListener('click', () => {
           myTabs.forEach((t) => t.classList.remove('is-on'));
           tab.classList.add('is-on');
           const filter = tab.dataset.myFilter;
-
           myCards.forEach((card) => {
-            const ok = filter === 'all' || card.dataset.myLayer === filter;
-            card.hidden = !ok;
+            card.hidden = !(filter === 'all' || card.dataset.myLayer === filter);
           });
         });
       });
-
-      // Multi-tab listener via BroadcastChannel
-      syncChannel.onmessage = (event) => {
-        if (event.data?.type === 'SYNC_UPDATE') {
-          renderState(event.data.state);
-        }
-      };
-
-      // Periodic background sync (every 15 seconds)
-      setInterval(() => syncWithServer(true), 15000);
     </script>
 
-    <style>
+    <!-- STYLESHEET WITH NO EMOJIS, SLEEK SIDEBAR, AND CONFIRMATION MODALS -->
+    <style is:global>
       .dash-body {
         margin: 0;
         background: var(--paper);
         color: var(--text);
         font-family: var(--font-body);
         min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+      }
+
+      /* Blueprint background overlay */
+      .dash-bg-canvas {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        background:
+          radial-gradient(65% 55% at 75% 15%, rgba(148, 188, 227, 0.32), transparent 70%),
+          radial-gradient(45% 45% at 20% 85%, rgba(89, 128, 166, 0.14), transparent 70%),
+          var(--paper);
+        background-image:
+          radial-gradient(65% 55% at 75% 15%, rgba(148, 188, 227, 0.32), transparent 70%),
+          radial-gradient(45% 45% at 20% 85%, rgba(89, 128, 166, 0.14), transparent 70%),
+          linear-gradient(var(--line) 1px, transparent 1px),
+          linear-gradient(90deg, var(--line) 1px, transparent 1px);
+        background-size: auto, auto, 64px 64px, 64px 64px;
+        opacity: 0.85;
       }
 
       /* ------------------------------------------------------------- Layout */
@@ -1333,9 +2485,11 @@ const initialData = {
         display: grid;
         grid-template-columns: 260px 1fr;
         min-height: 100vh;
+        position: relative;
+        z-index: 1;
       }
 
-      /* ------------------------------------------------------------- Sidebar */
+      /* ------------------------------------------------------------- Left Side Sidebar */
       .dash-sidebar {
         background: var(--ink);
         color: var(--text-on-ink);
@@ -1347,6 +2501,7 @@ const initialData = {
         top: 0;
         height: 100vh;
         z-index: 40;
+        box-shadow: 4px 0 24px -12px rgba(20, 33, 48, 0.3);
       }
 
       .sidebar-top {
@@ -1365,8 +2520,8 @@ const initialData = {
         background: none;
         border: 0;
         color: var(--text-on-ink);
-        font-size: 1.2rem;
         cursor: pointer;
+        padding: 4px;
       }
 
       .sidebar-biz-badge {
@@ -1395,19 +2550,22 @@ const initialData = {
         gap: 0.35rem;
         padding-top: 1.5rem;
         flex: 1;
+        overflow-y: auto;
       }
+      .sidebar-nav::-webkit-scrollbar { width: 4px; }
+      .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 4px; }
 
       .nav-item {
         display: flex;
         align-items: center;
         gap: 0.75rem;
         width: 100%;
-        padding: 0.65rem 0.9rem;
-        border-radius: 8px;
+        padding: 0.7rem 0.95rem;
+        border-radius: var(--radius-s);
         background: transparent;
         border: 0;
         color: var(--text-on-ink-muted);
-        font-size: 0.9rem;
+        font-size: 0.88rem;
         font-weight: 500;
         cursor: pointer;
         text-align: left;
@@ -1418,12 +2576,26 @@ const initialData = {
         color: var(--text-on-ink);
       }
       .nav-item.is-active {
-        background: rgba(148, 188, 227, 0.15);
+        background: rgba(148, 188, 227, 0.18);
         color: var(--tint);
         font-weight: 600;
       }
-      .nav-item svg {
-        flex: none;
+      .nav-item-highlight {
+        color: #94bce3;
+      }
+      .nav-item svg { flex: none; }
+
+      .pill-chip-new {
+        font-size: 0.58rem;
+        letter-spacing: 0.08em;
+        font-family: var(--font-mono);
+        text-transform: uppercase;
+        background: var(--accent);
+        color: var(--paper);
+        padding: 0.1rem 0.45rem;
+        border-radius: 999px;
+        margin-left: auto;
+        font-weight: 700;
       }
 
       .badge-pill {
@@ -1431,7 +2603,7 @@ const initialData = {
         padding: 0.1rem 0.5rem;
         border-radius: 999px;
         background: rgba(242, 242, 243, 0.15);
-        font-size: 0.75rem;
+        font-size: 0.72rem;
         font-family: var(--font-mono);
         color: var(--text-on-ink);
       }
@@ -1444,23 +2616,26 @@ const initialData = {
         padding-top: 1rem;
         border-top: 1px solid var(--line-on-ink);
       }
-      .nav-logout {
-        color: #e07a6f;
-      }
+      .nav-logout { color: #f87171; }
       .nav-logout:hover {
-        background: rgba(224, 122, 111, 0.15);
-        color: #ff9f94;
+        background: rgba(248, 113, 113, 0.15);
+        color: #fca5a5;
       }
 
-      /* ------------------------------------------------------------- Topbar */
+      /* ------------------------------------------------------------- Main Container & Topbar */
       .dash-main-container {
         display: flex;
         flex-direction: column;
         min-width: 0;
+        position: relative;
+        z-index: 1;
       }
+
       .dash-topbar {
         height: 64px;
-        background: var(--paper-raised);
+        background: color-mix(in srgb, var(--paper-raised) 85%, transparent);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
         border-bottom: 1px solid var(--line);
         display: flex;
         align-items: center;
@@ -1490,42 +2665,26 @@ const initialData = {
         gap: 0.5rem;
         font-size: 0.9rem;
       }
-      .bread-root {
-        color: var(--text-muted);
-      }
-      .bread-sep {
-        color: var(--line);
-      }
-      .bread-current {
-        font-weight: 600;
-        color: var(--ink);
-      }
+      .bread-root { color: var(--text-muted); }
+      .bread-sep { color: var(--line); }
+      .bread-current { font-weight: 600; color: var(--ink); }
 
       .topbar-right {
         display: flex;
         align-items: center;
         gap: 1.25rem;
       }
-      .sync-indicator {
-        display: flex;
-        align-items: center;
-        gap: 0.45rem;
-        background: rgba(29, 45, 61, 0.05);
-        padding: 0.35rem 0.75rem;
-        border-radius: 999px;
-      }
-      .sync-dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: #2e9e62;
-        box-shadow: 0 0 0 2px rgba(46, 158, 98, 0.25);
-      }
-      .sync-label {
-        font-size: 0.75rem;
+      .btn-text-link {
+        font-size: 0.78rem;
         color: var(--text-muted);
+        padding: 0.35rem 0.65rem;
+        border-radius: 999px;
+        transition: all 0.2s ease;
       }
-
+      .btn-text-link:hover {
+        color: var(--ink);
+        background: var(--paper-sunk);
+      }
       .topbar-icon-btn {
         position: relative;
         background: none;
@@ -1550,15 +2709,16 @@ const initialData = {
         height: 14px;
         background: var(--accent);
         color: white;
-        font-size: 0.65rem;
+        font-size: 0.62rem;
         border-radius: 999px;
         display: grid;
         place-items: center;
         padding: 0 3px;
         font-family: var(--font-mono);
       }
+      .clerk-user-slot { display: flex; align-items: center; }
 
-      /* ------------------------------------------------------------- Views */
+      /* ------------------------------------------------------------- Content Area */
       .dash-content {
         padding: clamp(1.25rem, 3vw, 2.5rem);
         flex: 1;
@@ -1567,9 +2727,7 @@ const initialData = {
         display: none;
         animation: fadeIn 0.3s ease;
       }
-      .dash-view.is-active {
-        display: block;
-      }
+      .dash-view.is-active { display: block; }
       @keyframes fadeIn {
         from { opacity: 0; transform: translateY(6px); }
         to { opacity: 1; transform: none; }
@@ -1577,24 +2735,26 @@ const initialData = {
 
       /* ------------------------------------------------------------- Welcome Card */
       .dash-welcome-card {
-        background: radial-gradient(40% 120% at 85% 0%, rgba(148, 188, 227, 0.35), transparent 70%), var(--paper-raised);
-        border: 1px solid var(--line);
-        border-radius: var(--radius);
+        background: radial-gradient(45% 120% at 85% 0%, rgba(148, 188, 227, 0.35), transparent 70%), var(--paper-raised);
+        border: 1px solid rgba(29, 45, 61, 0.12);
+        border-radius: var(--radius-l);
         padding: clamp(1.75rem, 3vw, 2.5rem);
         display: flex;
         justify-content: space-between;
         align-items: center;
         gap: 2rem;
         margin-bottom: 2rem;
+        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.85) inset, 0 18px 36px -18px rgba(29, 45, 61, 0.12);
       }
       .welcome-title {
-        font-size: clamp(1.8rem, 1.4rem + 1.2vw, 2.6rem);
-        margin-block: 0.35rem 0.5rem;
+        font-size: clamp(2rem, 1.4rem + 1.4vw, 2.9rem);
+        margin-block: 0.35rem 0.55rem;
       }
       .welcome-desc {
         color: var(--text-muted);
-        max-width: 55ch;
-        font-size: 0.95rem;
+        max-width: 58ch;
+        font-size: 0.96rem;
+        line-height: 1.55;
       }
       .welcome-actions {
         display: flex;
@@ -1603,7 +2763,7 @@ const initialData = {
         flex: none;
       }
 
-      /* ------------------------------------------------------------- Metrics Grid */
+      /* ------------------------------------------------------------- 4 Metrics Grid */
       .metrics-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
@@ -1612,51 +2772,90 @@ const initialData = {
       }
       .metric-card {
         background: var(--paper-raised);
-        border: 1px solid var(--line);
+        border: 1px solid rgba(29, 45, 61, 0.12);
         border-radius: var(--radius);
-        padding: 1.25rem 1.4rem;
+        padding: 1.35rem 1.5rem;
         display: grid;
         gap: 0.35rem;
+        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset, 0 12px 24px -14px rgba(29, 45, 61, 0.1);
+        transition: transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
+      }
+      .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset, 0 18px 36px -16px rgba(29, 45, 61, 0.16);
+      }
+      .metric-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
       }
       .metric-label {
-        font-size: 0.75rem;
+        font-size: 0.72rem;
         color: var(--text-muted);
-        letter-spacing: 0.05em;
+        letter-spacing: 0.08em;
       }
+      .metric-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--tint);
+      }
+      .dot-accent { background: var(--accent); }
+      .dot-warn { background: #d97706; }
+      .dot-success { background: #16a34a; }
+
       .metric-value {
         font-family: var(--font-display);
-        font-size: 2.75rem;
+        font-size: 3rem;
         line-height: 1;
+        letter-spacing: -0.02em;
         color: var(--ink);
       }
-      .metric-hint {
-        font-size: 0.8rem;
-        color: var(--text-muted);
-      }
+      .metric-hint { font-size: 0.8rem; color: var(--text-muted); }
       .text-accent { color: var(--accent); }
       .text-warn { color: #d97706; }
       .text-success { color: #16a34a; }
 
+      /* ------------------------------------------------------------- Planner Callout */
+      .planner-teaser-card {
+        background: radial-gradient(40% 120% at 90% 20%, rgba(89, 128, 166, 0.25), transparent 70%), var(--ink);
+        color: var(--text-on-ink);
+        border-radius: var(--radius-l);
+        padding: clamp(1.75rem, 3vw, 2.5rem);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 20px 40px -20px rgba(20, 33, 48, 0.4);
+      }
+      .planner-teaser-card .eyebrow { color: var(--tint); }
+      .planner-teaser-card .eyebrow::before { background: currentColor; }
+      .planner-teaser-card .display em { color: var(--tint); }
+      .planner-teaser-card .lead { color: var(--text-on-ink-muted); }
+      .planner-teaser-card .btn-primary { background: var(--paper); color: var(--ink); }
+      .planner-teaser-card .btn-primary:hover { background: var(--tint); color: var(--ink-deep); }
+
       /* ------------------------------------------------------------- Panels & Tables */
       .overview-columns {
         display: grid;
-        grid-template-columns: 2fr 1fr;
+        grid-template-columns: 2fr 1.15fr;
         gap: 1.5rem;
       }
       .card-panel {
         background: var(--paper-raised);
-        border: 1px solid var(--line);
-        border-radius: var(--radius);
-        padding: 1.75rem;
+        border: 1px solid rgba(29, 45, 61, 0.12);
+        border-radius: var(--radius-l);
+        padding: clamp(1.5rem, 3vw, 2.25rem);
+        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset, 0 18px 36px -18px rgba(29, 45, 61, 0.1);
       }
-      .max-form-panel {
-        max-width: 820px;
-      }
+      .max-form-panel { max-width: 860px; }
       .panel-header {
         margin-bottom: 1.5rem;
         display: flex;
         justify-content: space-between;
         align-items: flex-end;
+        gap: 1rem;
       }
       .panel-header-flex {
         display: flex;
@@ -1664,13 +2863,9 @@ const initialData = {
         align-items: center;
         flex-wrap: wrap;
         gap: 1rem;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.75rem;
       }
-      .panel-title {
-        font-size: 1.35rem;
-        font-weight: 700;
-        color: var(--ink);
-      }
+      .panel-title { color: var(--ink); }
       .panel-subtitle {
         color: var(--text-muted);
         font-size: 0.88rem;
@@ -1685,13 +2880,9 @@ const initialData = {
         cursor: pointer;
         padding: 0;
       }
-      .text-link:hover {
-        text-decoration: underline;
-      }
+      .text-link:hover { text-decoration: underline; }
 
-      .requests-table-wrap {
-        overflow-x: auto;
-      }
+      .requests-table-wrap { overflow-x: auto; }
       .data-table {
         width: 100%;
         border-collapse: collapse;
@@ -1703,23 +2894,18 @@ const initialData = {
         border-bottom: 1px solid var(--line);
         color: var(--text-muted);
         font-family: var(--font-mono);
-        font-size: 0.75rem;
+        font-size: 0.72rem;
         font-weight: 500;
         text-transform: uppercase;
+        letter-spacing: 0.05em;
       }
       .data-table td {
-        padding: 0.9rem 0.85rem;
+        padding: 0.95rem 0.85rem;
         border-bottom: 1px solid rgba(29, 45, 61, 0.06);
         vertical-align: middle;
       }
-      .table-service-name {
-        display: grid;
-        gap: 0.15rem;
-      }
-      .table-code {
-        font-size: 0.72rem;
-        color: var(--text-muted);
-      }
+      .table-service-name { display: grid; gap: 0.15rem; }
+      .table-code { font-size: 0.72rem; color: var(--text-muted); }
 
       /* ------------------------------------------------------------- Tags */
       .layer-tag {
@@ -1727,12 +2913,13 @@ const initialData = {
         padding: 0.2rem 0.6rem;
         border-radius: 999px;
         font-family: var(--font-mono);
-        font-size: 0.72rem;
+        font-size: 0.7rem;
         font-weight: 600;
         text-transform: uppercase;
+        letter-spacing: 0.05em;
       }
-      .layer-build { background: rgba(148, 188, 227, 0.35); color: #142130; }
-      .layer-grow { background: rgba(89, 128, 166, 0.25); color: #142130; }
+      .layer-build { background: rgba(148, 188, 227, 0.4); color: #142130; }
+      .layer-grow { background: rgba(89, 128, 166, 0.3); color: #142130; }
       .layer-run { background: rgba(29, 45, 61, 0.15); color: #142130; }
 
       .status-tag {
@@ -1740,9 +2927,10 @@ const initialData = {
         padding: 0.2rem 0.65rem;
         border-radius: 999px;
         font-family: var(--font-mono);
-        font-size: 0.72rem;
+        font-size: 0.7rem;
         font-weight: 600;
         text-transform: uppercase;
+        letter-spacing: 0.05em;
       }
       .status-pending { background: #fef3c7; color: #92400e; }
       .status-reviewing { background: #dbeafe; color: #1e40af; }
@@ -1770,18 +2958,9 @@ const initialData = {
         margin-top: 0.4rem;
         flex: none;
       }
-      .activity-body {
-        display: grid;
-        gap: 0.15rem;
-      }
-      .activity-desc {
-        font-size: 0.88rem;
-        line-height: 1.4;
-      }
-      .activity-time {
-        font-size: 0.72rem;
-        color: var(--text-muted);
-      }
+      .activity-body { display: grid; gap: 0.15rem; }
+      .activity-desc { font-size: 0.88rem; line-height: 1.4; }
+      .activity-time { font-size: 0.72rem; color: var(--text-muted); }
 
       /* ------------------------------------------------------------- Empty State */
       .empty-state {
@@ -1793,43 +2972,625 @@ const initialData = {
         gap: 0.75rem;
       }
       .empty-icon {
-        font-size: 2.25rem;
+        color: var(--accent);
+        margin-bottom: 0.25rem;
       }
-      .empty-title {
-        font-size: 1.45rem;
+      .empty-title { font-size: 1.6rem; color: var(--ink); }
+      .empty-desc { color: var(--text-muted); font-size: 0.95rem; max-width: 46ch; }
+      .empty-actions { display: flex; gap: 0.75rem; margin-top: 0.5rem; }
+
+      /* ============================================================== */
+      /* STYLES: PROJECT ESTIMATION PLANNER */
+      /* ============================================================== */
+      .planner-hero-card {
+        background: radial-gradient(40% 120% at 85% 0%, rgba(148, 188, 227, 0.35), transparent 70%), var(--paper-raised);
+        border: 1px solid rgba(29, 45, 61, 0.12);
+        border-radius: var(--radius-l);
+        padding: clamp(2rem, 4vw, 3rem);
+        margin-bottom: 2rem;
+        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.85) inset, 0 20px 40px -20px rgba(29, 45, 61, 0.12);
       }
-      .empty-desc {
+      .preset-stacks-box {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--line);
+      }
+      .preset-title {
+        font-size: 0.72rem;
         color: var(--text-muted);
-        font-size: 0.92rem;
-        max-width: 44ch;
+        letter-spacing: 0.12em;
+        display: block;
+        margin-bottom: 0.75rem;
+      }
+      .preset-buttons-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 0.75rem;
+      }
+      .preset-btn {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 0.85rem 1rem;
+        text-align: left;
+        cursor: pointer;
+        display: grid;
+        gap: 0.15rem;
+        transition: all 0.2s var(--ease-out);
+      }
+      .preset-btn:hover {
+        background: var(--paper-raised);
+        border-color: var(--accent);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px -10px rgba(29, 45, 61, 0.15);
+      }
+      .preset-tag {
+        font-size: 0.65rem;
+        letter-spacing: 0.1em;
+        color: var(--accent);
+        font-weight: 700;
+        margin-bottom: 0.1rem;
+      }
+      .preset-name { font-size: 0.92rem; font-weight: 700; color: var(--ink); }
+      .preset-sub { font-size: 0.75rem; color: var(--text-muted); }
+
+      .planner-workspace-grid {
+        display: grid;
+        grid-template-columns: 1.7fr 1.3fr;
+        gap: 2rem;
+        align-items: flex-start;
+      }
+      .planner-left-pane { display: grid; gap: 2rem; }
+      .planner-params-form { display: grid; gap: 1.25rem; }
+
+      .currency-switch {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        background: var(--paper);
+        padding: 0.25rem;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+      }
+      .curr-pill {
+        padding: 0.3rem 0.75rem;
+        border-radius: 999px;
+        border: 0;
+        background: transparent;
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        color: var(--text-muted);
+        transition: all 0.2s;
+      }
+      .curr-pill.is-active {
+        background: var(--ink);
+        color: var(--paper);
       }
 
-      /* ------------------------------------------------------------- Forms */
-      .business-form {
+      .tier-options-grid {
         display: grid;
-        gap: 1.25rem;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 0.75rem;
       }
-      .form-row {
+      .tier-card {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+        display: block;
+      }
+      .tier-card input { position: absolute; opacity: 0; pointer-events: none; }
+      .tier-card.is-checked {
+        border-color: var(--accent);
+        background: radial-gradient(60% 120% at 90% 0%, rgba(148, 188, 227, 0.25), transparent 70%), var(--paper-raised);
+        box-shadow: 0 0 0 2px var(--accent);
+      }
+      .tier-badge {
+        font-size: 0.65rem;
+        background: var(--paper-sunk);
+        padding: 0.15rem 0.5rem;
+        border-radius: 999px;
+        color: var(--text-muted);
+        display: inline-block;
+        margin-bottom: 0.4rem;
+      }
+      .tier-title {
+        display: block;
+        font-size: 1rem;
+        color: var(--ink);
+        margin-bottom: 0.25rem;
+      }
+      .tier-desc { font-size: 0.78rem; color: var(--text-muted); line-height: 1.35; display: block; }
+
+      .matrix-filter-bar { display: grid; gap: 0.85rem; margin-bottom: 1.25rem; }
+      .matrix-search {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 0.65rem 1.15rem;
+      }
+      .matrix-search input {
+        border: 0;
+        background: transparent;
+        outline: 0;
+        flex: 1;
+        font-size: 0.88rem;
+      }
+      .matrix-layer-pills { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+      .mlp-btn {
+        padding: 0.35rem 0.85rem;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: var(--paper);
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .mlp-btn.is-on {
+        background: var(--ink);
+        color: var(--paper);
+        border-color: var(--ink);
+      }
+      .mlp-build.is-on { background: #38bdf8; color: #082f49; border-color: #38bdf8; }
+      .mlp-grow.is-on { background: var(--accent); color: white; border-color: var(--accent); }
+      .mlp-run.is-on { background: var(--ink-deep); color: white; border-color: var(--ink-deep); }
+      .selected-counter { font-size: 0.75rem; color: var(--accent); font-weight: 600; }
+
+      .planner-services-list {
         display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
+        gap: 0.65rem;
+        max-height: 480px;
+        overflow-y: auto;
+        padding-right: 0.5rem;
       }
-      .form-row-3 {
+      .svc-select-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.85rem;
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 0.9rem 1.15rem;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .svc-select-item:hover { background: var(--paper-raised); border-color: rgba(29, 45, 61, 0.25); }
+      .svc-select-item.is-selected {
+        border-color: var(--accent);
+        background: radial-gradient(40% 120% at 95% 0%, rgba(148, 188, 227, 0.25), transparent 70%), var(--paper-raised);
+        box-shadow: 0 0 0 1.5px var(--accent);
+      }
+      .planner-svc-checkbox {
+        margin-top: 0.35rem;
+        width: 17px;
+        height: 17px;
+        accent-color: var(--accent);
+        cursor: pointer;
+      }
+      .svc-select-body { flex: 1; }
+      .svc-select-top {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.25rem;
+      }
+      .svc-select-code { font-size: 0.68rem; color: var(--text-muted); }
+      .svc-select-disc { font-size: 0.75rem; color: var(--text-muted); }
+      .svc-select-base-price {
+        margin-left: auto;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--ink);
+      }
+      .svc-select-title { font-size: 0.98rem; color: var(--ink); display: block; }
+      .svc-select-desc { font-size: 0.82rem; color: var(--text-muted); margin-top: 0.15rem; line-height: 1.4; }
+
+      /* Sticky Estimate Card */
+      .sticky-estimate-card {
+        background: var(--paper-raised);
+        border: 1px solid rgba(29, 45, 61, 0.14);
+        border-radius: var(--radius-l);
+        padding: clamp(1.5rem, 3vw, 2.25rem);
+        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset, 0 24px 48px -24px rgba(29, 45, 61, 0.2);
+        position: sticky;
+        top: 5.5rem;
+      }
+      .est-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.25rem;
+      }
+      .est-badge {
+        font-size: 0.65rem;
+        background: rgba(16, 185, 129, 0.12);
+        color: #10b981;
+        padding: 0.15rem 0.5rem;
+        border-radius: 999px;
+        font-weight: 600;
+      }
+      .est-price-block {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.25rem;
+        border-bottom: 1px solid var(--line);
+      }
+      .est-price-label { font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.1em; }
+      .est-price-value {
+        font-size: clamp(2.75rem, 2rem + 2vw, 3.75rem);
+        color: var(--ink);
+        line-height: 1.05;
+        margin-top: 0.25rem;
+      }
+      .est-synergy-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(16, 185, 129, 0.12);
+        color: #15803d;
+        border-radius: 999px;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-top: 0.65rem;
+      }
+
+      .est-metrics-row {
+        display: grid;
         grid-template-columns: 1fr 1fr 1fr;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 0.85rem 1rem;
       }
-      .field {
+      .est-metric { display: grid; gap: 0.2rem; }
+      .est-m-label { font-size: 0.65rem; color: var(--text-muted); letter-spacing: 0.08em; }
+      .est-m-val { font-size: 1.15rem; font-weight: 700; color: var(--ink); }
+
+      .est-breakdown-box { margin-bottom: 1.5rem; }
+      .est-subhead {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        letter-spacing: 0.1em;
+        display: block;
+        margin-bottom: 0.65rem;
+      }
+      .est-progress-bar {
+        height: 10px;
+        border-radius: 999px;
+        background: var(--paper-sunk);
+        display: flex;
+        overflow: hidden;
+        margin-bottom: 0.5rem;
+      }
+      .epb-segment { height: 100%; transition: width 0.3s ease; }
+      .epb-build { background: var(--tint); }
+      .epb-grow { background: var(--accent); }
+      .epb-run { background: var(--ink); }
+      .est-legend {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.72rem;
+        color: var(--text-muted);
+      }
+      .leg-item { display: inline-flex; align-items: center; gap: 0.35rem; }
+      .leg-dot { width: 7px; height: 7px; border-radius: 50%; }
+      .leg-build { background: var(--tint); }
+      .leg-grow { background: var(--accent); }
+      .leg-run { background: var(--ink); }
+
+      .est-milestones-box { margin-bottom: 1.5rem; }
+      .milestone-timeline {
+        display: grid;
+        gap: 0.75rem;
+        position: relative;
+        padding-left: 0.5rem;
+      }
+      .ms-node { display: flex; gap: 0.75rem; align-items: center; }
+      .ms-dot {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--paper-sunk);
+        color: var(--ink);
+        font-size: 0.7rem;
+        font-weight: 700;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--line);
+      }
+      .ms-body { display: grid; gap: 0.1rem; font-size: 0.85rem; }
+
+      .est-basket-box {
+        margin-bottom: 1.5rem;
+        background: var(--paper-sunk);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 0.85rem 1rem;
+      }
+      .est-basket-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+      }
+      .est-basket-header .est-subhead {
+        margin-bottom: 0;
+      }
+      .est-basket-list {
+        display: grid;
+        gap: 0.5rem;
+        max-height: 220px;
+        overflow-y: auto;
+        padding-right: 0.25rem;
+        margin: 0;
+        padding-left: 0;
+        list-style: none;
+      }
+      .est-basket-list::-webkit-scrollbar {
+        width: 4px;
+      }
+      .est-basket-list::-webkit-scrollbar-thumb {
+        background: rgba(20, 33, 48, 0.15);
+        border-radius: 4px;
+      }
+      .basket-empty-msg {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        list-style: none;
+        padding: 0.5rem 0;
+        line-height: 1.45;
+      }
+      .basket-item {
+        list-style: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.55rem 0.75rem;
+        background: var(--paper-raised);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-s);
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 1px 3px rgba(20, 33, 48, 0.03);
+      }
+      .basket-item:hover {
+        border-color: var(--line-strong);
+        box-shadow: 0 3px 8px -2px rgba(20, 33, 48, 0.08);
+      }
+      .basket-item-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        min-width: 0;
+        flex: 1;
+      }
+      .basket-layer-pill {
+        font-family: var(--font-mono);
+        font-size: 0.62rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 0.15rem 0.45rem;
+        border-radius: 999px;
+        flex: none;
+      }
+      .basket-layer-pill.layer-build {
+        background: rgba(148, 188, 227, 0.25);
+        color: #142130;
+        border: 1px solid rgba(148, 188, 227, 0.55);
+      }
+      .basket-layer-pill.layer-grow {
+        background: rgba(16, 185, 129, 0.12);
+        color: #065f46;
+        border: 1px solid rgba(16, 185, 129, 0.35);
+      }
+      .basket-layer-pill.layer-run {
+        background: rgba(245, 158, 11, 0.12);
+        color: #92400e;
+        border: 1px solid rgba(245, 158, 11, 0.35);
+      }
+      .basket-item-name {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--ink);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .basket-item-right {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        flex: none;
+      }
+      .basket-item-price {
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--ink);
+      }
+      .basket-remove-btn {
+        width: 22px;
+        height: 22px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: var(--paper);
+        color: var(--text-muted);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: none;
+        padding: 0;
+        transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .basket-remove-btn:hover {
+        background: rgba(239, 68, 68, 0.1);
+        border-color: rgba(239, 68, 68, 0.4);
+        color: #ef4444;
+        transform: scale(1.12);
+      }
+      .basket-remove-btn:active {
+        transform: scale(0.92);
+      }
+
+      /* Submit Scope Modal Styles */
+      .modal-dialog-submit {
+        max-width: 620px;
+        width: 100%;
+      }
+      .submit-summary-box {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 1.1rem 1.25rem;
+        display: grid;
+        gap: 0.85rem;
+      }
+      .submit-summary-top {
+        display: grid;
+        gap: 0.35rem;
+      }
+      .submit-summary-label {
+        font-size: 0.65rem;
+        letter-spacing: 0.08em;
+        color: var(--text-muted);
+      }
+      .submit-proj-name-input {
+        width: 100%;
+        background: var(--paper-raised);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-s);
+        padding: 0.55rem 0.85rem;
+        font-family: var(--font-body);
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--ink);
+        box-sizing: border-box;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+      .submit-proj-name-input:focus {
+        border-color: var(--accent);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(148, 188, 227, 0.25);
+      }
+      .submit-metrics-strip {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.65rem;
+        padding-top: 0.85rem;
+        border-top: 1px dashed var(--line);
+      }
+      .submit-metric-cell {
+        display: grid;
+        gap: 0.2rem;
+      }
+      .submit-metric-cell .cell-label {
+        font-size: 0.62rem;
+        letter-spacing: 0.08em;
+        color: var(--text-muted);
+      }
+      .submit-metric-cell .cell-val {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--ink);
+      }
+      .submit-scope-section {
+        display: grid;
+        gap: 0.5rem;
+      }
+      .submit-scope-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .submit-services-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        max-height: 180px;
+        overflow-y: auto;
         display: grid;
         gap: 0.45rem;
+        padding-right: 0.25rem;
       }
+      .submit-services-list::-webkit-scrollbar {
+        width: 4px;
+      }
+      .submit-services-list::-webkit-scrollbar-thumb {
+        background: rgba(20, 33, 48, 0.15);
+        border-radius: 4px;
+      }
+      .submit-svc-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.5rem 0.75rem;
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-s);
+      }
+      .submit-svc-left {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        min-width: 0;
+        flex: 1;
+      }
+      .submit-svc-code {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        flex: none;
+      }
+      .submit-svc-name {
+        font-size: 0.84rem;
+        font-weight: 600;
+        color: var(--ink);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .submit-svc-price {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--ink);
+        flex: none;
+      }
+      .modal-actions-submit {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+      }
+
+      .est-actions { display: grid; gap: 0.75rem; }
+      .btn-block { width: 100%; justify-content: center; }
+      .est-sub-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; }
+
+      /* ------------------------------------------------------------- Forms */
+      .business-form { display: grid; gap: 1.25rem; }
+      .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+      .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+      .field { display: grid; gap: 0.45rem; }
       .field .mono {
         color: var(--text-muted);
-        font-size: 0.75rem;
+        font-size: 0.72rem;
         text-transform: uppercase;
+        letter-spacing: 0.05em;
       }
-      .field em {
-        font-style: normal;
-        opacity: 0.65;
-      }
+      .field em { font-style: normal; opacity: 0.65; }
       .field input,
       .field select,
       .field textarea {
@@ -1857,10 +3618,7 @@ const initialData = {
         gap: 1rem;
         padding-top: 0.75rem;
       }
-      .save-status {
-        font-size: 0.85rem;
-        color: #16a34a;
-      }
+      .save-status { font-size: 0.85rem; color: #16a34a; }
 
       /* ------------------------------------------------------------- My Services */
       .my-services-filter-bar {
@@ -1869,6 +3627,7 @@ const initialData = {
         margin-bottom: 1.5rem;
         border-bottom: 1px solid var(--line);
         padding-bottom: 0.75rem;
+        overflow-x: auto;
       }
       .my-services-grid {
         display: grid;
@@ -1879,31 +3638,24 @@ const initialData = {
         background: var(--paper);
         border: 1px solid var(--line);
         border-radius: var(--radius);
-        padding: 1.4rem;
+        padding: 1.5rem;
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
+        gap: 0.85rem;
         transition: transform 0.25s, box-shadow 0.25s;
       }
       .my-service-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 12px 24px -12px rgba(29, 45, 61, 0.15);
+        box-shadow: 0 16px 32px -16px rgba(29, 45, 61, 0.16);
       }
-      .card-header-line {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
+      .card-header-line { display: flex; justify-content: space-between; align-items: center; }
       .my-service-title {
         font-family: var(--font-display);
-        font-size: 1.4rem;
-        margin: 0;
+        font-size: 1.45rem;
+        margin: 0.15rem 0 0.35rem 0;
+        color: var(--ink);
       }
-      .my-service-desc {
-        font-size: 0.88rem;
-        color: var(--text-muted);
-        line-height: 1.45;
-      }
+      .my-service-desc { font-size: 0.88rem; color: var(--text-muted); line-height: 1.45; }
       .my-service-meta {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -1911,15 +3663,8 @@ const initialData = {
         padding-block: 0.75rem;
         border-block: 1px solid rgba(29, 45, 61, 0.08);
       }
-      .meta-k {
-        display: block;
-        font-size: 0.68rem;
-        color: var(--text-muted);
-      }
-      .meta-v {
-        font-size: 0.85rem;
-        font-weight: 600;
-      }
+      .meta-k { display: block; font-size: 0.68rem; color: var(--text-muted); }
+      .meta-v { font-size: 0.85rem; font-weight: 600; color: var(--ink); }
       .my-service-req-box {
         background: var(--paper-raised);
         border: 1px dashed var(--line);
@@ -1928,15 +3673,12 @@ const initialData = {
         font-size: 0.82rem;
       }
       .req-box-title {
-        font-size: 0.7rem;
+        font-size: 0.68rem;
         color: var(--text-muted);
         display: block;
         margin-bottom: 0.2rem;
       }
-      .req-box-text {
-        color: var(--text);
-        margin: 0;
-      }
+      .req-box-text { color: var(--text); margin: 0; }
       .my-service-actions {
         display: flex;
         gap: 0.5rem;
@@ -1956,17 +3698,10 @@ const initialData = {
         border: 1px solid rgba(220, 38, 38, 0.2);
         color: #dc2626;
       }
-      .btn-danger-ghost:hover {
-        background: #fee2e2;
-        border-color: #dc2626;
-      }
+      .btn-danger-ghost:hover { background: #fee2e2; border-color: #dc2626; }
 
       /* ------------------------------------------------------------- Explore Services */
-      .explore-toolbar {
-        display: grid;
-        gap: 1rem;
-        margin-bottom: 2rem;
-      }
+      .explore-toolbar { display: grid; gap: 1rem; margin-bottom: 2rem; }
       .search-box {
         display: flex;
         align-items: center;
@@ -1983,17 +3718,27 @@ const initialData = {
         flex: 1;
         font-size: 0.95rem;
       }
-      .filter-pills-row {
-        display: flex;
+      .filter-pills-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+      .filter-label { font-size: 0.72rem; }
+      .filter-label-sep { margin-left: 1rem; }
+      .tab-pill {
+        display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        flex-wrap: wrap;
+        padding: 0.45rem 0.95rem;
+        border-radius: 999px;
+        background: var(--paper);
+        border: 1px solid var(--line);
+        color: var(--text-muted);
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
       }
-      .filter-label {
-        font-size: 0.72rem;
-      }
-      .filter-label-sep {
-        margin-left: 1rem;
+      .tab-pill.is-on {
+        background: var(--ink);
+        color: var(--paper);
+        border-color: var(--ink);
       }
       .discipline-select {
         padding: 0.45rem 0.95rem;
@@ -2012,7 +3757,7 @@ const initialData = {
         background: var(--paper);
         border: 1px solid var(--line);
         border-radius: var(--radius);
-        padding: 1.25rem;
+        padding: 1.4rem;
         display: flex;
         flex-direction: column;
         gap: 0.65rem;
@@ -2022,15 +3767,8 @@ const initialData = {
         transform: translateY(-3px);
         box-shadow: 0 16px 32px -16px rgba(29, 45, 61, 0.2);
       }
-      .explore-card-top {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-      }
-      .explore-code {
-        font-size: 0.72rem;
-        color: var(--text-muted);
-      }
+      .explore-card-top { display: flex; align-items: center; gap: 0.5rem; }
+      .explore-code { font-size: 0.72rem; color: var(--text-muted); }
       .card-badge-soft {
         margin-left: auto;
         font-size: 0.68rem;
@@ -2039,37 +3777,23 @@ const initialData = {
         border-radius: 999px;
         color: var(--text-muted);
       }
-      .explore-card-name {
-        font-family: var(--font-display);
-        font-size: 1.3rem;
-        line-height: 1.15;
-      }
-      .explore-card-desc {
-        font-size: 0.85rem;
-        color: var(--text-muted);
-        line-height: 1.45;
-      }
-      .explore-discipline-tag {
-        font-size: 0.72rem;
-        color: var(--accent);
-      }
-      .explore-card-footer {
-        margin-top: auto;
-        padding-top: 0.75rem;
-      }
+      .explore-card-name { font-family: var(--font-display); font-size: 1.35rem; line-height: 1.15; }
+      .explore-card-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.45; }
+      .explore-discipline-tag { font-size: 0.72rem; color: var(--accent); }
+      .explore-card-footer { margin-top: auto; padding-top: 0.75rem; }
       .btn-primary-pill {
         background: var(--ink);
         color: var(--paper);
         border: 0;
         font-weight: 600;
+        width: 100%;
+        text-align: center;
       }
-      .btn-primary-pill:hover {
-        background: var(--accent);
-      }
+      .btn-primary-pill:hover { background: var(--accent); }
       .already-added-badge {
         background: var(--paper-sunk);
         border: 1px solid var(--line);
-        padding: 0.35rem 0.75rem;
+        padding: 0.4rem 0.75rem;
         border-radius: 999px;
         text-align: center;
         font-size: 0.75rem;
@@ -2077,42 +3801,7 @@ const initialData = {
         font-weight: 600;
       }
 
-      /* ------------------------------------------------------------- Projects & Support */
-      .projects-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-        gap: 1.5rem;
-      }
-      .project-phase-card {
-        background: var(--paper);
-        border: 1px solid var(--line);
-        border-radius: var(--radius);
-        padding: 1.5rem;
-        display: grid;
-        gap: 0.75rem;
-      }
-      .phase-num {
-        font-size: 0.72rem;
-        color: var(--accent);
-      }
-      .phase-title {
-        font-family: var(--font-display);
-        font-size: 1.4rem;
-        margin: 0;
-      }
-      .phase-desc {
-        color: var(--text-muted);
-        font-size: 0.88rem;
-      }
-      .phase-status {
-        font-size: 0.75rem;
-        color: var(--ink);
-        background: var(--paper-sunk);
-        padding: 0.35rem 0.65rem;
-        border-radius: 6px;
-        width: fit-content;
-      }
-
+      /* ------------------------------------------------------------- Support */
       .support-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -2127,15 +3816,8 @@ const initialData = {
         display: grid;
         gap: 0.35rem;
       }
-      .support-card h4 {
-        margin: 0;
-        font-size: 1.15rem;
-        color: var(--ink);
-      }
-      .support-card p {
-        color: var(--text-muted);
-        font-size: 0.85rem;
-      }
+      .support-card h4 { margin: 0; font-size: 1.15rem; color: var(--ink); }
+      .support-card p { color: var(--text-muted); font-size: 0.88rem; line-height: 1.45; }
       .support-notice {
         background: radial-gradient(40% 120% at 90% 0%, rgba(148, 188, 227, 0.25), transparent 70%), var(--paper);
         border: 1px solid var(--line);
@@ -2157,11 +3839,14 @@ const initialData = {
         z-index: 99;
         padding: 1.5rem;
       }
+      .modal-backdrop[hidden] {
+        display: none !important;
+      }
       .modal-dialog {
         background: var(--paper-raised);
         border: 1px solid var(--line);
         border-radius: var(--radius-l);
-        max-width: 540px;
+        max-width: 560px;
         width: 100%;
         padding: clamp(1.5rem, 4vw, 2.25rem);
         box-shadow: 0 30px 60px -25px rgba(20, 33, 48, 0.4);
@@ -2169,35 +3854,25 @@ const initialData = {
         gap: 1.25rem;
         animation: modalScale 0.25s ease;
       }
+      .modal-dialog-sm { max-width: 440px; }
+      .modal-dialog-wide { max-width: 780px; }
       @keyframes modalScale {
         from { opacity: 0; transform: scale(0.95); }
         to { opacity: 1; transform: scale(1); }
       }
-      .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-      }
-      .modal-title {
-        font-size: 1.6rem;
-        margin-top: 0.25rem;
-      }
-      .modal-code {
-        color: var(--text-muted);
-        font-size: 0.75rem;
-      }
+      .modal-header { display: flex; justify-content: space-between; align-items: flex-start; }
+      .modal-title { font-size: 1.6rem; margin-top: 0.25rem; }
+      .modal-code { color: var(--text-muted); font-size: 0.75rem; }
       .modal-close-btn {
         background: none;
         border: 0;
-        font-size: 1.25rem;
         color: var(--text-muted);
         cursor: pointer;
         padding: 4px;
+        display: grid;
+        place-items: center;
       }
-      .modal-desc {
-        color: var(--text-muted);
-        font-size: 0.9rem;
-      }
+      .modal-desc { color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; }
       .modal-info-callout {
         background: var(--paper-sunk);
         border-left: 3px solid var(--accent);
@@ -2205,21 +3880,58 @@ const initialData = {
         border-radius: 0 var(--radius-s) var(--radius-s) 0;
         font-size: 0.82rem;
       }
-      .modal-info-callout .mono {
-        color: var(--accent);
-        display: block;
-        margin-bottom: 0.2rem;
-      }
-      .modal-info-callout p {
-        margin: 0;
-        color: var(--text);
-      }
-      .modal-actions {
-        display: flex;
-        justify-content: flex-end;
+      .modal-info-callout .mono { color: var(--accent); display: block; margin-bottom: 0.2rem; }
+      .modal-info-callout p { margin: 0; color: var(--text); }
+      .modal-actions { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem; }
+      .modal-actions-logout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
         gap: 0.75rem;
-        margin-top: 0.5rem;
+        width: 100%;
       }
+      .btn-danger {
+        background: #dc2626;
+        color: #ffffff;
+        border: 1px solid #dc2626;
+      }
+      .btn-danger:hover {
+        background: #b91c1c;
+        border-color: #b91c1c;
+      }
+
+      /* SOW Document Print */
+      .sow-document {
+        background: white;
+        color: #1d1f20;
+        padding: 1.75rem;
+        border-radius: var(--radius);
+        border: 1px solid var(--line);
+        display: grid;
+        gap: 1.25rem;
+      }
+      .sow-doc-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 2px solid #1d2d3d;
+        padding-bottom: 1rem;
+      }
+      .sow-brand-title {
+        font-size: 1.2rem;
+        font-family: var(--font-display);
+        letter-spacing: -0.01em;
+      }
+      .sow-summary-box {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+      }
+      .sow-stat-col { display: grid; gap: 0.25rem; }
+      .sow-stat-col strong { font-size: 1.1rem; }
+      .sow-services-table-wrap { overflow-x: auto; }
 
       /* ------------------------------------------------------------- Toast Hub */
       .toast-hub {
@@ -2248,8 +3960,9 @@ const initialData = {
       }
       .toast-item.toast-error { border-left-color: #ef4444; }
       .toast-item.toast-info { border-left-color: var(--tint); }
-      .toast-content { display: flex; align-items: center; gap: 0.5rem; }
-      .toast-close { background: none; border: 0; color: rgba(255, 255, 255, 0.6); cursor: pointer; padding: 2px; }
+      .toast-content { display: flex; align-items: center; gap: 0.6rem; }
+      .toast-icon { display: flex; align-items: center; }
+      .toast-close { background: none; border: 0; color: rgba(255, 255, 255, 0.6); cursor: pointer; padding: 2px; display: grid; place-items: center; }
       @keyframes toastEnter {
         from { opacity: 0; transform: translateY(12px); }
         to { opacity: 1; transform: none; }
@@ -2258,12 +3971,20 @@ const initialData = {
 
       /* ------------------------------------------------------------- Responsive */
       @media (max-width: 1024px) {
-        .overview-columns { grid-template-columns: 1fr; }
-        .dash-welcome-card { flex-direction: column; align-items: flex-start; }
+        .overview-columns,
+        .planner-workspace-grid {
+          grid-template-columns: 1fr;
+        }
+        .dash-welcome-card,
+        .planner-teaser-card {
+          flex-direction: column;
+          align-items: flex-start;
+        }
         .welcome-actions { width: 100%; flex-direction: row; }
+        .sticky-estimate-card { position: static; }
       }
 
-      @media (max-width: 820px) {
+      @media (max-width: 860px) {
         .dash-layout { grid-template-columns: 1fr; }
         .dash-sidebar {
           position: fixed;
@@ -2272,13 +3993,29 @@ const initialData = {
           transform: translateX(-100%);
           transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
         }
-        .dash-sidebar.is-open {
-          transform: none;
-        }
+        .dash-sidebar.is-open { transform: none; }
         .sidebar-close-btn { display: block; }
         .topbar-toggle-btn { display: block; }
-        .form-row, .form-row-3, .support-grid { grid-template-columns: 1fr; }
+        .form-row, .form-row-3, .support-grid, .sow-summary-box { grid-template-columns: 1fr; }
         .welcome-actions { flex-direction: column; }
+      }
+
+      @media print {
+        body * { visibility: hidden; }
+        #modal-sow-export, #modal-sow-export * { visibility: visible; }
+        #modal-sow-export {
+          position: absolute;
+          inset: 0;
+          background: white;
+          padding: 0;
+        }
+        .modal-dialog {
+          box-shadow: none;
+          border: 0;
+          padding: 0;
+          max-width: 100%;
+        }
+        .modal-actions, .modal-close-btn { display: none !important; }
       }
     </style>
   </body>
