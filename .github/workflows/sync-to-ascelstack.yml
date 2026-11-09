@@ -1,0 +1,32 @@
+name: Sync to Ascelstack Repo & Trigger Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  sync-to-ascelstack:
+    name: Sync to ASCEL6251/ascelstack
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git Credentials & Sync
+        env:
+          SYNC_TOKEN: ${{ secrets.ASCELSTACK_SYNC_TOKEN }}
+        run: |
+          if [ -z "$SYNC_TOKEN" ]; then
+            echo "::error::Secret ASCELSTACK_SYNC_TOKEN is not set in this repository."
+            echo "Please create a GitHub Personal Access Token in the ASCEL6251 account with repository write access,"
+            echo "and add it to Sujoymoulick/Ascelstack -> Settings -> Secrets and variables -> Actions -> ASCELSTACK_SYNC_TOKEN."
+            exit 1
+          fi
+
+          git remote add target "https://x-access-token:${SYNC_TOKEN}@github.com/ASCEL6251/ascelstack.git"
+          git push --force target main:main
+          echo "Sync successful! Commits pushed to ASCEL6251/ascelstack main branch."
