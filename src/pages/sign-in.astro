@@ -22,7 +22,7 @@ import AuthShell from '../components/auth/AuthShell.astro';
 </Base>
 
 <script>
-  import { signIn, getUser, safeRedirect } from '../lib/auth';
+  import { signIn, getUser, safeRedirect } from '../lib/mock-auth';
 
   const params = new URLSearchParams(location.search);
   const next = safeRedirect(params.get('redirect'));

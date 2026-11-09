@@ -7,7 +7,7 @@
 //   listEstimates   → GET  /api/estimates     (rows for the Clerk user id)
 //   getEstimate     → GET  /api/estimates/:id
 
-import type { User } from './auth';
+import type { User } from './mock-auth';
 import type { Cart } from './cart';
 import { buildEstimate, type Estimate } from './estimate';
 

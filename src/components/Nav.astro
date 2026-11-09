@@ -84,6 +84,14 @@ const menu: { label: string; href: string; sub?: Sub[]; all?: string }[] = [
         </span>
       </a>
 
+      <a href="/dashboard" class="nav-portal" aria-label="Client Portal" title="Client Portal">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        <span class="nav-portal-label">Portal</span>
+      </a>
+
       <button
         class="nav-dots"
         type="button"
@@ -160,6 +168,9 @@ const menu: { label: string; href: string; sub?: Sub[]; all?: string }[] = [
       </div>
       <a href="/contact" class="mnav-cta">
         Start a project <span aria-hidden="true">→</span>
+      </a>
+      <a href="/dashboard" class="mnav-portal-link">
+        Client Portal <span aria-hidden="true">→</span>
       </a>
     </div>
   </div>
@@ -368,6 +379,33 @@ const menu: { label: string; href: string; sub?: Sub[]; all?: string }[] = [
   }
   .mnav-acct-link .mono { padding: 0.1rem 0.45rem; border-radius: 999px; background: var(--accent); }
 
+  /* ------------------------------------------------------------- Client Portal */
+  .nav-portal {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    height: 44px;
+    padding: 0 1rem;
+    border-radius: 999px;
+    background: transparent;
+    border: 1px solid rgba(29, 45, 61, 0.15);
+    color: var(--ink);
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.25s var(--ease-out);
+  }
+  .nav-portal:hover {
+    border-color: var(--ink);
+    background: var(--paper-sunk);
+  }
+  .nav-portal svg {
+    color: var(--accent);
+    transition: transform 0.3s ease;
+  }
+  .nav-portal:hover svg {
+    transform: scale(1.1);
+  }
+
   /* ------------------------------------------------------------- Menu toggle (phone) */
   .nav-dots {
     display: none;
@@ -419,6 +457,7 @@ const menu: { label: string; href: string; sub?: Sub[]; all?: string }[] = [
     /* "Start a project" and account live inside the menu on phones. */
     .nav-cta { display: none; }
     .nav-icon[data-account-link] { display: none; }
+    .nav-portal { display: none; }
   }
 
   /* ------------------------------------------------------------- Full-screen menu (phone only) */
@@ -631,6 +670,23 @@ const menu: { label: string; href: string; sub?: Sub[]; all?: string }[] = [
     transition: background 0.25s;
   }
   .mnav-cta:hover { background: var(--tint); }
+  .mnav-portal-link {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.85rem;
+    margin-top: 0.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--line-on-ink);
+    color: var(--text-on-ink);
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.25s;
+  }
+  .mnav-portal-link:hover {
+    border-color: var(--tint);
+    color: var(--tint);
+  }
 
   @media (prefers-reduced-motion: reduce) {
     .mnav, .mnav-panel, .mnav-item, .mnav-foot, .mnav-sub, .mnav-sub-inner, .nav-glide { transition: none !important; }
@@ -640,7 +696,7 @@ const menu: { label: string; href: string; sub?: Sub[]; all?: string }[] = [
 <script>
   import { getLenis } from '../scripts/motion';
   import { onCart, count } from '../lib/cart';
-  import { onAuth } from '../lib/auth';
+  import { onAuth } from '../lib/mock-auth';
 
   /* ---------- Cart count + signed-in state */
   const badge = document.querySelector<HTMLElement>('[data-cart-count]')!;

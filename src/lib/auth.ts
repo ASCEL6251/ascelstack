@@ -1,105 +1,120 @@
-// MOCK AUTH — prototype only. Not secure: anyone can "sign in" with any
-// registered email and nothing leaves the browser. No password is stored.
-//
-// To replace with Clerk later:
-//   1. npm i @clerk/astro, add clerk() to astro.config.mjs (needs output: 'server' or hybrid
-//      routes), set PUBLIC_CLERK_PUBLISHABLE_KEY + CLERK_SECRET_KEY.
-//   2. Swap /sign-in and /sign-up pages for <SignIn /> and <SignUp />.
-//   3. Re-implement the functions below on top of Clerk (window.Clerk.user, signOut()).
-//      Keep the same names so cart/checkout/account pages keep working.
+import type { APIContext } from 'astro';
+import { clerkClient, createClerkClient } from '@clerk/astro/server';
+import { eq, desc } from 'drizzle-orm';
+import { db, users, businesses, activityLogs, type User, type Business } from '../db';
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  phone?: string;
-  company?: string;
-  createdAt: number;
+export interface AuthenticatedContext {
+  userId: string; // Clerk User ID
+  user: User; // Neon User
+  business: Business | null; // Primary or most recent business
 }
 
-const USERS = 'asc:mock-users';
-const SESSION = 'asc:mock-session';
-export const AUTH_EVENT = 'auth:change';
-
-const read = <T>(k: string, fallback: T): T => {
-  try {
-    return JSON.parse(localStorage.getItem(k) ?? 'null') ?? fallback;
-  } catch {
-    return fallback;
+/**
+ * Get or sync the authenticated user from Clerk into Neon PostgreSQL
+ */
+export async function getAuthenticatedUser(
+  context: APIContext
+): Promise<AuthenticatedContext | null> {
+  const auth = context.locals.auth();
+  if (!auth.isAuthenticated || !auth.userId) {
+    return null;
   }
-};
-const write = (k: string, v: unknown) => {
-  try {
-    localStorage.setItem(k, JSON.stringify(v));
-  } catch {}
-};
-const emit = () => window.dispatchEvent(new CustomEvent(AUTH_EVENT));
-const norm = (e: string) => e.trim().toLowerCase();
 
-/** Demo account present in every browser so the flow can be tested without signing up. */
-export const DEMO_USER: User = {
-  id: 'usr_demo',
-  name: 'Demo Customer',
-  email: 'demo@ascelstack.test',
-  phone: '+91 90000 00000',
-  company: 'Demo Cafe Pvt Ltd',
-  createdAt: 0,
-};
-(() => {
-  if (typeof localStorage === 'undefined') return;
-  const users = read<User[]>(USERS, []);
-  if (!users.some((u) => u.id === DEMO_USER.id)) write(USERS, [...users, DEMO_USER]);
-})();
+  const clerkUserId = auth.userId;
 
-export function getUser(): User | null {
-  const id = read<string | null>(SESSION, null);
-  if (!id) return null;
-  return read<User[]>(USERS, []).find((u) => u.id === id) ?? null;
-}
+  // 1. Try to find the user in Neon
+  let [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.clerkUserId, clerkUserId))
+    .limit(1);
 
-export function signUp(input: Omit<User, 'id' | 'createdAt'>): User {
-  const users = read<User[]>(USERS, []);
-  if (users.some((u) => norm(u.email) === norm(input.email))) {
-    throw new Error('An account with this email already exists. Sign in instead.');
+  // 2. If user doesn't exist in Neon, fetch from Clerk API and insert
+  if (!user) {
+    let email = '';
+    let fullName = '';
+    let avatarUrl = '';
+
+    try {
+      let client;
+      try {
+        client = clerkClient(context);
+      } catch {
+        const secretKey =
+          process.env.CLERK_SECRET_KEY || (import.meta as any).env?.CLERK_SECRET_KEY;
+        client = createClerkClient({ secretKey });
+      }
+
+      const clerkUserData = await client.users.getUser(clerkUserId);
+      email =
+        clerkUserData.emailAddresses.find((e) => e.id === clerkUserData.primaryEmailAddressId)
+          ?.emailAddress ||
+        clerkUserData.emailAddresses[0]?.emailAddress ||
+        '';
+      fullName =
+        `${clerkUserData.firstName || ''} ${clerkUserData.lastName || ''}`.trim() ||
+        clerkUserData.username ||
+        email.split('@')[0];
+      avatarUrl = clerkUserData.imageUrl || '';
+    } catch (e) {
+      console.warn('Failed to fetch full user from Clerk API:', e);
+      email = `user_${clerkUserId.slice(-8)}@customer.ascelstack.com`;
+      fullName = 'Ascelstack Customer';
+    }
+
+    [user] = await db
+      .insert(users)
+      .values({
+        clerkUserId,
+        email: email || `user_${clerkUserId.slice(-8)}@customer.ascelstack.com`,
+        fullName: fullName || 'Ascelstack Customer',
+        avatarUrl,
+      })
+      .returning();
+
+    // Log the registration/initial sync
+    await db.insert(activityLogs).values({
+      userId: user.id,
+      activityType: 'account_created',
+      description: 'Account created and synchronized with Ascelstack',
+      metadata: { clerkUserId, email },
+    });
   }
-  const user: User = { ...input, email: norm(input.email), id: `usr_${crypto.randomUUID().slice(0, 12)}`, createdAt: Date.now() };
-  write(USERS, [...users, user]);
-  write(SESSION, user.id);
-  emit();
-  return user;
+
+  // 3. Find user's primary/active business
+  const [business] = await db
+    .select()
+    .from(businesses)
+    .where(eq(businesses.ownerUserId, user.id))
+    .orderBy(desc(businesses.updatedAt))
+    .limit(1);
+
+  return {
+    userId: clerkUserId,
+    user,
+    business: business || null,
+  };
 }
 
-export function signIn(email: string): User {
-  const user = read<User[]>(USERS, []).find((u) => norm(u.email) === norm(email));
-  if (!user) throw new Error('No account found for this email. Create one first.');
-  write(SESSION, user.id);
-  emit();
-  return user;
-}
-
-export function signOut() {
+/**
+ * Log activity helper
+ */
+export async function logActivity(params: {
+  userId: string;
+  businessId?: string | null;
+  activityType: string;
+  description: string;
+  metadata?: Record<string, any>;
+}) {
   try {
-    localStorage.removeItem(SESSION);
-  } catch {}
-  emit();
-}
-
-export function updateUser(patch: Partial<Omit<User, 'id' | 'createdAt' | 'email'>>) {
-  const me = getUser();
-  if (!me) return null;
-  const users = read<User[]>(USERS, []).map((u) => (u.id === me.id ? { ...u, ...patch } : u));
-  write(USERS, users);
-  emit();
-  return getUser();
-}
-
-/** Only allow same-site relative redirects. */
-export function safeRedirect(target: string | null, fallback = '/account') {
-  return target && target.startsWith('/') && !target.startsWith('//') ? target : fallback;
-}
-
-export function onAuth(fn: (user: User | null) => void) {
-  fn(getUser());
-  window.addEventListener(AUTH_EVENT, () => fn(getUser()));
-  window.addEventListener('storage', (e) => (e.key === SESSION || e.key === USERS) && fn(getUser()));
+    await db.insert(activityLogs).values({
+      userId: params.userId,
+      businessId: params.businessId ?? null,
+      activityType: params.activityType,
+      description: params.description,
+      metadata: params.metadata ?? null,
+    });
+  } catch (err) {
+    console.error('Failed to log activity:', err);
+  }
 }

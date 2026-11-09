@@ -207,7 +207,7 @@ import Base from '../layouts/Base.astro';
   import { onCart, getCart, setQty, removeItem, setPackage, setSize, clearCart } from '../lib/cart';
   import { buildEstimate } from '../lib/estimate';
   import { formatINR, RECURRENCE_LABEL, RECURRENCE_SUFFIX } from '../lib/pricing';
-  import { getUser, onAuth } from '../lib/auth';
+  import { getUser, onAuth } from '../lib/mock-auth';
   import { submitEstimate } from '../lib/api';
 
   const linesEl = document.querySelector<HTMLElement>('[data-lines]')!;

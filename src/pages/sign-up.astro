@@ -1,64 +1,327 @@
 ---
-import Base from '../layouts/Base.astro';
-import AuthShell from '../components/auth/AuthShell.astro';
+export const prerender = false;
+
+import { SignUp } from '@clerk/astro/components';
+import Logo from '../components/Logo.astro';
+import '../styles/global.css';
+
+const auth = Astro.locals.auth();
+if (auth.isAuthenticated) {
+  return Astro.redirect('/dashboard');
+}
 ---
 
-<Base title="Create account" description="Create an Ascelstack account to save and submit project estimates.">
-  <AuthShell eyebrow="Create account" title="Price your project <em>in minutes.</em>" lead="An account keeps your estimates in one place so our team can pick up exactly where you left off.">
-    <form data-signup novalidate>
-      <label class="ff">
-        <span class="mono">Full name</span>
-        <input name="name" required autocomplete="name" />
-      </label>
-      <label class="ff">
-        <span class="mono">Work email</span>
-        <input name="email" type="email" required autocomplete="email" />
-      </label>
-      <label class="ff">
-        <span class="mono">Phone / WhatsApp <em>optional</em></span>
-        <input name="phone" type="tel" autocomplete="tel" />
-      </label>
-      <label class="ff">
-        <span class="mono">Business name <em>optional</em></span>
-        <input name="company" autocomplete="organization" />
-      </label>
-      <label class="ff">
-        <span class="mono">Password</span>
-        <input name="password" type="password" required minlength="8" autocomplete="new-password" />
-      </label>
-      <p class="form-err" data-err hidden></p>
-      <button class="btn" type="submit">Create account <span class="arrow">→</span></button>
-      <p class="auth-alt">Already have an account? <a href="/sign-in" data-keep-redirect>Sign in</a></p>
-    </form>
-  </AuthShell>
-</Base>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Register Business Account · Ascelstack</title>
+    <meta name="description" content="Create your Ascelstack account to request and manage software, marketing, automation, and compliance services." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bacasime+Antique&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="auth-page">
+    <div class="auth-layout">
+      <!-- Left brand panel -->
+      <aside class="auth-brand on-ink">
+        <div class="auth-brand-content">
+          <a href="/" class="auth-brand-logo" aria-label="Ascelstack home">
+            <Logo tone="light" size={32} />
+          </a>
 
-<script>
-  import { signUp, getUser, safeRedirect } from '../lib/auth';
+          <div class="auth-brand-body">
+            <span class="eyebrow">Get Started</span>
+            <h1 class="display auth-brand-title">Build your business on <em>one stack.</em></h1>
+            <p class="auth-brand-desc">
+              Stop stitching together disconnected agencies. Ascelstack unifies your engineering, branding, operations, and compliance under one dedicated team.
+            </p>
 
-  const params = new URLSearchParams(location.search);
-  const next = safeRedirect(params.get('redirect'));
-  if (getUser()) location.replace(next);
-  document.querySelectorAll<HTMLAnchorElement>('[data-keep-redirect]').forEach((a) => params.get('redirect') && (a.search = `?redirect=${encodeURIComponent(next)}`));
+            <div class="auth-bullets">
+              <div class="auth-bullet">
+                <span class="mono bullet-num">01</span>
+                <div>
+                  <strong>232 Services Across 13 Disciplines</strong>
+                  <p>From full-stack web apps and AI agents to GST filing and Swiggy onboarding.</p>
+                </div>
+              </div>
+              <div class="auth-bullet">
+                <span class="mono bullet-num">02</span>
+                <div>
+                  <strong>Transparent Request Management</strong>
+                  <p>Track progress, review deliverables, and adjust scopes from a central portal.</p>
+                </div>
+              </div>
+              <div class="auth-bullet">
+                <span class="mono bullet-num">03</span>
+                <div>
+                  <strong>No Vendor Fragmentation</strong>
+                  <p>One point of contact, synchronized data, and integrated execution.</p>
+                </div>
+              </div>
+            </div>
+          </div>
 
-  const form = document.querySelector<HTMLFormElement>('[data-signup]')!;
-  const err = form.querySelector<HTMLElement>('[data-err]')!;
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const d = new FormData(form);
-    const name = String(d.get('name') ?? '').trim();
-    const email = String(d.get('email') ?? '').trim();
-    const password = String(d.get('password') ?? '');
-    const fail = (m: string) => ((err.textContent = m), (err.hidden = false));
-    if (!name) return fail('Enter your name.');
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('Enter a valid email.');
-    if (password.length < 8) return fail('Password needs at least 8 characters.');
-    try {
-      // Password intentionally not stored (mock). Clerk handles it later.
-      signUp({ name, email, phone: String(d.get('phone') ?? '').trim(), company: String(d.get('company') ?? '').trim() });
-      location.href = next;
-    } catch (x) {
-      fail((x as Error).message);
-    }
-  });
-</script>
+          <footer class="auth-brand-footer mono">
+            <span>© 2026 Ascelstack</span>
+            <a href="https://ascelstack.com" target="_blank" rel="noreferrer">ascelstack.com</a>
+          </footer>
+        </div>
+      </aside>
+
+      <!-- Right auth form container -->
+      <main class="auth-main">
+        <header class="auth-header">
+          <a href="/" class="auth-back-link">
+            <span aria-hidden="true">←</span> Back to ascelstack.com
+          </a>
+        </header>
+
+        <div class="auth-card-wrap">
+          <div class="auth-card-header">
+            <p class="mono text-muted">Create Your Account</p>
+            <h2 class="display h3">Start with Ascelstack</h2>
+            <p class="auth-subtitle">Register to setup your business profile and explore services.</p>
+          </div>
+
+          <div class="clerk-container">
+            <SignUp
+              routing="hash"
+              forceRedirectUrl="/dashboard"
+              signInUrl="/login"
+              appearance={{
+                variables: {
+                  colorPrimary: '#1D2D3D',
+                  colorBackground: '#fafafb',
+                  colorText: '#1D1F20',
+                  colorInputBackground: '#F2F2F3',
+                  colorInputText: '#1D1F20',
+                  fontFamily: "'Inter Tight', system-ui, sans-serif",
+                  borderRadius: '10px',
+                },
+                elements: {
+                  rootBox: {
+                    width: '100%',
+                  },
+                  card: {
+                    border: '1px solid rgba(29, 45, 61, 0.12)',
+                    boxShadow: '0 16px 36px -18px rgba(29, 45, 61, 0.25)',
+                    backgroundColor: '#fafafb',
+                    padding: '2rem 1.75rem',
+                  },
+                  headerTitle: {
+                    fontFamily: "'Bacasime Antique', Georgia, serif",
+                    fontSize: '1.6rem',
+                    fontWeight: '400',
+                    color: '#1D2D3D',
+                  },
+                  headerSubtitle: {
+                    color: '#5D5D60',
+                    fontSize: '0.9rem',
+                  },
+                  formButtonPrimary: {
+                    backgroundColor: '#1D2D3D',
+                    color: '#F2F2F3',
+                    borderRadius: '999px',
+                    fontWeight: '600',
+                    fontSize: '0.95rem',
+                    padding: '0.75rem 1.5rem',
+                    transition: 'all 0.25s ease',
+                    '&:hover': {
+                      backgroundColor: '#5980A6',
+                    },
+                  },
+                  formFieldInput: {
+                    borderRadius: '8px',
+                    borderColor: 'rgba(29, 45, 61, 0.2)',
+                    fontSize: '0.95rem',
+                    '&:focus': {
+                      borderColor: '#5980A6',
+                      boxShadow: '0 0 0 3px rgba(89, 128, 166, 0.15)',
+                    },
+                  },
+                  footerActionLink: {
+                    color: '#5980A6',
+                    fontWeight: '600',
+                  },
+                },
+              }}
+            />
+          </div>
+
+          <p class="auth-switch mono">
+            Already have an account? <a href="/login">Sign in here →</a>
+          </p>
+        </div>
+      </main>
+    </div>
+
+    <style>
+      .auth-page {
+        min-height: 100vh;
+        background: var(--paper);
+        margin: 0;
+      }
+      .auth-layout {
+        display: grid;
+        grid-template-columns: 1.1fr 1.3fr;
+        min-height: 100vh;
+      }
+      .auth-brand {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: clamp(2.5rem, 5vw, 4rem);
+        position: relative;
+        overflow: hidden;
+      }
+      .auth-brand::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(circle at 10% 20%, rgba(148, 188, 227, 0.18), transparent 45%),
+          radial-gradient(circle at 90% 80%, rgba(89, 128, 166, 0.25), transparent 50%);
+        pointer-events: none;
+      }
+      .auth-brand-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        justify-content: space-between;
+        gap: 2.5rem;
+      }
+      .auth-brand-logo {
+        display: inline-flex;
+        align-items: center;
+        width: fit-content;
+      }
+      .auth-brand-body {
+        display: grid;
+        gap: 1.25rem;
+        max-width: 480px;
+      }
+      .auth-brand-title {
+        font-size: clamp(2.2rem, 1.8rem + 2vw, 3.5rem);
+        line-height: 1.08;
+      }
+      .auth-brand-desc {
+        color: var(--text-on-ink-muted);
+        font-size: 1.05rem;
+        line-height: 1.6;
+      }
+      .auth-bullets {
+        display: grid;
+        gap: 1.25rem;
+        margin-top: 1rem;
+      }
+      .auth-bullet {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+      }
+      .bullet-num {
+        color: var(--tint);
+        font-size: 0.8rem;
+        padding-top: 0.2rem;
+      }
+      .auth-bullet strong {
+        display: block;
+        color: var(--text-on-ink);
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin-bottom: 0.2rem;
+      }
+      .auth-bullet p {
+        color: var(--text-on-ink-muted);
+        font-size: 0.85rem;
+        line-height: 1.45;
+        margin: 0;
+      }
+      .auth-brand-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: var(--text-on-ink-muted);
+        font-size: 0.8rem;
+        border-top: 1px solid var(--line-on-ink);
+        padding-top: 1.5rem;
+      }
+      .auth-brand-footer a:hover {
+        color: var(--tint);
+      }
+      .auth-main {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: clamp(2rem, 4vw, 3.5rem);
+        background: var(--paper);
+      }
+      .auth-header {
+        display: flex;
+        justify-content: flex-end;
+      }
+      .auth-back-link {
+        font-size: 0.88rem;
+        color: var(--text-muted);
+        transition: color 0.2s ease;
+      }
+      .auth-back-link:hover {
+        color: var(--ink);
+      }
+      .auth-card-wrap {
+        max-width: 440px;
+        width: 100%;
+        margin: auto;
+        display: grid;
+        gap: 1.5rem;
+        padding-block: 2rem;
+      }
+      .auth-card-header {
+        display: grid;
+        gap: 0.4rem;
+      }
+      .auth-subtitle {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+      }
+      .clerk-container {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+      }
+      .auth-switch {
+        text-align: center;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-top: 0.5rem;
+      }
+      .auth-switch a {
+        color: var(--accent);
+        font-weight: 600;
+      }
+      .auth-switch a:hover {
+        text-decoration: underline;
+      }
+
+      @media (max-width: 960px) {
+        .auth-layout {
+          grid-template-columns: 1fr;
+        }
+        .auth-brand {
+          display: none;
+        }
+        .auth-main {
+          min-height: 100vh;
+        }
+      }
+    </style>
+  </body>
+</html>

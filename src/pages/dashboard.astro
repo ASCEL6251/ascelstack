@@ -1,0 +1,2285 @@
+---
+export const prerender = false;
+
+import { UserButton, SignOutButton } from '@clerk/astro/components';
+import Logo from '../components/Logo.astro';
+import { getAuthenticatedUser } from '../lib/auth';
+import { db, services, serviceRequests, businesses, activityLogs } from '../db';
+import { eq, desc, asc } from 'drizzle-orm';
+import '../styles/global.css';
+
+// 1. Server-side authentication check
+const auth = Astro.locals.auth();
+if (!auth.isAuthenticated || !auth.userId) {
+  return Astro.redirect('/login');
+}
+
+// 2. Fetch or sync authenticated customer from Neon PostgreSQL
+const authData = await getAuthenticatedUser(Astro);
+if (!authData) {
+  return Astro.redirect('/login');
+}
+
+const { user, business } = authData;
+
+// 3. Fetch customer's service requests with service & business details from Neon
+const customerRequests = await db
+  .select({
+    id: serviceRequests.id,
+    businessId: serviceRequests.businessId,
+    userId: serviceRequests.userId,
+    serviceId: serviceRequests.serviceId,
+    requirements: serviceRequests.requirements,
+    status: serviceRequests.status,
+    requestedAt: serviceRequests.requestedAt,
+    updatedAt: serviceRequests.updatedAt,
+    service: {
+      id: services.id,
+      code: services.code,
+      name: services.name,
+      slug: services.slug,
+      description: services.description,
+      layer: services.layer,
+      discipline: services.discipline,
+      availabilityStatus: services.availabilityStatus,
+    },
+    business: {
+      id: businesses.id,
+      businessName: businesses.businessName,
+    },
+  })
+  .from(serviceRequests)
+  .innerJoin(services, eq(serviceRequests.serviceId, services.id))
+  .innerJoin(businesses, eq(serviceRequests.businessId, businesses.id))
+  .where(eq(serviceRequests.userId, user.id))
+  .orderBy(desc(serviceRequests.requestedAt));
+
+// 4. Fetch all catalog services for exploration
+const allServices = await db
+  .select()
+  .from(services)
+  .orderBy(asc(services.code), asc(services.name));
+
+// 5. Fetch recent activity logs from Neon
+const recentActivities = await db
+  .select()
+  .from(activityLogs)
+  .where(eq(activityLogs.userId, user.id))
+  .orderBy(desc(activityLogs.createdAt))
+  .limit(10);
+
+// Calculate initial statistics
+const activeServicesCount = customerRequests.filter((r) => r.status === 'active').length;
+const pendingServicesCount = customerRequests.filter((r) => ['pending', 'reviewing'].includes(r.status)).length;
+const completedServicesCount = customerRequests.filter((r) => r.status === 'completed').length;
+const totalServicesCount = customerRequests.length;
+
+// Pre-fill initial business data if user hasn't created one
+const defaultBusinessName = business?.businessName || `${user.fullName || 'My'} Business`;
+const defaultBusinessEmail = business?.email || user.email;
+
+// Pass safe initial state to client for instant hydration without extra initial requests
+const initialData = {
+  user,
+  business: business || {
+    id: '',
+    businessName: defaultBusinessName,
+    email: defaultBusinessEmail,
+    businessType: '',
+    industry: '',
+    phone: '',
+    website: '',
+    address: '',
+    city: '',
+    state: '',
+    country: 'India',
+    gstin: '',
+    description: '',
+  },
+  requests: customerRequests,
+  activities: recentActivities,
+  stats: {
+    total: totalServicesCount,
+    active: activeServicesCount,
+    pending: pendingServicesCount,
+    completed: completedServicesCount,
+  },
+};
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Customer Dashboard · Ascelstack</title>
+    <meta name="description" content="Manage your Ascelstack services, business profile, and requests." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bacasime+Antique&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="dash-body">
+    <div class="dash-layout">
+      <!-- Sidebar Navigation -->
+      <aside class="dash-sidebar" data-sidebar>
+        <div class="sidebar-top">
+          <a href="/" class="sidebar-logo" aria-label="Ascelstack home">
+            <Logo tone="light" size={26} />
+          </a>
+          <button class="sidebar-close-btn" data-close-sidebar aria-label="Close sidebar">✕</button>
+        </div>
+
+        <div class="sidebar-biz-badge">
+          <span class="mono sidebar-biz-tag">ACTIVE BUSINESS</span>
+          <span class="sidebar-biz-name" data-bind-biz-name>{defaultBusinessName}</span>
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Dashboard navigation">
+          <button class="nav-item is-active" data-tab="overview">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="7" height="9" x="3" y="3" rx="1" /><rect width="7" height="5" x="14" y="3" rx="1" />
+              <rect width="7" height="9" x="14" y="12" rx="1" /><rect width="7" height="5" x="3" y="16" rx="1" />
+            </svg>
+            <span>Overview</span>
+          </button>
+
+          <button class="nav-item" data-tab="business">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 21h18" /><path d="M5 21V7l8-4v18" /><path d="M19 21V11l-6-4" />
+              <path d="M9 9v.01" /><path d="M9 12v.01" /><path d="M9 15v.01" /><path d="M9 18v.01" />
+            </svg>
+            <span>My Business</span>
+          </button>
+
+          <button class="nav-item" data-tab="my-services">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m16 6 4 14" /><path d="M12 6v14" /><path d="M8 8v12" /><path d="M4 4v16" />
+            </svg>
+            <span>My Services</span>
+            <span class="badge-pill" data-bind-total-badge>{totalServicesCount}</span>
+          </button>
+
+          <button class="nav-item" data-tab="explore">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+            </svg>
+            <span>Explore Services</span>
+            <span class="badge-pill badge-accent">232</span>
+          </button>
+
+          <button class="nav-item" data-tab="projects">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v20" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+            </svg>
+            <span>Projects</span>
+          </button>
+
+          <button class="nav-item" data-tab="support">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+              <path d="M12 17h.01" />
+            </svg>
+            <span>Support</span>
+          </button>
+
+          <button class="nav-item" data-tab="settings">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            <span>Settings</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-footer">
+          <SignOutButton redirectUrl="/login">
+            <button class="nav-item nav-logout" type="button">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" />
+                <line x1="21" x2="9" y1="12" y2="12" />
+              </svg>
+              <span>Logout</span>
+            </button>
+          </SignOutButton>
+        </div>
+      </aside>
+
+      <!-- Main Dashboard Content Container -->
+      <div class="dash-main-container">
+        <!-- Top App Bar -->
+        <header class="dash-topbar">
+          <div class="topbar-left">
+            <button class="topbar-toggle-btn" data-open-sidebar aria-label="Open sidebar menu">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+            <div class="dash-breadcrumbs">
+              <span class="mono bread-root">Ascelstack</span>
+              <span class="bread-sep">/</span>
+              <span class="bread-current" data-bind-current-view>Overview</span>
+            </div>
+          </div>
+
+          <div class="topbar-right">
+            <!-- Sync Status Indicator -->
+            <div class="sync-indicator" title="Connected to Neon PostgreSQL">
+              <span class="sync-dot"></span>
+              <span class="mono sync-label">Synced</span>
+            </div>
+
+            <!-- Notifications Trigger -->
+            <button class="topbar-icon-btn" data-open-notifications aria-label="View notifications">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+              </svg>
+              <span class="notif-badge" data-bind-notif-count>{recentActivities.length > 0 ? recentActivities.length : ''}</span>
+            </button>
+
+            <!-- Clerk User Button for Profile & Account Settings -->
+            <div class="clerk-user-slot" title="Clerk Account">
+              <UserButton afterSignOutUrl="/login" />
+            </div>
+          </div>
+        </header>
+
+        <!-- Dynamic Views Area -->
+        <main class="dash-content">
+          <!-- VIEW 1: OVERVIEW -->
+          <section class="dash-view is-active" id="view-overview" data-view="overview">
+            <div class="dash-welcome-card">
+              <div class="welcome-text">
+                <span class="eyebrow">Client Portal · Neon DB Connected</span>
+                <h1 class="display welcome-title">Welcome back, <em data-bind-user-name>{user.fullName || 'Partner'}</em></h1>
+                <p class="welcome-desc">
+                  Managing operations for <strong data-bind-biz-name>{defaultBusinessName}</strong>. All requests and scopes are synchronized with your dedicated team.
+                </p>
+              </div>
+              <div class="welcome-actions">
+                <button class="btn btn-primary" data-action="go-explore">
+                  <span>+ Explore Services</span>
+                  <span class="arrow">→</span>
+                </button>
+                <button class="btn btn-ghost" data-action="go-business">
+                  <span>Edit Business Profile</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Real Database Metrics Grid -->
+            <div class="metrics-grid">
+              <div class="metric-card">
+                <span class="mono metric-label">TOTAL REQUESTED</span>
+                <div class="metric-value" data-bind-total>{totalServicesCount}</div>
+                <span class="metric-hint">Across all 3 layers</span>
+              </div>
+              <div class="metric-card">
+                <span class="mono metric-label">ACTIVE SERVICES</span>
+                <div class="metric-value text-accent" data-bind-active>{activeServicesCount}</div>
+                <span class="metric-hint">In active execution</span>
+              </div>
+              <div class="metric-card">
+                <span class="mono metric-label">PENDING / REVIEW</span>
+                <div class="metric-value text-warn" data-bind-pending>{pendingServicesCount}</div>
+                <span class="metric-hint">Awaiting team confirmation</span>
+              </div>
+              <div class="metric-card">
+                <span class="mono metric-label">COMPLETED</span>
+                <div class="metric-value text-success" data-bind-completed>{completedServicesCount}</div>
+                <span class="metric-hint">Delivered & verified</span>
+              </div>
+            </div>
+
+            <!-- Overview Content Columns -->
+            <div class="overview-columns">
+              <!-- Left Column: Recently Added Services -->
+              <div class="card-panel">
+                <div class="panel-header">
+                  <div>
+                    <h2 class="panel-title">Requested Services</h2>
+                    <p class="panel-subtitle">Your active pipeline and pending requests</p>
+                  </div>
+                  <button class="text-link mono" data-action="go-my-services">View All ({totalServicesCount}) →</button>
+                </div>
+
+                <div class="requests-table-wrap" data-container="overview-requests">
+                  {customerRequests.length === 0 ? (
+                    <div class="empty-state">
+                      <div class="empty-icon">📦</div>
+                      <h3 class="display empty-title">No services requested yet</h3>
+                      <p class="empty-desc">
+                        Explore Ascelstack's 232 services across Software, Marketing, Operations, and Compliance to add your first service request.
+                      </p>
+                      <button class="btn btn-primary" data-action="go-explore">
+                        Browse Service Catalogue →
+                      </button>
+                    </div>
+                  ) : (
+                    <table class="data-table">
+                      <thead>
+                        <tr>
+                          <th>Service</th>
+                          <th>Layer</th>
+                          <th>Discipline</th>
+                          <th>Status</th>
+                          <th>Requested</th>
+                        </tr>
+                      </thead>
+                      <tbody data-bind-recent-requests>
+                        {customerRequests.slice(0, 5).map((req) => (
+                          <tr>
+                            <td class="table-service-name">
+                              <strong>{req.service.name}</strong>
+                              <span class="mono table-code">{req.service.code}</span>
+                            </td>
+                            <td>
+                              <span class={`layer-tag layer-${req.service.layer}`}>{req.service.layer}</span>
+                            </td>
+                            <td class="text-muted">{req.service.discipline}</td>
+                            <td>
+                              <span class={`status-tag status-${req.status}`}>{req.status}</span>
+                            </td>
+                            <td class="mono text-muted">
+                              {new Date(req.requestedAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </div>
+
+              <!-- Right Column: Recent Activity Feed -->
+              <div class="card-panel">
+                <div class="panel-header">
+                  <div>
+                    <h2 class="panel-title">Recent Activity</h2>
+                    <p class="panel-subtitle">Audit trail & timeline from Neon</p>
+                  </div>
+                </div>
+
+                <div class="activity-feed" data-container="overview-activity">
+                  {recentActivities.length === 0 ? (
+                    <p class="empty-subtext">No activity recorded yet.</p>
+                  ) : (
+                    recentActivities.map((act) => (
+                      <div class="activity-item">
+                        <div class="activity-bullet"></div>
+                        <div class="activity-body">
+                          <p class="activity-desc">{act.description}</p>
+                          <span class="mono activity-time">
+                            {new Date(act.createdAt).toLocaleDateString('en-IN', {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- VIEW 2: MY BUSINESS -->
+          <section class="dash-view" id="view-business" data-view="business">
+            <div class="card-panel max-form-panel">
+              <div class="panel-header">
+                <div>
+                  <span class="eyebrow">Company Details</span>
+                  <h2 class="display h3">Business Profile</h2>
+                  <p class="panel-subtitle">
+                    Configure your business identity. These details are used to prepare service requests and compliance filings.
+                  </p>
+                </div>
+              </div>
+
+              <form class="business-form" id="business-form" novalidate>
+                <input type="hidden" name="id" value={business?.id || ''} />
+
+                <div class="form-row">
+                  <label class="field">
+                    <span class="mono">Business Name *</span>
+                    <input name="businessName" required value={business?.businessName || defaultBusinessName} placeholder="e.g. Acme Tech Innovations Pvt Ltd" />
+                  </label>
+                  <label class="field">
+                    <span class="mono">Business Type</span>
+                    <select name="businessType">
+                      <option value="">Select structure...</option>
+                      <option value="Private Limited" selected={business?.businessType === 'Private Limited'}>Private Limited Company</option>
+                      <option value="LLP" selected={business?.businessType === 'LLP'}>Limited Liability Partnership (LLP)</option>
+                      <option value="Sole Proprietorship" selected={business?.businessType === 'Sole Proprietorship'}>Sole Proprietorship</option>
+                      <option value="Partnership" selected={business?.businessType === 'Partnership'}>Partnership Firm</option>
+                      <option value="Startup / Early Stage" selected={business?.businessType === 'Startup / Early Stage'}>Startup / Early Stage</option>
+                      <option value="Individual / Creator" selected={business?.businessType === 'Individual / Creator'}>Individual / Creator</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div class="form-row">
+                  <label class="field">
+                    <span class="mono">Industry</span>
+                    <select name="industry">
+                      <option value="">Select industry...</option>
+                      <option value="Technology & Software" selected={business?.industry === 'Technology & Software'}>Technology & Software</option>
+                      <option value="E-commerce & Retail" selected={business?.industry === 'E-commerce & Retail'}>E-commerce & Retail</option>
+                      <option value="Restaurant & Food" selected={business?.industry === 'Restaurant & Food'}>Restaurant, Cafe & Food</option>
+                      <option value="Healthcare & Wellness" selected={business?.industry === 'Healthcare & Wellness'}>Healthcare & Wellness</option>
+                      <option value="Manufacturing & Logistics" selected={business?.industry === 'Manufacturing & Logistics'}>Manufacturing & Logistics</option>
+                      <option value="Finance & Professional Services" selected={business?.industry === 'Finance & Professional Services'}>Finance & Professional Services</option>
+                      <option value="Other" selected={business?.industry === 'Other'}>Other</option>
+                    </select>
+                  </label>
+                  <label class="field">
+                    <span class="mono">Business Email</span>
+                    <input name="email" type="email" value={business?.email || defaultBusinessEmail} placeholder="contact@company.com" />
+                  </label>
+                </div>
+
+                <div class="form-row">
+                  <label class="field">
+                    <span class="mono">Contact Number / WhatsApp</span>
+                    <input name="phone" type="tel" value={business?.phone || ''} placeholder="+91 98765 43210" />
+                  </label>
+                  <label class="field">
+                    <span class="mono">Website URL</span>
+                    <input name="website" type="url" value={business?.website || ''} placeholder="https://yourcompany.com" />
+                  </label>
+                </div>
+
+                <label class="field">
+                  <span class="mono">Business Address</span>
+                  <input name="address" value={business?.address || ''} placeholder="Registered office address or facility" />
+                </label>
+
+                <div class="form-row form-row-3">
+                  <label class="field">
+                    <span class="mono">City</span>
+                    <input name="city" value={business?.city || ''} placeholder="City" />
+                  </label>
+                  <label class="field">
+                    <span class="mono">State</span>
+                    <input name="state" value={business?.state || ''} placeholder="State" />
+                  </label>
+                  <label class="field">
+                    <span class="mono">Country</span>
+                    <input name="country" value={business?.country || 'India'} placeholder="Country" />
+                  </label>
+                </div>
+
+                <div class="form-row">
+                  <label class="field">
+                    <span class="mono">GSTIN <em>(Optional)</em></span>
+                    <input name="gstin" value={business?.gstin || ''} placeholder="22AAAAA0000A1Z5" />
+                  </label>
+                  <label class="field">
+                    <span class="mono">Company Short Description</span>
+                    <input name="description" value={business?.description || ''} placeholder="What does your company do?" />
+                  </label>
+                </div>
+
+                <div class="form-footer">
+                  <button class="btn btn-primary" type="submit" id="btn-save-biz">
+                    <span>Save Business Profile</span>
+                    <span class="arrow">→</span>
+                  </button>
+                  <span class="mono text-muted save-status" id="biz-save-status"></span>
+                </div>
+              </form>
+            </div>
+          </section>
+
+          <!-- VIEW 3: MY SERVICES -->
+          <section class="dash-view" id="view-my-services" data-view="my-services">
+            <div class="card-panel">
+              <div class="panel-header-flex">
+                <div>
+                  <span class="eyebrow">Service Portfolio</span>
+                  <h2 class="display h3">My Services</h2>
+                  <p class="panel-subtitle">All active, pending, and completed services for your business</p>
+                </div>
+                <button class="btn btn-primary" data-action="go-explore">
+                  <span>+ Request New Service</span>
+                </button>
+              </div>
+
+              <!-- Filter tabs for My Services -->
+              <div class="my-services-filter-bar">
+                <button class="tab is-on" data-my-filter="all">All Services (<span data-bind-total>{totalServicesCount}</span>)</button>
+                <button class="tab" data-my-filter="build">Build</button>
+                <button class="tab" data-my-filter="grow">Grow</button>
+                <button class="tab" data-my-filter="run">Run</button>
+              </div>
+
+              <!-- Grid of Requested Services -->
+              <div class="my-services-grid" id="my-services-list">
+                {customerRequests.length === 0 ? (
+                  <div class="empty-state">
+                    <div class="empty-icon">✨</div>
+                    <h3 class="display empty-title">No services in your stack yet</h3>
+                    <p class="empty-desc">
+                      Add services from our catalogue to build software, grow your brand, or run day-to-day operations seamlessly.
+                    </p>
+                    <button class="btn btn-primary" data-action="go-explore">Explore Catalogue →</button>
+                  </div>
+                ) : (
+                  customerRequests.map((req) => (
+                    <article class="my-service-card" data-my-layer={req.service.layer} data-request-id={req.id}>
+                      <div class="card-header-line">
+                        <span class={`layer-tag layer-${req.service.layer}`}>{req.service.layer}</span>
+                        <span class={`status-tag status-${req.status}`}>{req.status}</span>
+                      </div>
+
+                      <h3 class="my-service-title">{req.service.name}</h3>
+                      <p class="my-service-desc">{req.service.description}</p>
+
+                      <div class="my-service-meta">
+                        <div>
+                          <span class="mono meta-k">DISCIPLINE</span>
+                          <span class="meta-v">{req.service.discipline}</span>
+                        </div>
+                        <div>
+                          <span class="mono meta-k">REQUESTED</span>
+                          <span class="mono meta-v">
+                            {new Date(req.requestedAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </span>
+                        </div>
+                      </div>
+
+                      {req.requirements && (
+                        <div class="my-service-req-box">
+                          <span class="mono req-box-title">Requirements Note:</span>
+                          <p class="req-box-text">{req.requirements}</p>
+                        </div>
+                      )}
+
+                      <div class="my-service-actions">
+                        <button class="btn-sm btn-ghost" data-action="edit-req" data-id={req.id} data-req={req.requirements || ''} data-name={req.service.name}>
+                          Update Requirements
+                        </button>
+                        {req.status !== 'cancelled' && (
+                          <button class="btn-sm btn-danger-ghost" data-action="cancel-req" data-id={req.id} data-name={req.service.name} data-status={req.status}>
+                            {req.status === 'active' ? 'Request Cancellation' : 'Cancel Request'}
+                          </button>
+                        )}
+                      </div>
+                    </article>
+                  ))
+                )}
+              </div>
+            </div>
+          </section>
+
+          <!-- VIEW 4: EXPLORE SERVICES -->
+          <section class="dash-view" id="view-explore" data-view="explore">
+            <div class="card-panel">
+              <div class="panel-header">
+                <div>
+                  <span class="eyebrow">Full Stack Catalogue</span>
+                  <h2 class="display h3">Explore Ascelstack Services</h2>
+                  <p class="panel-subtitle">Browse all 232 services across Build, Grow, and Run. Request services directly into your stack.</p>
+                </div>
+              </div>
+
+              <!-- Search and Filter Bar -->
+              <div class="explore-toolbar">
+                <div class="search-box">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+                  <input type="search" id="explore-search-input" placeholder="Search by service name, discipline, or keyword (e.g. GST, AI, Website)..." autocomplete="off" />
+                </div>
+
+                <div class="filter-pills-row">
+                  <span class="mono text-muted filter-label">LAYER:</span>
+                  <button class="tab is-on" data-layer-filter="all">All Layers</button>
+                  <button class="tab" data-layer-filter="build">Build</button>
+                  <button class="tab" data-layer-filter="grow">Grow</button>
+                  <button class="tab" data-layer-filter="run">Run</button>
+
+                  <span class="mono text-muted filter-label filter-label-sep">DISCIPLINE:</span>
+                  <select id="explore-discipline-filter" class="discipline-select">
+                    <option value="all">All Disciplines (13)</option>
+                    <option value="Software & Web">Software & Web (Build)</option>
+                    <option value="AI & Automation">AI & Automation (Build)</option>
+                    <option value="IT Infrastructure">IT Infrastructure (Build)</option>
+                    <option value="Corporate">Corporate (Build)</option>
+                    <option value="Marketing">Marketing (Grow)</option>
+                    <option value="Brand & Creative">Brand & Creative (Grow)</option>
+                    <option value="E-commerce">E-commerce (Grow)</option>
+                    <option value="Training">Training (Grow)</option>
+                    <option value="Consulting">Consulting (Grow)</option>
+                    <option value="Operations">Operations (Run)</option>
+                    <option value="Restaurants">Restaurants (Run)</option>
+                    <option value="Compliance">Compliance (Run)</option>
+                    <option value="HR & Hiring">HR & Hiring (Run)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Services Catalog Grid -->
+              <div class="explore-grid" id="explore-services-grid">
+                {allServices.map((svc) => {
+                  const existingReq = customerRequests.find((r) => r.serviceId === svc.id);
+                  const isPendingOrActive = existingReq && ['pending', 'reviewing', 'approved', 'active'].includes(existingReq.status);
+
+                  return (
+                    <article
+                      class="explore-card"
+                      data-layer={svc.layer}
+                      data-discipline={svc.discipline}
+                      data-search={`${svc.name} ${svc.description} ${svc.discipline} ${svc.code}`.toLowerCase()}
+                    >
+                      <div class="explore-card-top">
+                        <span class="mono explore-code">{svc.code}</span>
+                        <span class={`layer-tag layer-${svc.layer}`}>{svc.layer}</span>
+                        {svc.availabilityStatus === 'coming_soon' && (
+                          <span class="card-badge-soft">Coming soon</span>
+                        )}
+                      </div>
+
+                      <h3 class="explore-card-name">{svc.name}</h3>
+                      <p class="explore-card-desc">{svc.description}</p>
+                      <span class="mono explore-discipline-tag">{svc.discipline}</span>
+
+                      <div class="explore-card-footer">
+                        {isPendingOrActive ? (
+                          <div class="already-added-badge">
+                            <span class="mono">✓ {existingReq.status.toUpperCase()}</span>
+                          </div>
+                        ) : (
+                          <button
+                            class="btn-sm btn-primary-pill"
+                            data-action="open-add-service-modal"
+                            data-id={svc.id}
+                            data-name={svc.name}
+                            data-code={svc.code}
+                            data-layer={svc.layer}
+                            data-discipline={svc.discipline}
+                            data-desc={svc.description}
+                          >
+                            + Add Service
+                          </button>
+                        )}
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+
+              <div class="empty-state" id="explore-no-results" hidden>
+                <div class="empty-icon">🔍</div>
+                <h3 class="display empty-title">No services match your filters</h3>
+                <p class="empty-desc">Try resetting your search query or choosing another discipline.</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- VIEW 5: PROJECTS -->
+          <section class="dash-view" id="view-projects" data-view="projects">
+            <div class="card-panel">
+              <div class="panel-header">
+                <div>
+                  <span class="eyebrow">Execution Pipeline</span>
+                  <h2 class="display h3">Projects & Milestones</h2>
+                  <p class="panel-subtitle">Tracking the unified delivery of your connected stack</p>
+                </div>
+              </div>
+
+              <div class="projects-container">
+                <div class="project-phase-card">
+                  <div class="phase-header">
+                    <span class="mono phase-num">STAGE 01</span>
+                    <h3 class="phase-title">Discover & Architecture</h3>
+                  </div>
+                  <p class="phase-desc">Mapping existing handoffs, spreadsheets, domain setup, and requirements.</p>
+                  <span class="mono phase-status">Status: Active upon service approval</span>
+                </div>
+
+                <div class="project-phase-card">
+                  <div class="phase-header">
+                    <span class="mono phase-num">STAGE 02</span>
+                    <h3 class="phase-title">Build & Implement</h3>
+                  </div>
+                  <p class="phase-desc">Software development, integrations, and branding deliverables built in sprint cycles.</p>
+                  <span class="mono phase-status">Status: Dependent on Stage 01</span>
+                </div>
+
+                <div class="project-phase-card">
+                  <div class="phase-header">
+                    <span class="mono phase-num">STAGE 03</span>
+                    <h3 class="phase-title">Automate & Scale</h3>
+                  </div>
+                  <p class="phase-desc">AI agent deployment, compliance filings, and automated workflows switched on.</p>
+                  <span class="mono phase-status">Status: Scheduled</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- VIEW 6: SUPPORT -->
+          <section class="dash-view" id="view-support" data-view="support">
+            <div class="card-panel max-form-panel">
+              <div class="panel-header">
+                <div>
+                  <span class="eyebrow">Dedicated Help</span>
+                  <h2 class="display h3">Client Support & Inquiries</h2>
+                  <p class="panel-subtitle">Direct communication with your Ascelstack account lead</p>
+                </div>
+              </div>
+
+              <div class="support-grid">
+                <div class="support-card">
+                  <span class="mono text-muted">DIRECT EMAIL</span>
+                  <h4>hello@ascelstack.com</h4>
+                  <p>Guaranteed response within 1 business day for active customer accounts.</p>
+                </div>
+                <div class="support-card">
+                  <span class="mono text-muted">BUSINESS HOURS</span>
+                  <h4>Mon – Sat, 10:00 – 19:00 IST</h4>
+                  <p>Direct communication via phone, WhatsApp, and Google Meet.</p>
+                </div>
+              </div>
+
+              <div class="support-notice">
+                <p>
+                  Need a custom integration, enterprise SLA, or immediate scope revision? Reach out directly and we will sync it straight into your dashboard.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <!-- VIEW 7: SETTINGS -->
+          <section class="dash-view" id="view-settings" data-view="settings">
+            <div class="card-panel max-form-panel">
+              <div class="panel-header">
+                <div>
+                  <span class="eyebrow">Account Settings</span>
+                  <h2 class="display h3">Customer Profile</h2>
+                  <p class="panel-subtitle">Your identity mapped between Clerk and Neon PostgreSQL</p>
+                </div>
+              </div>
+
+              <form class="business-form" id="profile-form">
+                <div class="form-row">
+                  <label class="field">
+                    <span class="mono">Full Name</span>
+                    <input name="fullName" value={user.fullName || ''} placeholder="Your name" required />
+                  </label>
+                  <label class="field">
+                    <span class="mono">Primary Email</span>
+                    <input name="email" value={user.email} disabled class="input-disabled" />
+                  </label>
+                </div>
+
+                <div class="form-row">
+                  <label class="field">
+                    <span class="mono">Neon Account ID</span>
+                    <input value={user.id} disabled class="mono input-disabled" />
+                  </label>
+                  <label class="field">
+                    <span class="mono">Clerk User Identifier</span>
+                    <input value={user.clerkUserId} disabled class="mono input-disabled" />
+                  </label>
+                </div>
+
+                <div class="form-footer">
+                  <button class="btn btn-primary" type="submit" id="btn-save-profile">
+                    Save Profile Changes
+                  </button>
+                  <span class="mono text-muted save-status" id="profile-save-status"></span>
+                </div>
+              </form>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <!-- MODAL 1: ADD SERVICE REQUEST -->
+    <div class="modal-backdrop" id="modal-add-service" hidden>
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <div>
+            <span class="eyebrow" id="modal-svc-layer">Build Layer</span>
+            <h3 class="display modal-title" id="modal-svc-name">Website Development</h3>
+            <span class="mono modal-code" id="modal-svc-code">ASC-0001</span>
+          </div>
+          <button class="modal-close-btn" data-close-modal aria-label="Close modal">✕</button>
+        </div>
+
+        <form id="form-add-service">
+          <input type="hidden" name="serviceId" id="modal-svc-id" />
+
+          <p class="modal-desc" id="modal-svc-desc"></p>
+
+          <label class="field">
+            <span class="mono">Associate with Business</span>
+            <input type="text" value={defaultBusinessName} disabled class="input-disabled" />
+          </label>
+
+          <label class="field">
+            <span class="mono">Requirements & Notes <em>(Optional)</em></span>
+            <textarea
+              name="requirements"
+              rows="4"
+              placeholder="Describe your current tech stack, timelines, key features, or specific deliverables needed..."
+            ></textarea>
+          </label>
+
+          <div class="modal-info-callout">
+            <span class="mono">NOTE</span>
+            <p>
+              Your request will be registered with status <strong>Pending</strong> in Neon PostgreSQL. Our team will review the specifications and assign engineers before activation.
+            </p>
+          </div>
+
+          <div class="modal-actions">
+            <button class="btn btn-ghost" type="button" data-close-modal>Cancel</button>
+            <button class="btn btn-primary" type="submit" id="btn-submit-request">
+              <span>Submit Request</span>
+              <span class="arrow">→</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL 2: UPDATE REQUIREMENTS / CANCEL REQUEST -->
+    <div class="modal-backdrop" id="modal-edit-req" hidden>
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <div>
+            <span class="eyebrow">Service Requirements</span>
+            <h3 class="display modal-title" id="edit-req-title">Update Requirements</h3>
+          </div>
+          <button class="modal-close-btn" data-close-modal aria-label="Close modal">✕</button>
+        </div>
+
+        <form id="form-edit-req">
+          <input type="hidden" name="requestId" id="edit-req-id" />
+
+          <label class="field">
+            <span class="mono">Project Scope & Requirements</span>
+            <textarea name="requirements" id="edit-req-text" rows="5" required></textarea>
+          </label>
+
+          <div class="modal-actions">
+            <button class="btn btn-ghost" type="button" data-close-modal>Close</button>
+            <button class="btn btn-primary" type="submit" id="btn-save-req">
+              <span>Save Requirements</span>
+              <span class="arrow">→</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION POPUP -->
+    <div class="toast-hub" id="toast-hub" aria-live="polite"></div>
+
+    <!-- Pass server initial data into client script securely -->
+    <script is:inline define:vars={{ initialData }}>
+      window.__ASC_DASH__ = initialData;
+    </script>
+
+    <!-- Client-side Synchronization, Real-time Polling & UI Script -->
+    <script>
+      interface SyncData {
+        user: any;
+        business: any;
+        requests: any[];
+        activities: any[];
+        stats: {
+          total: number;
+          active: number;
+          pending: number;
+          completed: number;
+        };
+      }
+
+      let state: SyncData = (window as any).__ASC_DASH__;
+
+      // Broadcast channel for multi-tab synchronization
+      const syncChannel = new BroadcastChannel('ascelstack_customer_sync');
+
+      // Toast notification helper
+      function showToast(message: string, type: 'success' | 'error' | 'info' = 'success') {
+        const hub = document.getElementById('toast-hub');
+        if (!hub) return;
+
+        const toast = document.createElement('div');
+        toast.className = `toast-item toast-${type}`;
+        toast.innerHTML = `
+          <div class="toast-content">
+            <span class="toast-icon">${type === 'success' ? '✓' : type === 'error' ? '⚠' : 'ℹ'}</span>
+            <span>${message}</span>
+          </div>
+          <button class="toast-close" type="button">✕</button>
+        `;
+
+        toast.querySelector('.toast-close')?.addEventListener('click', () => toast.remove());
+        hub.appendChild(toast);
+
+        setTimeout(() => {
+          toast.classList.add('is-leaving');
+          setTimeout(() => toast.remove(), 300);
+        }, 4500);
+      }
+
+      // Update UI elements from current state
+      function renderState(newState: SyncData) {
+        state = newState;
+
+        // Update counts
+        document.querySelectorAll('[data-bind-total]').forEach((el) => (el.textContent = String(state.stats.total)));
+        document.querySelectorAll('[data-bind-total-badge]').forEach((el) => (el.textContent = String(state.stats.total)));
+        document.querySelectorAll('[data-bind-active]').forEach((el) => (el.textContent = String(state.stats.active)));
+        document.querySelectorAll('[data-bind-pending]').forEach((el) => (el.textContent = String(state.stats.pending)));
+        document.querySelectorAll('[data-bind-completed]').forEach((el) => (el.textContent = String(state.stats.completed)));
+
+        // Update business names
+        if (state.business?.businessName) {
+          document.querySelectorAll('[data-bind-biz-name]').forEach((el) => (el.textContent = state.business.businessName));
+        }
+
+        // Update user name
+        if (state.user?.fullName) {
+          document.querySelectorAll('[data-bind-user-name]').forEach((el) => (el.textContent = state.user.fullName));
+        }
+      }
+
+      // Sync with server API
+      async function syncWithServer(silent = true) {
+        try {
+          const res = await fetch('/api/customer/sync');
+          if (!res.ok) return;
+          const data = await res.json();
+          renderState(data);
+          syncChannel.postMessage({ type: 'SYNC_UPDATE', state: data });
+          if (!silent) {
+            showToast('Synchronized with Neon database', 'info');
+          }
+        } catch (e) {
+          console.warn('Sync failed:', e);
+        }
+      }
+
+      // Tab navigation
+      const navItems = document.querySelectorAll<HTMLButtonElement>('.sidebar-nav .nav-item');
+      const views = document.querySelectorAll<HTMLElement>('.dash-view');
+      const currentViewLabel = document.querySelector<HTMLElement>('[data-bind-current-view]');
+
+      function switchTab(targetTab: string) {
+        navItems.forEach((btn) => btn.classList.toggle('is-active', btn.dataset.tab === targetTab));
+        views.forEach((view) => view.classList.toggle('is-active', view.dataset.view === targetTab));
+
+        if (currentViewLabel) {
+          const activeBtn = Array.from(navItems).find((b) => b.dataset.tab === targetTab);
+          currentViewLabel.textContent = activeBtn?.querySelector('span')?.textContent || 'Overview';
+        }
+
+        history.replaceState(null, '', `#${targetTab}`);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      navItems.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const tab = btn.dataset.tab;
+          if (tab) switchTab(tab);
+          // Close sidebar on mobile after clicking
+          document.querySelector('[data-sidebar]')?.classList.remove('is-open');
+        });
+      });
+
+      // Quick action buttons
+      document.querySelectorAll('[data-action="go-explore"]').forEach((b) => b.addEventListener('click', () => switchTab('explore')));
+      document.querySelectorAll('[data-action="go-business"]').forEach((b) => b.addEventListener('click', () => switchTab('business')));
+      document.querySelectorAll('[data-action="go-my-services"]').forEach((b) => b.addEventListener('click', () => switchTab('my-services')));
+
+      // Initialize tab from hash
+      const hash = location.hash.replace('#', '');
+      if (hash && document.querySelector(`[data-view="${hash}"]`)) {
+        switchTab(hash);
+      }
+
+      // Mobile sidebar toggle
+      document.querySelector('[data-open-sidebar]')?.addEventListener('click', () => {
+        document.querySelector('[data-sidebar]')?.classList.add('is-open');
+      });
+      document.querySelector('[data-close-sidebar]')?.addEventListener('click', () => {
+        document.querySelector('[data-sidebar]')?.classList.remove('is-open');
+      });
+
+      // Explore Services Filter & Search Logic
+      const exploreSearch = document.getElementById('explore-search-input') as HTMLInputElement;
+      const exploreCards = document.querySelectorAll<HTMLElement>('.explore-card');
+      const layerFilters = document.querySelectorAll<HTMLButtonElement>('[data-layer-filter]');
+      const disciplineFilter = document.getElementById('explore-discipline-filter') as HTMLSelectElement;
+      const noResults = document.getElementById('explore-no-results');
+
+      let currentLayer = 'all';
+      let currentDiscipline = 'all';
+
+      function filterExploreCatalog() {
+        const query = exploreSearch?.value.trim().toLowerCase() || '';
+        let visibleCount = 0;
+
+        exploreCards.forEach((card) => {
+          const matchesLayer = currentLayer === 'all' || card.dataset.layer === currentLayer;
+          const matchesDiscipline = currentDiscipline === 'all' || card.dataset.discipline === currentDiscipline;
+          const matchesSearch = !query || (card.dataset.search?.includes(query) ?? false);
+
+          const isMatch = matchesLayer && matchesDiscipline && matchesSearch;
+          card.hidden = !isMatch;
+          if (isMatch) visibleCount++;
+        });
+
+        if (noResults) {
+          noResults.hidden = visibleCount > 0;
+        }
+      }
+
+      exploreSearch?.addEventListener('input', filterExploreCatalog);
+      layerFilters.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          layerFilters.forEach((b) => b.classList.remove('is-on'));
+          btn.classList.add('is-on');
+          currentLayer = btn.dataset.layerFilter || 'all';
+          filterExploreCatalog();
+        });
+      });
+      disciplineFilter?.addEventListener('change', () => {
+        currentDiscipline = disciplineFilter.value;
+        filterExploreCatalog();
+      });
+
+      // Add Service Modal Handling
+      const modalAddService = document.getElementById('modal-add-service') as HTMLElement;
+      const formAddService = document.getElementById('form-add-service') as HTMLFormElement;
+
+      document.querySelectorAll('[data-action="open-add-service-modal"]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          const target = e.currentTarget as HTMLElement;
+          const svcId = target.dataset.id;
+          const svcName = target.dataset.name;
+          const svcCode = target.dataset.code;
+          const svcLayer = target.dataset.layer;
+          const svcDesc = target.dataset.desc;
+
+          if (!modalAddService) return;
+
+          (document.getElementById('modal-svc-id') as HTMLInputElement).value = svcId || '';
+          document.getElementById('modal-svc-name')!.textContent = svcName || '';
+          document.getElementById('modal-svc-code')!.textContent = svcCode || '';
+          document.getElementById('modal-svc-layer')!.textContent = `${svcLayer?.toUpperCase()} LAYER`;
+          document.getElementById('modal-svc-desc')!.textContent = svcDesc || '';
+
+          modalAddService.hidden = false;
+        });
+      });
+
+      // Close modals
+      document.querySelectorAll('[data-close-modal]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.modal-backdrop').forEach((m) => ((m as HTMLElement).hidden = true));
+        });
+      });
+
+      // Submit Add Service Request
+      formAddService?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const submitBtn = document.getElementById('btn-submit-request') as HTMLButtonElement;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Saving to Neon...';
+
+        const formData = new FormData(formAddService);
+        const serviceId = formData.get('serviceId') as string;
+        const requirements = formData.get('requirements') as string;
+
+        try {
+          const res = await fetch('/api/customer/service-requests', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ serviceId, requirements }),
+          });
+
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.error || 'Failed to submit request');
+          }
+
+          modalAddService.hidden = true;
+          formAddService.reset();
+          showToast(`Request submitted for ${data.request?.service?.name}! Status: Pending.`, 'success');
+
+          // Immediately sync and reload full dashboard
+          await syncWithServer();
+          location.reload();
+        } catch (err: any) {
+          showToast(err.message, 'error');
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<span>Submit Request</span><span class="arrow">→</span>';
+        }
+      });
+
+      // Save Business Profile
+      const formBusiness = document.getElementById('business-form') as HTMLFormElement;
+      formBusiness?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const saveBtn = document.getElementById('btn-save-biz') as HTMLButtonElement;
+        const statusSpan = document.getElementById('biz-save-status');
+
+        saveBtn.disabled = true;
+        if (statusSpan) statusSpan.textContent = 'Saving...';
+
+        const formData = new FormData(formBusiness);
+        const payload: Record<string, any> = {};
+        formData.forEach((val, key) => {
+          payload[key] = typeof val === 'string' ? val.trim() : val;
+        });
+
+        // Don't send empty ID
+        if (!payload.id) delete payload.id;
+
+        try {
+          const res = await fetch('/api/customer/business', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.error || 'Failed to update business profile');
+          }
+
+          if (data.business?.id) {
+            (formBusiness.querySelector('input[name="id"]') as HTMLInputElement).value = data.business.id;
+          }
+
+          showToast('Business profile persisted in Neon PostgreSQL', 'success');
+          if (statusSpan) statusSpan.textContent = 'Saved ✓';
+          await syncWithServer();
+        } catch (err: any) {
+          showToast(err.message, 'error');
+          if (statusSpan) statusSpan.textContent = 'Error';
+        } finally {
+          saveBtn.disabled = false;
+        }
+      });
+
+      // Save Customer Profile (Settings)
+      const formProfile = document.getElementById('profile-form') as HTMLFormElement;
+      formProfile?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const saveBtn = document.getElementById('btn-save-profile') as HTMLButtonElement;
+        const statusSpan = document.getElementById('profile-save-status');
+
+        saveBtn.disabled = true;
+        if (statusSpan) statusSpan.textContent = 'Saving...';
+
+        const formData = new FormData(formProfile);
+        const fullName = formData.get('fullName') as string;
+
+        try {
+          const res = await fetch('/api/customer/profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fullName }),
+          });
+
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Failed to update profile');
+
+          showToast('Profile name updated successfully', 'success');
+          if (statusSpan) statusSpan.textContent = 'Saved ✓';
+          await syncWithServer();
+        } catch (err: any) {
+          showToast(err.message, 'error');
+          if (statusSpan) statusSpan.textContent = 'Error';
+        } finally {
+          saveBtn.disabled = false;
+        }
+      });
+
+      // Edit Requirements Modal
+      const modalEditReq = document.getElementById('modal-edit-req') as HTMLElement;
+      const formEditReq = document.getElementById('form-edit-req') as HTMLFormElement;
+
+      document.querySelectorAll('[data-action="edit-req"]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          const target = e.currentTarget as HTMLElement;
+          const id = target.dataset.id;
+          const req = target.dataset.req || '';
+          const name = target.dataset.name;
+
+          (document.getElementById('edit-req-id') as HTMLInputElement).value = id || '';
+          (document.getElementById('edit-req-text') as HTMLTextAreaElement).value = req;
+          document.getElementById('edit-req-title')!.textContent = `Update Scope: ${name}`;
+
+          if (modalEditReq) modalEditReq.hidden = false;
+        });
+      });
+
+      formEditReq?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const submitBtn = document.getElementById('btn-save-req') as HTMLButtonElement;
+        submitBtn.disabled = true;
+
+        const formData = new FormData(formEditReq);
+        const requestId = formData.get('requestId') as string;
+        const requirements = formData.get('requirements') as string;
+
+        try {
+          const res = await fetch('/api/customer/service-requests', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ requestId, requirements }),
+          });
+
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Failed to update requirements');
+
+          modalEditReq.hidden = true;
+          showToast('Requirements saved in database', 'success');
+          await syncWithServer();
+          location.reload();
+        } catch (err: any) {
+          showToast(err.message, 'error');
+        } finally {
+          submitBtn.disabled = false;
+        }
+      });
+
+      // Cancel Service Request
+      document.querySelectorAll('[data-action="cancel-req"]').forEach((btn) => {
+        btn.addEventListener('click', async (e) => {
+          const target = e.currentTarget as HTMLElement;
+          const id = target.dataset.id;
+          const name = target.dataset.name;
+          const status = target.dataset.status;
+
+          const promptMsg =
+            status === 'active'
+              ? `Are you sure you want to request cancellation for active service "${name}"?`
+              : `Cancel pending request for "${name}"?`;
+
+          if (!confirm(promptMsg)) return;
+
+          try {
+            const res = await fetch('/api/customer/service-requests/cancel', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ requestId: id }),
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to cancel service request');
+
+            showToast(`Cancelled service request for ${name}`, 'info');
+            await syncWithServer();
+            location.reload();
+          } catch (err: any) {
+            showToast(err.message, 'error');
+          }
+        });
+      });
+
+      // Filter tabs in My Services view
+      const myTabs = document.querySelectorAll<HTMLButtonElement>('[data-my-filter]');
+      const myCards = document.querySelectorAll<HTMLElement>('.my-service-card');
+
+      myTabs.forEach((tab) => {
+        tab.addEventListener('click', () => {
+          myTabs.forEach((t) => t.classList.remove('is-on'));
+          tab.classList.add('is-on');
+          const filter = tab.dataset.myFilter;
+
+          myCards.forEach((card) => {
+            const ok = filter === 'all' || card.dataset.myLayer === filter;
+            card.hidden = !ok;
+          });
+        });
+      });
+
+      // Multi-tab listener via BroadcastChannel
+      syncChannel.onmessage = (event) => {
+        if (event.data?.type === 'SYNC_UPDATE') {
+          renderState(event.data.state);
+        }
+      };
+
+      // Periodic background sync (every 15 seconds)
+      setInterval(() => syncWithServer(true), 15000);
+    </script>
+
+    <style>
+      .dash-body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--text);
+        font-family: var(--font-body);
+        min-height: 100vh;
+      }
+
+      /* ------------------------------------------------------------- Layout */
+      .dash-layout {
+        display: grid;
+        grid-template-columns: 260px 1fr;
+        min-height: 100vh;
+      }
+
+      /* ------------------------------------------------------------- Sidebar */
+      .dash-sidebar {
+        background: var(--ink);
+        color: var(--text-on-ink);
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid var(--line-on-ink);
+        padding: 1.5rem 1.25rem;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        z-index: 40;
+      }
+
+      .sidebar-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid var(--line-on-ink);
+      }
+      .sidebar-logo {
+        display: inline-flex;
+        align-items: center;
+      }
+      .sidebar-close-btn {
+        display: none;
+        background: none;
+        border: 0;
+        color: var(--text-on-ink);
+        font-size: 1.2rem;
+        cursor: pointer;
+      }
+
+      .sidebar-biz-badge {
+        padding: 1rem 0;
+        display: grid;
+        gap: 0.2rem;
+        border-bottom: 1px solid var(--line-on-ink);
+      }
+      .sidebar-biz-tag {
+        font-size: 0.65rem;
+        letter-spacing: 0.12em;
+        color: var(--tint);
+      }
+      .sidebar-biz-name {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--paper);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .sidebar-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        padding-top: 1.5rem;
+        flex: 1;
+      }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        width: 100%;
+        padding: 0.65rem 0.9rem;
+        border-radius: 8px;
+        background: transparent;
+        border: 0;
+        color: var(--text-on-ink-muted);
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        text-align: left;
+        transition: all 0.2s ease;
+      }
+      .nav-item:hover {
+        background: rgba(242, 242, 243, 0.08);
+        color: var(--text-on-ink);
+      }
+      .nav-item.is-active {
+        background: rgba(148, 188, 227, 0.15);
+        color: var(--tint);
+        font-weight: 600;
+      }
+      .nav-item svg {
+        flex: none;
+      }
+
+      .badge-pill {
+        margin-left: auto;
+        padding: 0.1rem 0.5rem;
+        border-radius: 999px;
+        background: rgba(242, 242, 243, 0.15);
+        font-size: 0.75rem;
+        font-family: var(--font-mono);
+        color: var(--text-on-ink);
+      }
+      .badge-accent {
+        background: var(--accent);
+        color: var(--paper);
+      }
+
+      .sidebar-footer {
+        padding-top: 1rem;
+        border-top: 1px solid var(--line-on-ink);
+      }
+      .nav-logout {
+        color: #e07a6f;
+      }
+      .nav-logout:hover {
+        background: rgba(224, 122, 111, 0.15);
+        color: #ff9f94;
+      }
+
+      /* ------------------------------------------------------------- Topbar */
+      .dash-main-container {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+      .dash-topbar {
+        height: 64px;
+        background: var(--paper-raised);
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-inline: clamp(1.25rem, 3vw, 2.5rem);
+        position: sticky;
+        top: 0;
+        z-index: 30;
+      }
+
+      .topbar-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+      .topbar-toggle-btn {
+        display: none;
+        background: none;
+        border: 0;
+        cursor: pointer;
+        color: var(--ink);
+        padding: 4px;
+      }
+      .dash-breadcrumbs {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+      }
+      .bread-root {
+        color: var(--text-muted);
+      }
+      .bread-sep {
+        color: var(--line);
+      }
+      .bread-current {
+        font-weight: 600;
+        color: var(--ink);
+      }
+
+      .topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+      }
+      .sync-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        background: rgba(29, 45, 61, 0.05);
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+      }
+      .sync-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #2e9e62;
+        box-shadow: 0 0 0 2px rgba(46, 158, 98, 0.25);
+      }
+      .sync-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+      }
+
+      .topbar-icon-btn {
+        position: relative;
+        background: none;
+        border: 0;
+        cursor: pointer;
+        color: var(--text-muted);
+        display: grid;
+        place-items: center;
+        padding: 6px;
+        border-radius: 50%;
+        transition: background 0.2s, color 0.2s;
+      }
+      .topbar-icon-btn:hover {
+        background: var(--paper-sunk);
+        color: var(--ink);
+      }
+      .notif-badge {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        min-width: 14px;
+        height: 14px;
+        background: var(--accent);
+        color: white;
+        font-size: 0.65rem;
+        border-radius: 999px;
+        display: grid;
+        place-items: center;
+        padding: 0 3px;
+        font-family: var(--font-mono);
+      }
+
+      /* ------------------------------------------------------------- Views */
+      .dash-content {
+        padding: clamp(1.25rem, 3vw, 2.5rem);
+        flex: 1;
+      }
+      .dash-view {
+        display: none;
+        animation: fadeIn 0.3s ease;
+      }
+      .dash-view.is-active {
+        display: block;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: none; }
+      }
+
+      /* ------------------------------------------------------------- Welcome Card */
+      .dash-welcome-card {
+        background: radial-gradient(40% 120% at 85% 0%, rgba(148, 188, 227, 0.35), transparent 70%), var(--paper-raised);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: clamp(1.75rem, 3vw, 2.5rem);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 2rem;
+        margin-bottom: 2rem;
+      }
+      .welcome-title {
+        font-size: clamp(1.8rem, 1.4rem + 1.2vw, 2.6rem);
+        margin-block: 0.35rem 0.5rem;
+      }
+      .welcome-desc {
+        color: var(--text-muted);
+        max-width: 55ch;
+        font-size: 0.95rem;
+      }
+      .welcome-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+        flex: none;
+      }
+
+      /* ------------------------------------------------------------- Metrics Grid */
+      .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+      }
+      .metric-card {
+        background: var(--paper-raised);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 1.25rem 1.4rem;
+        display: grid;
+        gap: 0.35rem;
+      }
+      .metric-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        letter-spacing: 0.05em;
+      }
+      .metric-value {
+        font-family: var(--font-display);
+        font-size: 2.75rem;
+        line-height: 1;
+        color: var(--ink);
+      }
+      .metric-hint {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+      }
+      .text-accent { color: var(--accent); }
+      .text-warn { color: #d97706; }
+      .text-success { color: #16a34a; }
+
+      /* ------------------------------------------------------------- Panels & Tables */
+      .overview-columns {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 1.5rem;
+      }
+      .card-panel {
+        background: var(--paper-raised);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 1.75rem;
+      }
+      .max-form-panel {
+        max-width: 820px;
+      }
+      .panel-header {
+        margin-bottom: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+      }
+      .panel-header-flex {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+      .panel-title {
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: var(--ink);
+      }
+      .panel-subtitle {
+        color: var(--text-muted);
+        font-size: 0.88rem;
+        margin-top: 0.25rem;
+      }
+      .text-link {
+        background: none;
+        border: 0;
+        color: var(--accent);
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 0;
+      }
+      .text-link:hover {
+        text-decoration: underline;
+      }
+
+      .requests-table-wrap {
+        overflow-x: auto;
+      }
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+      }
+      .data-table th {
+        text-align: left;
+        padding: 0.75rem 0.85rem;
+        border-bottom: 1px solid var(--line);
+        color: var(--text-muted);
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: uppercase;
+      }
+      .data-table td {
+        padding: 0.9rem 0.85rem;
+        border-bottom: 1px solid rgba(29, 45, 61, 0.06);
+        vertical-align: middle;
+      }
+      .table-service-name {
+        display: grid;
+        gap: 0.15rem;
+      }
+      .table-code {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+      }
+
+      /* ------------------------------------------------------------- Tags */
+      .layer-tag {
+        display: inline-block;
+        padding: 0.2rem 0.6rem;
+        border-radius: 999px;
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+      .layer-build { background: rgba(148, 188, 227, 0.35); color: #142130; }
+      .layer-grow { background: rgba(89, 128, 166, 0.25); color: #142130; }
+      .layer-run { background: rgba(29, 45, 61, 0.15); color: #142130; }
+
+      .status-tag {
+        display: inline-block;
+        padding: 0.2rem 0.65rem;
+        border-radius: 999px;
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+      .status-pending { background: #fef3c7; color: #92400e; }
+      .status-reviewing { background: #dbeafe; color: #1e40af; }
+      .status-approved { background: #dcfce7; color: #15803d; }
+      .status-active { background: var(--ink); color: var(--paper); }
+      .status-completed { background: #f3f4f6; color: #374151; }
+      .status-cancelled { background: #fee2e2; color: #991b1b; }
+
+      /* ------------------------------------------------------------- Activity Feed */
+      .activity-feed {
+        display: grid;
+        gap: 1.15rem;
+        position: relative;
+      }
+      .activity-item {
+        display: flex;
+        gap: 0.85rem;
+        align-items: flex-start;
+      }
+      .activity-bullet {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent);
+        margin-top: 0.4rem;
+        flex: none;
+      }
+      .activity-body {
+        display: grid;
+        gap: 0.15rem;
+      }
+      .activity-desc {
+        font-size: 0.88rem;
+        line-height: 1.4;
+      }
+      .activity-time {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+      }
+
+      /* ------------------------------------------------------------- Empty State */
+      .empty-state {
+        padding: 3rem 1.5rem;
+        text-align: center;
+        display: grid;
+        place-content: center;
+        justify-items: center;
+        gap: 0.75rem;
+      }
+      .empty-icon {
+        font-size: 2.25rem;
+      }
+      .empty-title {
+        font-size: 1.45rem;
+      }
+      .empty-desc {
+        color: var(--text-muted);
+        font-size: 0.92rem;
+        max-width: 44ch;
+      }
+
+      /* ------------------------------------------------------------- Forms */
+      .business-form {
+        display: grid;
+        gap: 1.25rem;
+      }
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+      .form-row-3 {
+        grid-template-columns: 1fr 1fr 1fr;
+      }
+      .field {
+        display: grid;
+        gap: 0.45rem;
+      }
+      .field .mono {
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+      }
+      .field em {
+        font-style: normal;
+        opacity: 0.65;
+      }
+      .field input,
+      .field select,
+      .field textarea {
+        width: 100%;
+        padding: 0.75rem 0.95rem;
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-s);
+        font-size: 0.92rem;
+        transition: border-color 0.25s, box-shadow 0.25s;
+      }
+      .field :is(input, select, textarea):focus {
+        outline: 0;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(89, 128, 166, 0.15);
+      }
+      .input-disabled {
+        opacity: 0.7;
+        background: var(--paper-sunk) !important;
+        cursor: not-allowed;
+      }
+      .form-footer {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding-top: 0.75rem;
+      }
+      .save-status {
+        font-size: 0.85rem;
+        color: #16a34a;
+      }
+
+      /* ------------------------------------------------------------- My Services */
+      .my-services-filter-bar {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 0.75rem;
+      }
+      .my-services-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.25rem;
+      }
+      .my-service-card {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 1.4rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        transition: transform 0.25s, box-shadow 0.25s;
+      }
+      .my-service-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 24px -12px rgba(29, 45, 61, 0.15);
+      }
+      .card-header-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .my-service-title {
+        font-family: var(--font-display);
+        font-size: 1.4rem;
+        margin: 0;
+      }
+      .my-service-desc {
+        font-size: 0.88rem;
+        color: var(--text-muted);
+        line-height: 1.45;
+      }
+      .my-service-meta {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+        padding-block: 0.75rem;
+        border-block: 1px solid rgba(29, 45, 61, 0.08);
+      }
+      .meta-k {
+        display: block;
+        font-size: 0.68rem;
+        color: var(--text-muted);
+      }
+      .meta-v {
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+      .my-service-req-box {
+        background: var(--paper-raised);
+        border: 1px dashed var(--line);
+        border-radius: 6px;
+        padding: 0.65rem 0.85rem;
+        font-size: 0.82rem;
+      }
+      .req-box-title {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        display: block;
+        margin-bottom: 0.2rem;
+      }
+      .req-box-text {
+        color: var(--text);
+        margin: 0;
+      }
+      .my-service-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: auto;
+        padding-top: 0.5rem;
+      }
+      .btn-sm {
+        padding: 0.45rem 0.85rem;
+        font-size: 0.8rem;
+        border-radius: 999px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s;
+      }
+      .btn-danger-ghost {
+        background: transparent;
+        border: 1px solid rgba(220, 38, 38, 0.2);
+        color: #dc2626;
+      }
+      .btn-danger-ghost:hover {
+        background: #fee2e2;
+        border-color: #dc2626;
+      }
+
+      /* ------------------------------------------------------------- Explore Services */
+      .explore-toolbar {
+        display: grid;
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+      .search-box {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 0.75rem 1.25rem;
+      }
+      .search-box input {
+        border: 0;
+        outline: 0;
+        background: none;
+        flex: 1;
+        font-size: 0.95rem;
+      }
+      .filter-pills-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+      .filter-label {
+        font-size: 0.72rem;
+      }
+      .filter-label-sep {
+        margin-left: 1rem;
+      }
+      .discipline-select {
+        padding: 0.45rem 0.95rem;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: var(--paper);
+        font-size: 0.85rem;
+        cursor: pointer;
+      }
+      .explore-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.25rem;
+      }
+      .explore-card {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+        transition: transform 0.25s, box-shadow 0.25s;
+      }
+      .explore-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 16px 32px -16px rgba(29, 45, 61, 0.2);
+      }
+      .explore-card-top {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .explore-code {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+      }
+      .card-badge-soft {
+        margin-left: auto;
+        font-size: 0.68rem;
+        background: var(--paper-sunk);
+        padding: 0.15rem 0.5rem;
+        border-radius: 999px;
+        color: var(--text-muted);
+      }
+      .explore-card-name {
+        font-family: var(--font-display);
+        font-size: 1.3rem;
+        line-height: 1.15;
+      }
+      .explore-card-desc {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        line-height: 1.45;
+      }
+      .explore-discipline-tag {
+        font-size: 0.72rem;
+        color: var(--accent);
+      }
+      .explore-card-footer {
+        margin-top: auto;
+        padding-top: 0.75rem;
+      }
+      .btn-primary-pill {
+        background: var(--ink);
+        color: var(--paper);
+        border: 0;
+        font-weight: 600;
+      }
+      .btn-primary-pill:hover {
+        background: var(--accent);
+      }
+      .already-added-badge {
+        background: var(--paper-sunk);
+        border: 1px solid var(--line);
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+        text-align: center;
+        font-size: 0.75rem;
+        color: var(--accent);
+        font-weight: 600;
+      }
+
+      /* ------------------------------------------------------------- Projects & Support */
+      .projects-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1.5rem;
+      }
+      .project-phase-card {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        display: grid;
+        gap: 0.75rem;
+      }
+      .phase-num {
+        font-size: 0.72rem;
+        color: var(--accent);
+      }
+      .phase-title {
+        font-family: var(--font-display);
+        font-size: 1.4rem;
+        margin: 0;
+      }
+      .phase-desc {
+        color: var(--text-muted);
+        font-size: 0.88rem;
+      }
+      .phase-status {
+        font-size: 0.75rem;
+        color: var(--ink);
+        background: var(--paper-sunk);
+        padding: 0.35rem 0.65rem;
+        border-radius: 6px;
+        width: fit-content;
+      }
+
+      .support-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+        margin-bottom: 1.5rem;
+      }
+      .support-card {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        display: grid;
+        gap: 0.35rem;
+      }
+      .support-card h4 {
+        margin: 0;
+        font-size: 1.15rem;
+        color: var(--ink);
+      }
+      .support-card p {
+        color: var(--text-muted);
+        font-size: 0.85rem;
+      }
+      .support-notice {
+        background: radial-gradient(40% 120% at 90% 0%, rgba(148, 188, 227, 0.25), transparent 70%), var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 1.25rem;
+        font-size: 0.9rem;
+        color: var(--text-muted);
+      }
+
+      /* ------------------------------------------------------------- Modals */
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(20, 33, 48, 0.65);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        display: grid;
+        place-items: center;
+        z-index: 99;
+        padding: 1.5rem;
+      }
+      .modal-dialog {
+        background: var(--paper-raised);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-l);
+        max-width: 540px;
+        width: 100%;
+        padding: clamp(1.5rem, 4vw, 2.25rem);
+        box-shadow: 0 30px 60px -25px rgba(20, 33, 48, 0.4);
+        display: grid;
+        gap: 1.25rem;
+        animation: modalScale 0.25s ease;
+      }
+      @keyframes modalScale {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+      }
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+      .modal-title {
+        font-size: 1.6rem;
+        margin-top: 0.25rem;
+      }
+      .modal-code {
+        color: var(--text-muted);
+        font-size: 0.75rem;
+      }
+      .modal-close-btn {
+        background: none;
+        border: 0;
+        font-size: 1.25rem;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 4px;
+      }
+      .modal-desc {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+      }
+      .modal-info-callout {
+        background: var(--paper-sunk);
+        border-left: 3px solid var(--accent);
+        padding: 0.85rem 1rem;
+        border-radius: 0 var(--radius-s) var(--radius-s) 0;
+        font-size: 0.82rem;
+      }
+      .modal-info-callout .mono {
+        color: var(--accent);
+        display: block;
+        margin-bottom: 0.2rem;
+      }
+      .modal-info-callout p {
+        margin: 0;
+        color: var(--text);
+      }
+      .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+      }
+
+      /* ------------------------------------------------------------- Toast Hub */
+      .toast-hub {
+        position: fixed;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        pointer-events: none;
+      }
+      .toast-item {
+        pointer-events: auto;
+        background: var(--ink);
+        color: var(--paper);
+        border-radius: 8px;
+        padding: 0.75rem 1.15rem;
+        font-size: 0.88rem;
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        box-shadow: 0 16px 36px -16px rgba(0, 0, 0, 0.4);
+        border-left: 4px solid var(--accent);
+        animation: toastEnter 0.3s ease;
+      }
+      .toast-item.toast-error { border-left-color: #ef4444; }
+      .toast-item.toast-info { border-left-color: var(--tint); }
+      .toast-content { display: flex; align-items: center; gap: 0.5rem; }
+      .toast-close { background: none; border: 0; color: rgba(255, 255, 255, 0.6); cursor: pointer; padding: 2px; }
+      @keyframes toastEnter {
+        from { opacity: 0; transform: translateY(12px); }
+        to { opacity: 1; transform: none; }
+      }
+      .toast-item.is-leaving { opacity: 0; transform: translateY(12px); transition: all 0.3s; }
+
+      /* ------------------------------------------------------------- Responsive */
+      @media (max-width: 1024px) {
+        .overview-columns { grid-template-columns: 1fr; }
+        .dash-welcome-card { flex-direction: column; align-items: flex-start; }
+        .welcome-actions { width: 100%; flex-direction: row; }
+      }
+
+      @media (max-width: 820px) {
+        .dash-layout { grid-template-columns: 1fr; }
+        .dash-sidebar {
+          position: fixed;
+          inset: 0 auto 0 0;
+          width: 280px;
+          transform: translateX(-100%);
+          transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
+        }
+        .dash-sidebar.is-open {
+          transform: none;
+        }
+        .sidebar-close-btn { display: block; }
+        .topbar-toggle-btn { display: block; }
+        .form-row, .form-row-3, .support-grid { grid-template-columns: 1fr; }
+        .welcome-actions { flex-direction: column; }
+      }
+    </style>
+  </body>
+</html>
