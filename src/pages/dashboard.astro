@@ -206,8 +206,17 @@ const initialData = {
           </button>
         </nav>
 
-        <!-- Left bottom corner: Logout option with Stay / Logout confirmation dialog -->
+        <!-- Left bottom corner: Site link & Logout option with Stay / Logout confirmation dialog -->
         <div class="sidebar-footer">
+          <a href="/" class="nav-item nav-site-item" title="Ascelstack Main Website">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="2" y1="12" x2="22" y2="12" />
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z" />
+            </svg>
+            <span>Site</span>
+          </a>
+
           <button class="nav-item nav-logout" type="button" data-action="open-logout-modal" aria-label="Sign out">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" />
@@ -218,15 +227,18 @@ const initialData = {
         </div>
       </aside>
 
+      <!-- Sidebar Backdrop for Mobile/Tablet drawer -->
+      <div class="dash-sidebar-backdrop" id="sidebar-backdrop" data-close-sidebar aria-hidden="true"></div>
+
       <!-- ============================================================== -->
       <!-- MAIN CONTAINER: TOPBAR & DYNAMIC CONTENT -->
       <!-- ============================================================== -->
       <div class="dash-main-container">
-        <!-- Top App Bar (without 'sync with neon' sentence) -->
+        <!-- Top App Bar -->
         <header class="dash-topbar">
           <div class="topbar-left">
-            <button class="topbar-toggle-btn" data-open-sidebar aria-label="Open sidebar menu">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <button class="topbar-toggle-btn" data-open-sidebar aria-label="Open sidebar menu" title="Open Menu">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="3" y1="12" x2="21" y2="12"></line>
                 <line x1="3" y1="6" x2="21" y2="6"></line>
                 <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -240,19 +252,6 @@ const initialData = {
           </div>
 
           <div class="topbar-right">
-            <!-- Return to Website Link -->
-            <a href="/" class="btn-text-link mono" title="Return to public website">
-              <span>← Site</span>
-            </a>
-
-            <!-- Notifications Trigger -->
-            <button class="topbar-icon-btn" data-open-notifications aria-label="View activity logs" title="Activity Feed">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-              </svg>
-              {recentActivities.length > 0 && <span class="notif-badge">{recentActivities.length}</span>}
-            </button>
-
             <!-- Clerk User Profile Button -->
             <div class="clerk-user-slot" title="Clerk Profile">
               <UserButton afterSignOutUrl="/login" />
@@ -749,6 +748,18 @@ const initialData = {
                 </div>
               </div>
             </div>
+
+            <!-- Mobile Live Estimation Floating Dock -->
+            <div class="planner-mobile-dock" id="planner-mobile-dock">
+              <div class="pmd-info">
+                <span class="mono pmd-count" id="pmd-count">0 services selected</span>
+                <span class="pmd-price" id="pmd-price">₹0</span>
+              </div>
+              <button type="button" class="btn btn-primary btn-sm pmd-btn" id="pmd-scroll-summary">
+                <span>Review & Submit</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </button>
+            </div>
           </section>
 
           <!-- ============================================================== -->
@@ -1115,7 +1126,7 @@ const initialData = {
                 <div>
                   <span class="eyebrow">Account Settings</span>
                   <h2 class="display h3">Customer Profile</h2>
-                  <p class="panel-subtitle">Your identity mapped between Clerk and Neon PostgreSQL</p>
+                  <p class="panel-subtitle">Your account identity and profile details</p>
                 </div>
               </div>
 
@@ -1133,12 +1144,8 @@ const initialData = {
 
                 <div class="form-row">
                   <label class="field">
-                    <span class="mono">Neon Account ID</span>
+                    <span class="mono">Account ID</span>
                     <input value={user.id} disabled class="mono input-disabled" />
-                  </label>
-                  <label class="field">
-                    <span class="mono">Clerk User Identifier</span>
-                    <input value={user.clerkUserId} disabled class="mono input-disabled" />
                   </label>
                 </div>
 
@@ -1491,6 +1498,21 @@ const initialData = {
       const navItems = document.querySelectorAll<HTMLButtonElement>('.sidebar-nav .nav-item');
       const views = document.querySelectorAll<HTMLElement>('.dash-view');
       const currentViewLabel = document.querySelector<HTMLElement>('[data-bind-current-view]');
+      const sidebarEl = document.querySelector('[data-sidebar]');
+      const backdropEl = document.getElementById('sidebar-backdrop');
+      const plannerMobileDock = document.getElementById('planner-mobile-dock');
+
+      function openSidebar() {
+        sidebarEl?.classList.add('is-open');
+        backdropEl?.classList.add('is-visible');
+        document.body.classList.add('sidebar-locked');
+      }
+
+      function closeSidebar() {
+        sidebarEl?.classList.remove('is-open');
+        backdropEl?.classList.remove('is-visible');
+        document.body.classList.remove('sidebar-locked');
+      }
 
       function switchTab(targetTab: string) {
         navItems.forEach((btn) => btn.classList.toggle('is-active', btn.dataset.tab === targetTab));
@@ -1506,7 +1528,16 @@ const initialData = {
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
         // Close sidebar on mobile after navigating
-        document.querySelector('[data-sidebar]')?.classList.remove('is-open');
+        closeSidebar();
+
+        // Toggle mobile planner floating dock
+        if (plannerMobileDock) {
+          if (targetTab === 'planner') {
+            plannerMobileDock.classList.add('is-active');
+          } else {
+            plannerMobileDock.classList.remove('is-active');
+          }
+        }
       }
 
       navItems.forEach((btn) => {
@@ -1526,14 +1557,33 @@ const initialData = {
       const hash = location.hash.replace('#', '');
       if (hash && document.querySelector(`[data-view="${hash}"]`)) {
         switchTab(hash);
+      } else {
+        const defaultView = document.querySelector('.dash-view.is-active');
+        if (defaultView?.getAttribute('data-view') === 'planner') {
+          plannerMobileDock?.classList.add('is-active');
+        }
       }
 
-      // Mobile sidebar toggle listeners
-      document.querySelector('[data-open-sidebar]')?.addEventListener('click', () => {
-        document.querySelector('[data-sidebar]')?.classList.add('is-open');
+      // Mobile sidebar toggle listeners & backdrop handling
+      const openSidebarBtn = document.querySelector('[data-open-sidebar]');
+      openSidebarBtn?.addEventListener('click', openSidebar);
+      document.querySelectorAll('[data-close-sidebar]').forEach((btn) => {
+        btn.addEventListener('click', closeSidebar);
       });
-      document.querySelector('[data-close-sidebar]')?.addEventListener('click', () => {
-        document.querySelector('[data-sidebar]')?.classList.remove('is-open');
+
+      // Close sidebar with Escape key
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && sidebarEl?.classList.contains('is-open')) {
+          closeSidebar();
+        }
+      });
+
+      // Mobile Planner Dock "Review & Submit" smooth scroll
+      document.getElementById('pmd-scroll-summary')?.addEventListener('click', () => {
+        const summaryCard = document.getElementById('planner-estimate-summary');
+        if (summaryCard) {
+          summaryCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
       });
 
       // ----------------------------------------------------------------------
@@ -1734,6 +1784,12 @@ const initialData = {
         // Update UI
         const priceEl = document.getElementById('est-total-price');
         if (priceEl) priceEl.textContent = formatMoney(finalTotalInr);
+
+        // Update mobile floating dock
+        const pmdCount = document.getElementById('pmd-count');
+        const pmdPrice = document.getElementById('pmd-price');
+        if (pmdCount) pmdCount.textContent = `${count} ${count === 1 ? 'service' : 'services'} selected`;
+        if (pmdPrice) pmdPrice.textContent = formatMoney(finalTotalInr);
 
         const durationEl = document.getElementById('est-duration');
         if (durationEl) durationEl.textContent = count > 0 ? `${totalWeeks}–${totalWeeks + 2} Wks` : '0 Weeks';
@@ -2517,11 +2573,38 @@ const initialData = {
       }
       .sidebar-close-btn {
         display: none;
-        background: none;
-        border: 0;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid var(--line-on-ink);
+        border-radius: var(--radius-s);
         color: var(--text-on-ink);
         cursor: pointer;
-        padding: 4px;
+        padding: 6px;
+        transition: background 0.2s, color 0.2s;
+      }
+      .sidebar-close-btn:hover {
+        background: rgba(255, 255, 255, 0.16);
+      }
+
+      /* Sidebar Backdrop for mobile/tablet */
+      .dash-sidebar-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(10, 18, 28, 0.65);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        z-index: 45;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+      }
+      .dash-sidebar-backdrop.is-visible {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      body.sidebar-locked {
+        overflow: hidden;
       }
 
       .sidebar-biz-badge {
@@ -2615,6 +2698,29 @@ const initialData = {
       .sidebar-footer {
         padding-top: 1rem;
         border-top: 1px solid var(--line-on-ink);
+        display: grid;
+        gap: 0.35rem;
+        margin-top: auto;
+      }
+      .nav-site-item {
+        text-decoration: none;
+        color: var(--text-on-ink);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.65rem 0.85rem;
+        border-radius: var(--radius-s);
+        font-size: 0.88rem;
+        font-weight: 500;
+        transition: background 0.15s, color 0.15s;
+      }
+      .nav-site-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+      }
+      .nav-site-item svg {
+        flex-shrink: 0;
+        opacity: 0.85;
       }
       .nav-logout { color: #f87171; }
       .nav-logout:hover {
@@ -2653,11 +2759,25 @@ const initialData = {
       }
       .topbar-toggle-btn {
         display: none;
-        background: none;
-        border: 0;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-s);
         cursor: pointer;
         color: var(--ink);
-        padding: 4px;
+        padding: 0;
+        flex-shrink: 0;
+        transition: background 0.2s, border-color 0.2s, transform 0.15s;
+      }
+      .topbar-toggle-btn:hover {
+        background: var(--paper-sunk);
+        border-color: rgba(20, 33, 48, 0.25);
+      }
+      .topbar-toggle-btn:active {
+        transform: scale(0.96);
       }
       .dash-breadcrumbs {
         display: flex;
@@ -3202,7 +3322,22 @@ const initialData = {
         padding: clamp(1.5rem, 3vw, 2.25rem);
         box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset, 0 24px 48px -24px rgba(29, 45, 61, 0.2);
         position: sticky;
-        top: 5.5rem;
+        top: 5rem;
+        max-height: calc(100vh - 6rem);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .sticky-estimate-card::-webkit-scrollbar {
+        width: 5px;
+      }
+      .sticky-estimate-card::-webkit-scrollbar-thumb {
+        background: rgba(20, 33, 48, 0.15);
+        border-radius: 999px;
+      }
+
+      /* Mobile Planner Dock (hidden on desktop) */
+      .planner-mobile-dock {
+        display: none;
       }
       .est-header {
         display: flex;
@@ -3970,9 +4105,34 @@ const initialData = {
       .toast-item.is-leaving { opacity: 0; transform: translateY(12px); transition: all 0.3s; }
 
       /* ------------------------------------------------------------- Responsive */
+      /* Tablet & Smaller Laptops (<= 1024px) */
       @media (max-width: 1024px) {
-        .overview-columns,
-        .planner-workspace-grid {
+        .dash-layout {
+          grid-template-columns: 1fr;
+        }
+        .dash-sidebar {
+          position: fixed;
+          inset: 0 auto 0 0;
+          width: min(300px, 84vw);
+          height: 100vh;
+          height: 100dvh;
+          transform: translateX(-100%);
+          transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+          z-index: 50;
+          box-shadow: 4px 0 32px rgba(0, 0, 0, 0.35);
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+        .dash-sidebar.is-open {
+          transform: translateX(0);
+        }
+        .sidebar-close-btn {
+          display: inline-flex;
+        }
+        .topbar-toggle-btn {
+          display: inline-flex;
+        }
+        .overview-columns {
           grid-template-columns: 1fr;
         }
         .dash-welcome-card,
@@ -3980,24 +4140,202 @@ const initialData = {
           flex-direction: column;
           align-items: flex-start;
         }
-        .welcome-actions { width: 100%; flex-direction: row; }
-        .sticky-estimate-card { position: static; }
+        .welcome-actions {
+          width: 100%;
+          flex-direction: row;
+        }
+        /* Tablet Planner: balanced 2-column workspace since sidebar is in off-canvas drawer */
+        .planner-workspace-grid {
+          grid-template-columns: 1.15fr 0.85fr;
+          gap: 1.5rem;
+        }
+        .preset-buttons-row {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .tier-options-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+        .sticky-estimate-card {
+          position: sticky;
+          top: 5rem;
+          padding: 1.5rem 1.25rem;
+        }
+        .est-price-value {
+          font-size: clamp(2.2rem, 3.5vw, 2.75rem);
+        }
       }
 
-      @media (max-width: 860px) {
-        .dash-layout { grid-template-columns: 1fr; }
-        .dash-sidebar {
-          position: fixed;
-          inset: 0 auto 0 0;
-          width: 280px;
-          transform: translateX(-100%);
-          transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
+      /* Mobile & Compact Tablets (<= 768px) */
+      @media (max-width: 768px) {
+        .form-row, .form-row-3, .support-grid, .sow-summary-box {
+          grid-template-columns: 1fr;
         }
-        .dash-sidebar.is-open { transform: none; }
-        .sidebar-close-btn { display: block; }
-        .topbar-toggle-btn { display: block; }
-        .form-row, .form-row-3, .support-grid, .sow-summary-box { grid-template-columns: 1fr; }
-        .welcome-actions { flex-direction: column; }
+        .welcome-actions {
+          flex-direction: column;
+        }
+
+        /* Planner Mobile Optimization */
+        .planner-workspace-grid {
+          grid-template-columns: 1fr;
+          gap: 1.5rem;
+        }
+        .planner-hero-card {
+          padding: 1.25rem 1rem;
+          margin-bottom: 1.25rem;
+        }
+        .preset-buttons-row {
+          display: flex;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          scroll-snap-type: x mandatory;
+          gap: 0.65rem;
+          padding-bottom: 0.5rem;
+          margin-inline: -0.25rem;
+          padding-inline: 0.25rem;
+        }
+        .preset-btn {
+          min-width: 200px;
+          flex: 0 0 auto;
+          scroll-snap-align: start;
+        }
+        .tier-options-grid {
+          grid-template-columns: 1fr;
+          gap: 0.65rem;
+        }
+        .tier-card {
+          padding: 0.85rem;
+        }
+        .matrix-filter-bar {
+          gap: 0.65rem;
+        }
+        .matrix-layer-pills {
+          gap: 0.35rem;
+        }
+        .mlp-btn {
+          padding: 0.35rem 0.65rem;
+          font-size: 0.74rem;
+        }
+        .planner-services-list {
+          max-height: 400px;
+          padding-right: 0.25rem;
+        }
+        .svc-select-item {
+          padding: 0.75rem 0.85rem;
+          gap: 0.65rem;
+        }
+        .svc-select-top {
+          flex-wrap: wrap;
+          gap: 0.35rem 0.5rem;
+        }
+        .svc-select-base-price {
+          margin-left: 0;
+          font-size: 0.75rem;
+        }
+        .sticky-estimate-card {
+          position: static;
+          max-height: none;
+          overflow-y: visible;
+          padding: 1.25rem 1rem;
+        }
+        .est-price-value {
+          font-size: clamp(2.2rem, 8vw, 3rem);
+        }
+        .est-metrics-row {
+          padding: 0.65rem 0.75rem;
+          gap: 0.5rem;
+        }
+        .est-m-label {
+          font-size: 0.6rem;
+        }
+        .est-m-val {
+          font-size: 1rem;
+        }
+        .est-actions {
+          padding-bottom: 4rem; /* room for mobile floating dock */
+        }
+
+        /* Mobile Live Estimation Floating Dock */
+        .planner-mobile-dock {
+          display: flex;
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          border-top: 1px solid var(--line);
+          padding: 0.65rem 1rem max(0.65rem, env(safe-area-inset-bottom));
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.75rem;
+          z-index: 35;
+          box-shadow: 0 -4px 24px rgba(20, 33, 48, 0.12);
+          transform: translateY(120%);
+          transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .planner-mobile-dock.is-active {
+          transform: translateY(0);
+        }
+        .pmd-info {
+          display: grid;
+          gap: 0.1rem;
+        }
+        .pmd-count {
+          font-size: 0.7rem;
+          color: var(--text-muted);
+          letter-spacing: 0.05em;
+        }
+        .pmd-price {
+          font-size: 1.15rem;
+          font-weight: 700;
+          color: var(--ink);
+          font-family: var(--font-display);
+          line-height: 1.1;
+        }
+        .pmd-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.35rem;
+          padding: 0.55rem 0.95rem;
+          font-size: 0.82rem;
+          white-space: nowrap;
+        }
+      }
+
+      /* Compact Phone Screens (<= 480px) */
+      @media (max-width: 480px) {
+        .dash-topbar {
+          padding-inline: 0.85rem;
+          height: 58px;
+        }
+        .dash-breadcrumbs {
+          font-size: 0.82rem;
+          gap: 0.35rem;
+        }
+        .bread-root, .bread-sep {
+          display: none;
+        }
+        .est-sub-actions {
+          grid-template-columns: 1fr;
+        }
+        .panel-header {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.75rem;
+        }
+        .currency-switch {
+          align-self: flex-start;
+        }
+        .modal-backdrop {
+          padding: 0.75rem;
+        }
+        .modal-dialog {
+          padding: 1.25rem 1rem;
+        }
+        .modal-title {
+          font-size: 1.35rem;
+        }
       }
 
       @media print {
