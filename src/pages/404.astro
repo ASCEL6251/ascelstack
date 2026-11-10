@@ -1,0 +1,335 @@
+---
+import Base from '../layouts/Base.astro';
+import { coreCategories } from '../data/catalog';
+
+const quickLinks = [
+  { label: 'Explore Services', href: '/services', desc: 'Browse 232 services across 13 disciplines' },
+  { label: 'Automation Studio', href: '/automation', desc: 'Interactive visual workflow scrubber & AI agents' },
+  { label: 'About Ascelstack', href: '/about', desc: 'The 3-layer architecture & operating philosophy' },
+  { label: 'Contact Us', href: '/contact', desc: 'Speak directly with a systems architect' },
+];
+---
+
+<Base
+  title="404 — Page Not Found"
+  description="The requested page could not be found on Ascelstack. Return to the home stack or explore our services catalogue."
+>
+  <section class="e404-hero">
+    <div class="wrap e404-inner">
+      <!-- Layered A / 404 Art -->
+      <div class="e404-art" data-reveal aria-hidden="true">
+        <div class="e404-stack">
+          <span class="slab slab-1"></span>
+          <span class="slab slab-2"></span>
+          <span class="slab slab-3"></span>
+        </div>
+        <span class="display e404-num">404</span>
+      </div>
+
+      <div class="e404-content">
+        <p class="eyebrow" data-reveal>Error 404 · Route Not Found</p>
+        <h1 class="display h1 e404-h1" data-reveal>
+          This layer is <em>missing from the stack.</em>
+        </h1>
+        <p class="lead e404-lead" data-reveal>
+          The page or resource you are looking for has been relocated, refactored, or is temporarily
+          unavailable in this deployment.
+        </p>
+
+        <!-- Search Bar -->
+        <div class="e404-search-box" data-reveal>
+          <form action="/services" method="GET" class="e404-search-form">
+            <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="search" name="q" placeholder="Search services (e.g., GST, Shopify, AI Agents)..." class="e404-search-input" />
+            <button type="submit" class="btn btn-search">Search <span class="arrow">→</span></button>
+          </form>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="e404-btns" data-reveal>
+          <a href="/" class="btn">
+            Return to home <span class="arrow">→</span>
+          </a>
+          <button type="button" class="btn btn-ghost" onclick="history.back()">
+            ← Go back
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Suggested Routes Grid -->
+  <section class="section on-ink e404-links-section">
+    <div class="wrap">
+      <div class="e404-links-head">
+        <div>
+          <p class="eyebrow" data-reveal>Navigation Recovery</p>
+          <h2 class="display h2" data-reveal>Where would you like <em>to go?</em></h2>
+        </div>
+        <p class="lead" data-reveal>
+          Jump straight into one of our core destinations or explore the service catalogue.
+        </p>
+      </div>
+
+      <div class="quick-grid">
+        {
+          quickLinks.map((q) => (
+            <a href={q.href} class="quick-card" data-reveal>
+              <div class="quick-top">
+                <h3 class="display quick-title">{q.label}</h3>
+                <span class="quick-arrow" aria-hidden="true">→</span>
+              </div>
+              <p class="quick-desc">{q.desc}</p>
+            </a>
+          ))
+        }
+      </div>
+
+      <!-- Categories Cloud -->
+      <div class="cats-cloud" data-reveal>
+        <span class="mono cats-lbl">Or jump directly to a discipline:</span>
+        <div class="cats-list">
+          {
+            coreCategories.map((c) => (
+              <a href={`/services/${c.slug}`} class="cat-pill">
+                <span>{c.name}</span>
+                <span class="cat-pill-arrow">↗</span>
+              </a>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* ------------------------------------------------------------- 404 Hero */
+  .e404-hero {
+    padding-top: calc(var(--nav-h) + clamp(4rem, 8vw, 7rem));
+    padding-bottom: clamp(4rem, 8vw, 8rem);
+    background:
+      radial-gradient(55% 50% at 50% 0%, rgba(148, 188, 227, 0.28), transparent 75%),
+      var(--paper);
+    min-height: 75vh;
+    display: flex;
+    align-items: center;
+  }
+  .e404-inner {
+    display: grid;
+    grid-template-columns: 5fr 7fr;
+    gap: clamp(2.5rem, 6vw, 6rem);
+    align-items: center;
+  }
+
+  /* Art block */
+  .e404-art {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(3rem, 6vw, 5rem) 2rem;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-l);
+    box-shadow: 0 40px 90px -50px rgba(29, 45, 61, 0.35);
+  }
+  .e404-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 140px;
+    margin-bottom: 1.5rem;
+  }
+  .slab {
+    height: 10px;
+    border-radius: 999px;
+    transition: transform 0.4s var(--ease-out);
+  }
+  .slab-1 { background: var(--tint); width: 60%; align-self: center; }
+  .slab-2 { background: var(--accent); width: 85%; align-self: center; }
+  .slab-3 { background: var(--ink); width: 100%; align-self: center; }
+
+  .e404-art:hover .slab-1 { transform: translateY(-4px); }
+  .e404-art:hover .slab-3 { transform: translateY(4px); }
+
+  .e404-num {
+    font-size: clamp(6rem, 12vw, 10rem);
+    line-height: 0.85;
+    color: var(--ink);
+    letter-spacing: -0.05em;
+  }
+
+  /* Content block */
+  .e404-content {
+    display: grid;
+    gap: 1.5rem;
+  }
+  .e404-h1 {
+    font-size: clamp(2.5rem, 1.8rem + 3vw, 4.75rem);
+    line-height: 1.05;
+  }
+  .e404-lead {
+    font-size: 1.15rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+  }
+
+  /* Search */
+  .e404-search-box {
+    margin-top: 0.5rem;
+    max-width: 580px;
+  }
+  .e404-search-form {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 6px 6px 6px 16px;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    box-shadow: 0 10px 25px -10px rgba(29, 45, 61, 0.15);
+  }
+  .search-icon {
+    color: var(--accent);
+    flex: none;
+  }
+  .e404-search-input {
+    flex: 1;
+    border: 0;
+    background: transparent;
+    font-size: 0.95rem;
+    padding: 0.5rem 0;
+    min-width: 0;
+  }
+  .e404-search-input:focus {
+    outline: none;
+  }
+  .btn-search {
+    padding: 0.65rem 1.25rem;
+    font-size: 0.85rem;
+  }
+
+  .e404-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  /* ------------------------------------------------------------- Recovery section */
+  .e404-links-section {
+    padding-block: clamp(5rem, 7vw, 8rem);
+  }
+  .e404-links-head {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: end;
+    margin-bottom: clamp(3rem, 5vw, 4.5rem);
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--line-on-ink);
+  }
+
+  .quick-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: clamp(3rem, 5vw, 4.5rem);
+  }
+  .quick-card {
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 1.75rem;
+    background: var(--ink-raised);
+    border: 1px solid var(--line-on-ink);
+    border-radius: var(--radius);
+    transition: transform 0.3s var(--ease-out), border-color 0.3s;
+  }
+  .quick-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--tint);
+  }
+  .quick-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+  .quick-title {
+    font-size: 1.35rem;
+    line-height: 1.2;
+    color: var(--text-on-ink);
+  }
+  .quick-arrow {
+    color: var(--tint);
+    font-size: 1.2rem;
+    transition: transform 0.3s;
+  }
+  .quick-card:hover .quick-arrow {
+    transform: translateX(4px);
+  }
+  .quick-desc {
+    font-size: 0.88rem;
+    color: var(--text-on-ink-muted);
+    line-height: 1.55;
+  }
+
+  /* Disciplines cloud */
+  .cats-cloud {
+    display: grid;
+    gap: 1rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--line-on-ink);
+  }
+  .cats-lbl {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--tint);
+    letter-spacing: 0.08em;
+  }
+  .cats-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+  }
+  .cat-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.55rem 1rem;
+    border-radius: 999px;
+    background: rgba(242, 242, 243, 0.06);
+    border: 1px solid var(--line-on-ink);
+    color: var(--text-on-ink);
+    font-size: 0.85rem;
+    transition: background 0.25s, border-color 0.25s, color 0.25s;
+  }
+  .cat-pill:hover {
+    background: var(--paper);
+    color: var(--ink);
+    border-color: var(--paper);
+  }
+  .cat-pill-arrow {
+    font-size: 0.75rem;
+    opacity: 0.6;
+  }
+
+  /* ------------------------------------------------------------- Responsive */
+  @media (max-width: 1080px) {
+    .quick-grid { grid-template-columns: repeat(2, 1fr); }
+    .e404-links-head { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 900px) {
+    .e404-inner { grid-template-columns: 1fr; }
+    .e404-art { order: -1; padding-block: 2.5rem; }
+  }
+
+  @media (max-width: 600px) {
+    .quick-grid { grid-template-columns: 1fr; }
+    .e404-search-form { flex-direction: column; border-radius: var(--radius); padding: 12px; }
+    .btn-search { width: 100%; justify-content: center; }
+  }
+</style>

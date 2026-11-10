@@ -1,12 +1,4 @@
-// MOCK AUTH — prototype only. Not secure: anyone can "sign in" with any
-// registered email and nothing leaves the browser. No password is stored.
-//
-// To replace with Clerk later:
-//   1. npm i @clerk/astro, add clerk() to astro.config.mjs (needs output: 'server' or hybrid
-//      routes), set PUBLIC_CLERK_PUBLISHABLE_KEY + CLERK_SECRET_KEY.
-//   2. Swap /sign-in and /sign-up pages for <SignIn /> and <SignUp />.
-//   3. Re-implement the functions below on top of Clerk (window.Clerk.user, signOut()).
-//      Keep the same names so cart/checkout/account pages keep working.
+import { $userStore, $clerkStore } from '@clerk/astro/client';
 
 export interface User {
   id: string;
@@ -17,89 +9,111 @@ export interface User {
   createdAt: number;
 }
 
-const USERS = 'asc:mock-users';
-const SESSION = 'asc:mock-session';
 export const AUTH_EVENT = 'auth:change';
 
-const read = <T>(k: string, fallback: T): T => {
-  try {
-    return JSON.parse(localStorage.getItem(k) ?? 'null') ?? fallback;
-  } catch {
-    return fallback;
-  }
-};
-const write = (k: string, v: unknown) => {
-  try {
-    localStorage.setItem(k, JSON.stringify(v));
-  } catch {}
-};
-const emit = () => window.dispatchEvent(new CustomEvent(AUTH_EVENT));
-const norm = (e: string) => e.trim().toLowerCase();
+let cachedUser: User | null = null;
+const listeners = new Set<(u: User | null) => void>();
 
-/** Demo account present in every browser so the flow can be tested without signing up. */
-export const DEMO_USER: User = {
-  id: 'usr_demo',
-  name: 'Demo Customer',
-  email: 'demo@ascelstack.test',
-  phone: '+91 90000 00000',
-  company: 'Demo Cafe Pvt Ltd',
-  createdAt: 0,
-};
-(() => {
-  if (typeof localStorage === 'undefined') return;
-  const users = read<User[]>(USERS, []);
-  if (!users.some((u) => u.id === DEMO_USER.id)) write(USERS, [...users, DEMO_USER]);
-})();
+function mapClerkUser(clerkUser: any): User | null {
+  if (!clerkUser) return null;
+  const email =
+    clerkUser.primaryEmailAddress?.emailAddress ||
+    clerkUser.emailAddresses?.[0]?.emailAddress ||
+    '';
+  const name =
+    clerkUser.fullName ||
+    `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() ||
+    clerkUser.username ||
+    email.split('@')[0] ||
+    'Ascelstack Partner';
+
+  return {
+    id: clerkUser.id,
+    name,
+    email,
+    phone: clerkUser.primaryPhoneNumber?.phoneNumber || clerkUser.phoneNumbers?.[0]?.phoneNumber,
+    company: clerkUser.publicMetadata?.company,
+    createdAt: clerkUser.createdAt ? new Date(clerkUser.createdAt).getTime() : Date.now(),
+  };
+}
+
+if (typeof window !== 'undefined') {
+  $userStore.subscribe((clerkUser) => {
+    if (clerkUser === undefined) return;
+    cachedUser = mapClerkUser(clerkUser);
+    listeners.forEach((fn) => {
+      try {
+        fn(cachedUser);
+      } catch (e) {
+        console.warn('Auth listener error:', e);
+      }
+    });
+    window.dispatchEvent(new CustomEvent(AUTH_EVENT, { detail: cachedUser }));
+  });
+}
 
 export function getUser(): User | null {
-  const id = read<string | null>(SESSION, null);
-  if (!id) return null;
-  return read<User[]>(USERS, []).find((u) => u.id === id) ?? null;
-}
-
-export function signUp(input: Omit<User, 'id' | 'createdAt'>): User {
-  const users = read<User[]>(USERS, []);
-  if (users.some((u) => norm(u.email) === norm(input.email))) {
-    throw new Error('An account with this email already exists. Sign in instead.');
+  if (cachedUser) return cachedUser;
+  if (typeof window !== 'undefined') {
+    const clerk = (window as any).Clerk;
+    if (clerk?.user) {
+      cachedUser = mapClerkUser(clerk.user);
+      return cachedUser;
+    }
+    const storeVal = $userStore.get();
+    if (storeVal) {
+      cachedUser = mapClerkUser(storeVal);
+      return cachedUser;
+    }
   }
-  const user: User = { ...input, email: norm(input.email), id: `usr_${crypto.randomUUID().slice(0, 12)}`, createdAt: Date.now() };
-  write(USERS, [...users, user]);
-  write(SESSION, user.id);
-  emit();
-  return user;
+  return null;
 }
 
-export function signIn(email: string): User {
-  const user = read<User[]>(USERS, []).find((u) => norm(u.email) === norm(email));
-  if (!user) throw new Error('No account found for this email. Create one first.');
-  write(SESSION, user.id);
-  emit();
-  return user;
+export function onAuth(cb: (user: User | null) => void): () => void {
+  listeners.add(cb);
+  const u = getUser();
+  if (u) {
+    try {
+      cb(u);
+    } catch (e) {}
+  }
+  return () => listeners.delete(cb);
 }
 
-export function signOut() {
-  try {
-    localStorage.removeItem(SESSION);
-  } catch {}
-  emit();
+export function signIn(redirectUrl = '/dashboard') {
+  if (typeof window !== 'undefined') {
+    window.location.href = `/login?redirect=${encodeURIComponent(redirectUrl)}`;
+  }
 }
 
-export function updateUser(patch: Partial<Omit<User, 'id' | 'createdAt' | 'email'>>) {
-  const me = getUser();
-  if (!me) return null;
-  const users = read<User[]>(USERS, []).map((u) => (u.id === me.id ? { ...u, ...patch } : u));
-  write(USERS, users);
-  emit();
+export function signUp(redirectUrl = '/dashboard') {
+  if (typeof window !== 'undefined') {
+    window.location.href = `/sign-up?redirect=${encodeURIComponent(redirectUrl)}`;
+  }
+}
+
+export async function signOut() {
+  if (typeof window !== 'undefined') {
+    const clerk = (window as any).Clerk || $clerkStore.get();
+    if (clerk?.signOut) {
+      await clerk.signOut();
+    }
+    cachedUser = null;
+    listeners.forEach((fn) => {
+      try {
+        fn(null);
+      } catch (e) {}
+    });
+    window.dispatchEvent(new CustomEvent(AUTH_EVENT, { detail: null }));
+    window.location.href = '/login';
+  }
+}
+
+export function updateUser(_patch: any) {
   return getUser();
 }
 
 /** Only allow same-site relative redirects. */
-export function safeRedirect(target: string | null, fallback = '/account') {
+export function safeRedirect(target: string | null, fallback = '/dashboard') {
   return target && target.startsWith('/') && !target.startsWith('//') ? target : fallback;
-}
-
-export function onAuth(fn: (user: User | null) => void) {
-  fn(getUser());
-  window.addEventListener(AUTH_EVENT, () => fn(getUser()));
-  window.addEventListener('storage', (e) => (e.key === SESSION || e.key === USERS) && fn(getUser()));
 }

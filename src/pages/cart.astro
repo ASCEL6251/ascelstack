@@ -34,9 +34,9 @@ import Base from '../layouts/Base.astro';
             </ul>
             <div class="sum-act" data-actions></div>
           </div>
-          <p class="proto-note">
-            <strong>PROTOTYPE</strong>
-            <span>Your estimate is kept in this browser. Submitting saves it to a mock store (Neon later).</span>
+          <p class="proto-note live-note">
+            <strong>LIVE SYNC</strong>
+            <span>Submitting your estimate automatically creates service requests in your Ascelstack Client Portal.</span>
           </p>
         </aside>
       </div>
@@ -303,7 +303,7 @@ import Base from '../layouts/Base.astro';
       return;
     }
     if (!user) {
-      actionsEl.innerHTML = `<a class="btn" href="/sign-in?redirect=/cart">Sign in to submit <span class="arrow">→</span></a>
+      actionsEl.innerHTML = `<a class="btn" href="/login?redirect=/cart">Sign in to submit <span class="arrow">→</span></a>
         <a class="ghost" href="/sign-up?redirect=/cart">Create an account</a>
         <button type="button" class="ghost" data-print>Print / save as PDF</button>`;
       return;
@@ -346,12 +346,18 @@ import Base from '../layouts/Base.astro';
     if (t.closest('[data-print]')) return window.print();
     if (!t.closest('[data-submit]') || busy) return;
     const user = getUser();
-    if (!user) return (location.href = '/sign-in?redirect=/cart');
+    if (!user) return (location.href = '/login?redirect=/cart');
     busy = true;
     renderActions(true);
-    const saved = await submitEstimate(user, getCart(), note);
-    clearCart();
-    location.href = `/account?submitted=${encodeURIComponent(saved.id)}`;
+    try {
+      await submitEstimate(user, getCart(), note);
+      clearCart();
+      location.href = '/dashboard#my-services';
+    } catch (err: any) {
+      alert(err.message || 'Failed to submit estimate');
+      busy = false;
+      renderActions(true);
+    }
   });
 
   onCart(render);

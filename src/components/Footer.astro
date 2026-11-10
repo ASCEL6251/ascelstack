@@ -12,7 +12,7 @@ const year = new Date().getFullYear();
         <p class="footer-tag">
           One stack for the whole business. {counts.core} services live today, more on the way.
         </p>
-        <a href="mailto:hello@ascelstack.com" class="footer-mail temp">hello@ascelstack.com</a>
+        <a href="mailto:hello@ascelstack.com" class="footer-mail">hello@ascelstack.com</a>
       </div>
 
       <div class="footer-cols">
@@ -25,10 +25,19 @@ const year = new Date().getFullYear();
         <div>
           <p class="mono footer-h">Company</p>
           <ul>
+            <li><a href="/about">About us</a></li>
             <li><a href="/automation">Automation studio</a></li>
             <li><a href="/#process">Process</a></li>
             <li><a href="/#industries">Industries</a></li>
-            <li><a href="/contact">Contact</a></li>
+            <li><a href="/contact">Contact us</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="mono footer-h">Legal & Trust</p>
+          <ul>
+            <li><a href="/privacy">Privacy policy</a></li>
+            <li><a href="/terms">Terms & conditions</a></li>
+            <li><a href="/contact">Support & security</a></li>
           </ul>
         </div>
       </div>
@@ -39,8 +48,14 @@ const year = new Date().getFullYear();
     </p>
 
     <div class="footer-bottom mono">
-      <span>© {year} Ascelstack</span>
-      <span>ascelstack.com</span>
+      <span>© {year} Ascelstack Technologies</span>
+      <div class="footer-legal-links">
+        <a href="/privacy">Privacy</a>
+        <span>·</span>
+        <a href="/terms">Terms</a>
+        <span>·</span>
+        <a href="/contact">Contact</a>
+      </div>
       <span>Build · Grow · Run</span>
     </div>
   </div>
@@ -53,7 +68,7 @@ const year = new Date().getFullYear();
   }
   .footer-top {
     display: grid;
-    grid-template-columns: 1.2fr 1fr;
+    grid-template-columns: 1fr 1.35fr;
     gap: 3rem;
   }
   .footer-tag {
@@ -72,8 +87,8 @@ const year = new Date().getFullYear();
   .footer-mail:hover { color: var(--tint); border-color: var(--tint); }
   .footer-cols {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 2rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
   }
   .footer-h {
     color: var(--tint);
@@ -139,15 +154,33 @@ const year = new Date().getFullYear();
   .footer-bottom {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     flex-wrap: wrap;
     gap: 1rem;
     padding-block: 1.5rem 2rem;
     border-top: 1px solid var(--line-on-ink);
     color: var(--text-on-ink-muted);
   }
+  .footer-legal-links {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+  .footer-legal-links a {
+    color: var(--text-on-ink-muted);
+    transition: color 0.2s;
+  }
+  .footer-legal-links a:hover {
+    color: var(--tint);
+  }
 
-  @media (max-width: 760px) {
+  @media (max-width: 900px) {
     .footer-top { grid-template-columns: 1fr; }
+    .footer-cols { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 540px) {
+    .footer-cols { grid-template-columns: 1fr; }
   }
 </style>
 

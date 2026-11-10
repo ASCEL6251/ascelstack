@@ -1,0 +1,566 @@
+---
+import Base from '../layouts/Base.astro';
+
+const lastUpdated = 'November 10, 2026';
+
+const sections = [
+  { id: 'introduction', title: '1. Introduction & Scope' },
+  { id: 'data-collection', title: '2. Information We Collect' },
+  { id: 'ai-data-handling', title: '3. AI & Automation Data Ethics' },
+  { id: 'legal-basis', title: '4. Legal Grounds for Processing' },
+  { id: 'data-use', title: '5. How We Use Your Information' },
+  { id: 'data-sharing', title: '6. Sub-Processors & Data Sharing' },
+  { id: 'security', title: '7. Data Security & Storage' },
+  { id: 'retention', title: '8. Data Retention & Destruction' },
+  { id: 'cookies', title: '9. Cookies & Local Storage' },
+  { id: 'user-rights', title: '10. Your Privacy Rights' },
+  { id: 'international', title: '11. International Transfers' },
+  { id: 'grievance', title: '12. Grievance Officer & Contact' },
+];
+---
+
+<Base
+  title="Privacy Policy"
+  description="Privacy Policy for Ascelstack Technologies. How we collect, safeguard, and process business and personal information across our platforms and services."
+>
+  <header class="legal-hero">
+    <div class="wrap">
+      <div class="legal-head">
+        <p class="eyebrow" data-reveal>Compliance & Governance</p>
+        <h1 class="display h1 legal-title" data-reveal>
+          Privacy <em>Policy</em>
+        </h1>
+        <div class="legal-meta" data-reveal>
+          <span class="mono">Effective Date: {lastUpdated}</span>
+          <span class="mono">Jurisdiction: Republic of India & Global</span>
+          <span class="mono">Document: POL-PRIV-2026-v2</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap legal-layout">
+    <!-- Sticky Table of Contents -->
+    <aside class="legal-nav" aria-label="Table of contents">
+      <div class="legal-nav-inner">
+        <span class="mono legal-nav-h">Contents</span>
+        <ul>
+          {
+            sections.map((s) => (
+              <li>
+                <a href={`#${s.id}`} class="legal-nav-link">
+                  {s.title}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        <div class="nav-cta-box">
+          <span class="mono cta-lbl">Questions?</span>
+          <a href="mailto:privacy@ascelstack.com" class="cta-link">privacy@ascelstack.com</a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Legal Content -->
+    <main class="legal-body">
+      <!-- Section 1 -->
+      <section id="introduction" class="legal-section">
+        <h2 class="display legal-h2">1. Introduction & Scope</h2>
+        <p>
+          Ascelstack Technologies (“Ascelstack”, “we”, “our”, or “us”) operates as a multi-disciplinary
+          technology and business operations partner. We deliver software engineering, digital growth,
+          e-commerce infrastructure, autonomous AI automation workflows, and corporate compliance services
+          through our website at <a href="https://ascelstack.com">ascelstack.com</a>, our client portal, and
+          our custom client deployments (collectively, the “Services”).
+        </p>
+        <p>
+          This Privacy Policy governs how we collect, store, process, transfer, and protect personal data and
+          confidential business information provided by visitors, clients, prospective clients, and authorized
+          representatives. We operate in strict compliance with applicable data protection frameworks, including
+          the <strong>Digital Personal Data Protection Act, 2023 (DPDPA)</strong> of India, the Information
+          Technology Act, 2000, and where applicable, the European Union General Data Protection Regulation
+          (GDPR) and UK Data Protection Act.
+        </p>
+      </section>
+
+      <!-- Section 2 -->
+      <section id="data-collection" class="legal-section">
+        <h2 class="display legal-h2">2. Information We Collect</h2>
+        <p>
+          Depending on how you interact with Ascelstack, we collect and process several categories of information:
+        </p>
+        <div class="legal-box-grid">
+          <div class="legal-box">
+            <h3 class="legal-box-title">Account & Contact Data</h3>
+            <p>Your name, business email address, direct phone/WhatsApp number, company name, billing address, and job title collected via consultation forms, client onboarding, or contract execution.</p>
+          </div>
+          <div class="legal-box">
+            <h3 class="legal-box-title">Client Operational Data</h3>
+            <p>API keys, webhook endpoints, database connection strings, inventory records, and CRM customer records furnished by you strictly to configure custom software and automation pipelines.</p>
+          </div>
+          <div class="legal-box">
+            <h3 class="legal-box-title">Statutory & Filing Documents</h3>
+            <p>For regulatory, licensing, and compliance services (e.g. GST registration, FSSAI, MCA company formation, trademark filing): PAN, Aadhaar, Certificate of Incorporation, director identification, and financial statements.</p>
+          </div>
+          <div class="legal-box">
+            <h3 class="legal-box-title">Technical & Usage Logs</h3>
+            <p>IP addresses, browser type, device identifiers, referring URLs, operating systems, and anonymous telemetry metrics captured to monitor infrastructure stability and prevent cyber attacks.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3 -->
+      <section id="ai-data-handling" class="legal-section">
+        <h2 class="display legal-h2">3. AI & Automation Data Ethics</h2>
+        <div class="highlight-card">
+          <strong class="highlight-title">Zero Public Model Training Guarantee</strong>
+          <p>
+            Ascelstack guarantees that <strong>no client confidential data, proprietary source code, operational spreadsheets, financial records, or customer personal data</strong> is ever used, rented, or contributed to train, fine-tune, or improve public foundation artificial intelligence models.
+          </p>
+        </div>
+        <p>
+          When building automated AI workflows (such as order reconciliation bots, invoice parsing engines, or WhatsApp customer service agents):
+        </p>
+        <ul>
+          <li><strong>Enterprise Zero-Retention APIs:</strong> We integrate exclusively with enterprise-tier API endpoints (Anthropic Claude, OpenAI Enterprise, Google Gemini Vertex) that offer contractual zero-day data retention commitments.</li>
+          <li><strong>Payload Encryption:</strong> Transient workflow payloads passing through background workers are encrypted in flight and purged from cache immediately upon step completion.</li>
+          <li><strong>Human-in-the-Loop Governance:</strong> Automated workflows involving financial payouts, legal filings, or sensitive data deletions require authenticated human sign-off before committing irreversible actions.</li>
+        </ul>
+      </section>
+
+      <!-- Section 4 -->
+      <section id="legal-basis" class="legal-section">
+        <h2 class="display legal-h2">4. Legal Grounds for Processing</h2>
+        <p>We process your data under the following recognized legal grounds:</p>
+        <ul>
+          <li><strong>Performance of Contract:</strong> Processing necessary to fulfill our service agreements, build custom applications, manage cloud servers, and deliver agreed-upon scopes of work.</li>
+          <li><strong>Compliance with Legal Obligations:</strong> Processing required under Indian tax statutes (Goods and Services Tax Act, Income Tax Act), Companies Act, and licensing requirements.</li>
+          <li><strong>Legitimate Interests:</strong> Securing our networks, preventing fraud, managing client relationship history, and monitoring service performance.</li>
+          <li><strong>Consent:</strong> Explicit opt-in consent for email notifications, marketing communications, and non-essential cookies, which may be revoked at any time.</li>
+        </ul>
+      </section>
+
+      <!-- Section 5 -->
+      <section id="data-use" class="legal-section">
+        <h2 class="display legal-h2">5. How We Use Your Information</h2>
+        <p>We use collected data solely for legitimate business purposes:</p>
+        <ul>
+          <li>Delivering, configuring, and supporting our 232 catalogue services across Build, Grow, and Run.</li>
+          <li>Provisioning staging, preview, and production cloud infrastructure on your behalf.</li>
+          <li>Executing statutory filings with regulatory bodies including the Ministry of Corporate Affairs (MCA), Goods and Services Tax Network (GSTN), Intellectual Property India, and FSSAI.</li>
+          <li>Generating transparent invoices, milestone receipts, and processing transactions through regulated payment processors.</li>
+          <li>Communicating project sprint updates, security advisories, and architecture diagnostics.</li>
+        </ul>
+      </section>
+
+      <!-- Section 6 -->
+      <section id="data-sharing" class="legal-section">
+        <h2 class="display legal-h2">6. Sub-Processors & Data Sharing</h2>
+        <p>
+          Ascelstack does not sell, rent, or trade your personal or business data. We share data only with
+          vetted third-party sub-processors necessary to run the Services:
+        </p>
+        <div class="subprocessor-table-wrap">
+          <table class="subprocessor-table">
+            <thead>
+              <tr>
+                <th class="mono">Provider</th>
+                <th class="mono">Role</th>
+                <th class="mono">Security Framework</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Cloudflare, Inc.</strong></td>
+                <td>Edge DNS, CDN, WAF, Serverless Workers runtime</td>
+                <td>SOC 2 Type II, ISO 27001, PCI-DSS</td>
+              </tr>
+              <tr>
+                <td><strong>Neon Database Inc.</strong></td>
+                <td>Serverless PostgreSQL database storage</td>
+                <td>SOC 2 Type II, encrypted at rest (AES-256)</td>
+              </tr>
+              <tr>
+                <td><strong>Clerk, Inc.</strong></td>
+                <td>Client portal identity authentication & session security</td>
+                <td>SOC 2 Type II, CCPA, GDPR compliant</td>
+              </tr>
+              <tr>
+                <td><strong>Stripe / Razorpay</strong></td>
+                <td>Payment gateway processing & PCI-DSS compliance</td>
+                <td>PCI-DSS Level 1 certified gateway</td>
+              </tr>
+              <tr>
+                <td><strong>Chartered Accountants & Legal Associates</strong></td>
+                <td>Statutory GST, MCA, and compliance filing execution</td>
+                <td>Bound by statutory professional confidentiality and Ascelstack NDAs</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section 7 -->
+      <section id="security" class="legal-section">
+        <h2 class="display legal-h2">7. Data Security & Storage</h2>
+        <p>
+          We employ state-of-the-art technical, physical, and administrative safeguards designed to protect
+          your data against unauthorized access, disclosure, alteration, or destruction:
+        </p>
+        <ul>
+          <li><strong>Encryption:</strong> All network communication is enforced with TLS 1.3 encryption. All static data and database volumes are encrypted using AES-256 algorithms.</li>
+          <li><strong>Principle of Least Privilege:</strong> Only engineers, architects, or legal associates directly assigned to your specific pod hold access to your project environment.</li>
+          <li><strong>Credential Isolation:</strong> Client API keys and third-party secrets are held in isolated secrets stores (Cloudflare Secrets Store / encrypted environment variables), never logged in plain text or committed to git repositories.</li>
+          <li><strong>Audit Logging:</strong> System and portal activities are recorded in immutable logs for security incident tracking and continuous monitoring.</li>
+        </ul>
+      </section>
+
+      <!-- Section 8 -->
+      <section id="retention" class="legal-section">
+        <h2 class="display legal-h2">8. Data Retention & Destruction</h2>
+        <p>
+          We retain your personal data only as long as necessary to fulfill the purposes for which it was
+          collected, including satisfying legal, accounting, and compliance reporting requirements:
+        </p>
+        <ul>
+          <li><strong>Active Client Accounts:</strong> Retained for the duration of the engagement plus 90 days following offboarding, after which database instances and repository access are securely purged.</li>
+          <li><strong>Statutory Invoices & Tax Records:</strong> Retained for a mandatory period of 7 years in compliance with Section 44AA of the Indian Income Tax Act and GST regulations.</li>
+          <li><strong>Consultation Enquiries:</strong> Inactive prospective consultation briefs that do not lead to an engagement are permanently deleted after 12 months.</li>
+        </ul>
+      </section>
+
+      <!-- Section 9 -->
+      <section id="cookies" class="legal-section">
+        <h2 class="display legal-h2">9. Cookies & Local Storage</h2>
+        <p>
+          Ascelstack utilizes minimal cookies and local browser storage strictly to ensure site functionality:
+        </p>
+        <ul>
+          <li><strong>Essential Functional Cookies:</strong> Session tokens (via Clerk) required to maintain your authenticated login state in the Client Portal.</li>
+          <li><strong>Local Storage State:</strong> Temporary storage of your selected estimate items (the Service Cart) and project enquiry reference IDs so your progress is preserved across page refreshes.</li>
+          <li><strong>Zero Cross-Site Tracking:</strong> We do not deploy third-party advertising cookies, invasive tracking pixels, or cross-site fingerprinting scripts.</li>
+        </ul>
+      </section>
+
+      <!-- Section 10 -->
+      <section id="user-rights" class="legal-section">
+        <h2 class="display legal-h2">10. Your Privacy Rights</h2>
+        <p>Under applicable Indian and global data protection laws, you possess the following rights:</p>
+        <ul>
+          <li><strong>Right of Access & Summary:</strong> You may request a structured copy of the personal data we hold about you.</li>
+          <li><strong>Right to Correction & Updating:</strong> You may request immediate correction of inaccurate or incomplete information.</li>
+          <li><strong>Right to Erasure (“Right to Be Forgotten”):</strong> You may request the deletion of your personal data, subject to statutory tax and legal retention requirements.</li>
+          <li><strong>Right to Withdraw Consent:</strong> Where processing is based on consent, you may withdraw it at any time without affecting lawful processing performed prior to withdrawal.</li>
+          <li><strong>Right to Nominate:</strong> Under DPDPA 2023, you have the right to nominate an individual to exercise your rights in the event of incapacity or death.</li>
+        </ul>
+        <p>
+          To exercise any of these rights, email your request to <a href="mailto:privacy@ascelstack.com">privacy@ascelstack.com</a> with the subject line <em>“Data Subject Rights Request”</em>.
+        </p>
+      </section>
+
+      <!-- Section 11 -->
+      <section id="international" class="legal-section">
+        <h2 class="display legal-h2">11. International Transfers</h2>
+        <p>
+          Ascelstack operates out of India and utilizes globally distributed edge networks. When client data
+          is transferred across international borders, we ensure adequate protection mechanisms are in place,
+          including standard contractual clauses, international adequacy safeguards, and SOC 2 Type II certified sub-processors.
+        </p>
+      </section>
+
+      <!-- Section 12 -->
+      <section id="grievance" class="legal-section">
+        <h2 class="display legal-h2">12. Grievance Officer & Contact</h2>
+        <p>
+          In accordance with the Information Technology Act, 2000 and the Digital Personal Data Protection Act,
+          2023, the details of our designated Grievance Redressal Officer are published below:
+        </p>
+        <div class="officer-card">
+          <div class="officer-info">
+            <strong class="officer-name">Grievance Redressal Officer</strong>
+            <span class="officer-entity">Ascelstack Technologies Private Limited</span>
+            <span class="officer-loc">Sector V, Bidhannagar, Salt Lake, Kolkata, West Bengal 700091, India</span>
+          </div>
+          <div class="officer-contact">
+            <div>
+              <span class="mono">Dedicated Email</span>
+              <a href="mailto:privacy@ascelstack.com" class="officer-link">privacy@ascelstack.com</a>
+            </div>
+            <div>
+              <span class="mono">General Enquiries</span>
+              <a href="mailto:hello@ascelstack.com" class="officer-link">hello@ascelstack.com</a>
+            </div>
+            <div>
+              <span class="mono">Statutory Response SLA</span>
+              <span class="officer-sla">Acknowledgment within 24 hours · Resolution within 30 days</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</Base>
+
+<style>
+  /* ------------------------------------------------------------- Legal Hero */
+  .legal-hero {
+    padding-top: calc(var(--nav-h) + clamp(3.5rem, 7vw, 6rem));
+    padding-bottom: clamp(3rem, 5vw, 4.5rem);
+    background:
+      radial-gradient(50% 60% at 50% 0%, rgba(148, 188, 227, 0.25), transparent 75%),
+      var(--paper);
+    border-bottom: 1px solid var(--line);
+  }
+  .legal-head {
+    max-width: 860px;
+    display: grid;
+    gap: 1.25rem;
+  }
+  .legal-title {
+    font-size: clamp(2.75rem, 1.8rem + 4vw, 5.5rem);
+    line-height: 1;
+  }
+  .legal-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+  }
+
+  /* ------------------------------------------------------------- Legal Layout */
+  .legal-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: clamp(2.5rem, 5vw, 6rem);
+    padding-block: clamp(3.5rem, 6vw, 6rem);
+    align-items: start;
+  }
+
+  /* Sticky Navigation */
+  .legal-nav {
+    position: sticky;
+    top: calc(var(--nav-h) + 2rem);
+  }
+  .legal-nav-inner {
+    display: grid;
+    gap: 1rem;
+    padding: 1.75rem 1.5rem;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+  .legal-nav-h {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+  }
+  .legal-nav ul {
+    display: grid;
+    gap: 0.45rem;
+  }
+  .legal-nav-link {
+    display: block;
+    font-size: 0.86rem;
+    color: var(--text-muted);
+    padding: 0.25rem 0;
+    transition: color 0.2s, transform 0.2s;
+  }
+  .legal-nav-link:hover {
+    color: var(--ink);
+    transform: translateX(3px);
+  }
+  .nav-cta-box {
+    margin-top: 0.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+    display: grid;
+    gap: 0.25rem;
+  }
+  .cta-lbl {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+  .cta-link {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    color: var(--accent);
+  }
+
+  /* ------------------------------------------------------------- Legal Body */
+  .legal-body {
+    display: grid;
+    gap: clamp(3rem, 5vw, 4.5rem);
+    font-size: 1.02rem;
+    line-height: 1.75;
+    color: var(--text);
+  }
+  .legal-section {
+    display: grid;
+    gap: 1.25rem;
+    scroll-margin-top: calc(var(--nav-h) + 3rem);
+  }
+  .legal-h2 {
+    font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.5rem);
+    color: var(--ink);
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .legal-section p {
+    color: var(--text);
+    margin: 0;
+  }
+  .legal-section a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .legal-section ul {
+    display: grid;
+    gap: 0.75rem;
+    padding-left: 1.25rem;
+    list-style: disc;
+  }
+  .legal-section li {
+    padding-left: 0.35rem;
+  }
+
+  /* Grid of info boxes */
+  .legal-box-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin-top: 0.5rem;
+  }
+  .legal-box {
+    padding: 1.5rem;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    display: grid;
+    gap: 0.5rem;
+  }
+  .legal-box-title {
+    font-size: 1.1rem;
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .legal-box p {
+    font-size: 0.88rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+  }
+
+  /* Highlight card (AI guarantee) */
+  .highlight-card {
+    padding: 1.75rem;
+    background: color-mix(in srgb, var(--tint) 15%, var(--paper-raised));
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    display: grid;
+    gap: 0.5rem;
+  }
+  .highlight-title {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    color: var(--ink);
+  }
+  .highlight-card p {
+    color: var(--text);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  /* Table */
+  .subprocessor-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper-raised);
+  }
+  .subprocessor-table {
+    width: 100%;
+    min-width: 580px;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    text-align: left;
+  }
+  .subprocessor-table th {
+    background: var(--paper);
+    padding: 0.9rem 1.25rem;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+  .subprocessor-table td {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+    color: var(--text);
+  }
+  .subprocessor-table tr:last-child td {
+    border-bottom: 0;
+  }
+
+  /* Officer card */
+  .officer-card {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    padding: 2rem;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+  .officer-info {
+    display: grid;
+    gap: 0.4rem;
+  }
+  .officer-name {
+    font-size: 1.25rem;
+    color: var(--ink);
+  }
+  .officer-entity {
+    font-size: 0.95rem;
+    color: var(--text);
+  }
+  .officer-loc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .officer-contact {
+    display: grid;
+    gap: 1rem;
+  }
+  .officer-contact .mono {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 0.2rem;
+  }
+  .officer-link {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    color: var(--accent);
+  }
+  .officer-sla {
+    font-size: 0.85rem;
+    color: var(--text);
+  }
+
+  /* ------------------------------------------------------------- Responsive */
+  @media (max-width: 900px) {
+    .legal-layout { grid-template-columns: 1fr; }
+    .legal-nav { display: none; }
+    .legal-box-grid { grid-template-columns: 1fr; }
+    .officer-card { grid-template-columns: 1fr; }
+  }
+</style>

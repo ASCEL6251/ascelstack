@@ -6,8 +6,11 @@ import Logo from '../components/Logo.astro';
 import '../styles/global.css';
 
 const auth = Astro.locals.auth();
+const redirectParam = Astro.url.searchParams.get('redirect');
+const redirectUrl = redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//') ? redirectParam : '/dashboard';
+
 if (auth.isAuthenticated) {
-  return Astro.redirect('/dashboard');
+  return Astro.redirect(redirectUrl);
 }
 ---
 
@@ -83,8 +86,8 @@ if (auth.isAuthenticated) {
           <div class="clerk-container">
             <SignIn
               routing="hash"
-              forceRedirectUrl="/dashboard"
-              signUpUrl="/sign-up"
+              forceRedirectUrl={redirectUrl}
+              signUpUrl={`/sign-up${redirectParam ? `?redirect=${encodeURIComponent(redirectUrl)}` : ''}`}
               appearance={{
                 variables: {
                   colorPrimary: '#1D2D3D',

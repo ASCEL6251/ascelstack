@@ -1,0 +1,347 @@
+---
+import Base from '../layouts/Base.astro';
+
+interface Props {
+  error?: unknown;
+}
+
+const { error } = Astro.props;
+const errorMessage = error instanceof Error ? error.message : typeof error === 'string' ? error : null;
+---
+
+<Base
+  title="500 — Internal Server Error"
+  description="An unexpected server error occurred on Ascelstack. Our telemetry systems have been alerted."
+>
+  <section class="e500-hero">
+    <div class="wrap e500-inner">
+      <div class="e500-art" data-reveal aria-hidden="true">
+        <div class="pulse-ring"></div>
+        <div class="gear-wrap">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </div>
+        <span class="display e500-num">500</span>
+      </div>
+
+      <div class="e500-content">
+        <p class="eyebrow" data-reveal>Error 500 · Server Interruption</p>
+        <h1 class="display h1 e500-h1" data-reveal>
+          A hitch in the <em>automation pipeline.</em>
+        </h1>
+        <p class="lead e500-lead" data-reveal>
+          Our edge runtime encountered an unexpected state while compiling or serving this view.
+          Our internal observability pods have already received the stack trace.
+        </p>
+
+        <!-- System Status Indicator -->
+        <div class="status-indicator" data-reveal>
+          <span class="status-dot"></span>
+          <span class="status-txt">Edge infrastructure operational · Auto-recovery triggered</span>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="e500-btns" data-reveal>
+          <button type="button" class="btn btn-reload" onclick="location.reload()">
+            Reload page <span class="arrow">↺</span>
+          </button>
+          <a href="/" class="btn btn-ghost">
+            Return to home
+          </a>
+          <a href="/contact" class="btn btn-ghost">
+            Report incident
+          </a>
+        </div>
+
+        <!-- Safe Diagnostic Details -->
+        <div class="diag-card" data-reveal>
+          <div class="diag-head">
+            <span class="mono diag-lbl">Telemetry Diagnostic Record</span>
+            <span class="mono diag-id" data-diag-id>INC-500-8472</span>
+          </div>
+          <div class="diag-body">
+            <div class="diag-row">
+              <span class="mono">Runtime</span>
+              <span class="mono">Cloudflare Workers Edge (SSR)</span>
+            </div>
+            <div class="diag-row">
+              <span class="mono">Time</span>
+              <span class="mono" data-diag-time>Synchronizing...</span>
+            </div>
+            {
+              errorMessage && (
+                <div class="diag-row diag-msg">
+                  <span class="mono">Reason</span>
+                  <code>{errorMessage}</code>
+                </div>
+              )
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Helpful Fallback Destinations -->
+  <section class="section on-ink e500-foot-section">
+    <div class="wrap">
+      <div class="e500-grid">
+        <div class="e500-col">
+          <h3 class="display e500-subh">Need urgent assistance?</h3>
+          <p class="e500-subp">
+            If you are an active client experiencing downtime on a deployed service or workflow,
+            reach our support on-call desk directly.
+          </p>
+          <div class="e500-contacts">
+            <a href="mailto:support@ascelstack.com" class="support-link">support@ascelstack.com</a>
+            <span class="mono">SLA: Urgent triage within 1 hour for active retainers</span>
+          </div>
+        </div>
+
+        <div class="e500-col">
+          <h3 class="display e500-subh">Explore unaffected areas</h3>
+          <ul class="e500-nav-list">
+            <li><a href="/services">Service Catalogue (232 services) →</a></li>
+            <li><a href="/automation">Automation Studio & Workflows →</a></li>
+            <li><a href="/about">About Ascelstack →</a></li>
+            <li><a href="/dashboard">Client Portal & Project Logs →</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  // Set real timestamp and random diagnostic code
+  const timeEl = document.querySelector<HTMLElement>('[data-diag-time]');
+  const idEl = document.querySelector<HTMLElement>('[data-diag-id]');
+  if (timeEl) timeEl.textContent = new Date().toUTCString();
+  if (idEl) idEl.textContent = `INC-500-${Math.floor(100000 + Math.random() * 900000)}`;
+</script>
+
+<style>
+  /* ------------------------------------------------------------- 500 Hero */
+  .e500-hero {
+    padding-top: calc(var(--nav-h) + clamp(4rem, 8vw, 7rem));
+    padding-bottom: clamp(4rem, 8vw, 8rem);
+    background:
+      radial-gradient(55% 50% at 50% 0%, rgba(148, 188, 227, 0.25), transparent 75%),
+      var(--paper);
+    min-height: 75vh;
+    display: flex;
+    align-items: center;
+  }
+  .e500-inner {
+    display: grid;
+    grid-template-columns: 5fr 7fr;
+    gap: clamp(2.5rem, 6vw, 6rem);
+    align-items: center;
+  }
+
+  /* Art block */
+  .e500-art {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(3rem, 6vw, 5rem) 2rem;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-l);
+    box-shadow: 0 40px 90px -50px rgba(29, 45, 61, 0.35);
+  }
+  .gear-wrap {
+    color: var(--accent);
+    margin-bottom: 1rem;
+    animation: spin 20s linear infinite;
+  }
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .gear-wrap { animation: none; }
+  }
+
+  .e500-num {
+    font-size: clamp(6rem, 12vw, 10rem);
+    line-height: 0.85;
+    color: var(--ink);
+    letter-spacing: -0.05em;
+  }
+
+  /* Content */
+  .e500-content {
+    display: grid;
+    gap: 1.5rem;
+  }
+  .e500-h1 {
+    font-size: clamp(2.5rem, 1.8rem + 3vw, 4.75rem);
+    line-height: 1.05;
+  }
+  .e500-lead {
+    font-size: 1.15rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+  }
+
+  /* Status indicator */
+  .status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, #2e7d32 10%, transparent);
+    border: 1px solid rgba(46, 125, 50, 0.25);
+    width: fit-content;
+  }
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #2e7d32;
+    box-shadow: 0 0 8px #2e7d32;
+    animation: blink 2s infinite;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  .status-txt {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: #1b5e20;
+  }
+
+  .e500-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 0.25rem;
+  }
+  .btn-reload .arrow {
+    display: inline-block;
+    transition: transform 0.4s var(--ease-out);
+  }
+  .btn-reload:hover .arrow {
+    transform: rotate(180deg);
+  }
+
+  /* Diagnostics card */
+  .diag-card {
+    margin-top: 1rem;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    display: grid;
+    gap: 0.75rem;
+  }
+  .diag-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .diag-lbl {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .diag-id {
+    font-size: 0.75rem;
+    color: var(--accent);
+  }
+  .diag-body {
+    display: grid;
+    gap: 0.4rem;
+  }
+  .diag-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+  .diag-msg {
+    margin-top: 0.25rem;
+    padding-top: 0.4rem;
+    border-top: 1px dashed var(--line);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+  }
+  .diag-msg code {
+    background: rgba(154, 59, 46, 0.08);
+    color: #9a3b2e;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.78rem;
+  }
+
+  /* ------------------------------------------------------------- Footer Section */
+  .e500-foot-section {
+    padding-block: clamp(4rem, 6vw, 7rem);
+  }
+  .e500-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(2rem, 5vw, 5rem);
+  }
+  .e500-col {
+    display: grid;
+    gap: 1.25rem;
+  }
+  .e500-subh {
+    font-size: 1.75rem;
+    color: var(--text-on-ink);
+  }
+  .e500-subp {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--text-on-ink-muted);
+  }
+  .e500-contacts {
+    display: grid;
+    gap: 0.35rem;
+  }
+  .support-link {
+    font-family: var(--font-display);
+    font-size: 1.45rem;
+    color: var(--tint);
+    border-bottom: 1px solid var(--tint);
+    width: fit-content;
+  }
+  .e500-contacts .mono {
+    font-size: 0.75rem;
+    color: var(--text-on-ink-muted);
+  }
+  .e500-nav-list {
+    display: grid;
+    gap: 0.75rem;
+  }
+  .e500-nav-list a {
+    color: var(--text-on-ink);
+    font-size: 1rem;
+    transition: color 0.2s, transform 0.2s;
+    display: inline-block;
+  }
+  .e500-nav-list a:hover {
+    color: var(--tint);
+    transform: translateX(4px);
+  }
+
+  /* ------------------------------------------------------------- Responsive */
+  @media (max-width: 900px) {
+    .e500-inner { grid-template-columns: 1fr; }
+    .e500-art { order: -1; padding-block: 2.5rem; }
+    .e500-grid { grid-template-columns: 1fr; }
+  }
+</style>

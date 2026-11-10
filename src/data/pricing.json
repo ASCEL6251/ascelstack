@@ -5838,5 +5838,25 @@
     "billing": "Project",
     "market": "₹3,00,000–₹50,00,000",
     "notes": ""
+  },
+  "ASC-0233": {
+    "id": "ASC-0233",
+    "status": "open",
+    "type": "starting",
+    "small": {
+      "price": 3000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "From ₹3,000"
+    },
+    "mid": {
+      "price": 3000,
+      "text": "",
+      "unit": "one-time",
+      "detail": "From ₹3,000"
+    },
+    "billing": "Per report",
+    "market": "",
+    "notes": ""
   }
 }

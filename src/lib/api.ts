@@ -1,12 +1,3 @@
-// MOCK BACKEND — prototype only. Every function here stands in for a future
-// API route backed by Neon Postgres (see db/schema.sql). Data is kept in
-// localStorage so the full flow (cart → sign in → submit → account) can be
-// clicked through. Keep the signatures when wiring the real endpoints:
-//
-//   submitEstimate  → POST /api/estimates     (insert estimates + estimate_items)
-//   listEstimates   → GET  /api/estimates     (rows for the Clerk user id)
-//   getEstimate     → GET  /api/estimates/:id
-
 import type { User } from './mock-auth';
 import type { Cart } from './cart';
 import { buildEstimate, type Estimate } from './estimate';
@@ -20,27 +11,34 @@ export interface SavedEstimate {
   status: EstimateStatus;
   note: string;
   cart: Cart;
-  /** Snapshot of totals at submit time, so later price changes don't rewrite history. */
   totals: { recurrence: string; subtotal: number; gst: number; total: number }[];
   onQuoteCount: number;
 }
 
-const KEY = 'asc:mock-estimates';
-const delay = (ms = 350) => new Promise((r) => setTimeout(r, ms));
-
-const readAll = (): SavedEstimate[] => {
-  try {
-    return JSON.parse(localStorage.getItem(KEY) ?? '[]');
-  } catch {
-    return [];
-  }
-};
-
 export async function submitEstimate(user: User, cart: Cart, note = ''): Promise<SavedEstimate> {
-  await delay();
   const est: Estimate = buildEstimate(cart);
+
+  // Submit to real Neon PostgreSQL API
+  const res = await fetch('/api/customer/estimate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      cart,
+      note,
+      totals: est.groups,
+    }),
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || 'Failed to submit estimate to server');
+  }
+
+  const result = await res.json();
+  const estimateId = result.estimateId || `EST-${Date.now().toString(36).toUpperCase()}`;
+
   const saved: SavedEstimate = {
-    id: `EST-${Date.now().toString(36).toUpperCase()}`,
+    id: estimateId,
     userId: user.id,
     createdAt: Date.now(),
     status: 'submitted',
@@ -49,16 +47,32 @@ export async function submitEstimate(user: User, cart: Cart, note = ''): Promise
     totals: est.groups,
     onQuoteCount: est.onQuote.length,
   };
-  localStorage.setItem(KEY, JSON.stringify([saved, ...readAll()]));
+
   return saved;
 }
 
-export async function listEstimates(user: User): Promise<SavedEstimate[]> {
-  await delay(150);
-  return readAll().filter((e) => e.userId === user.id);
+export async function listEstimates(_user: User): Promise<any[]> {
+  try {
+    const res = await fetch('/api/customer/service-requests');
+    if (res.ok) {
+      const data = await res.json();
+      return data.requests || [];
+    }
+  } catch (e) {
+    console.warn('Failed to fetch requests from Neon API:', e);
+  }
+  return [];
 }
 
-export async function getEstimate(user: User, id: string): Promise<SavedEstimate | null> {
-  await delay(150);
-  return readAll().find((e) => e.userId === user.id && e.id === id) ?? null;
+export async function getEstimate(_user: User, id: string): Promise<any | null> {
+  try {
+    const res = await fetch('/api/customer/service-requests');
+    if (res.ok) {
+      const data = await res.json();
+      return (data.requests || []).find((r: any) => r.id === id) ?? null;
+    }
+  } catch (e) {
+    console.warn('Failed to fetch request from Neon API:', e);
+  }
+  return null;
 }

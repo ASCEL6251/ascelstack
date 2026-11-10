@@ -21,7 +21,7 @@ export const businessSchema = z.object({
 });
 
 export const serviceRequestCreateSchema = z.object({
-  serviceId: z.string().uuid('Valid service ID required'),
+  serviceId: z.string().min(1, 'Valid service ID or code required'),
   businessId: z.string().uuid('Valid business ID required').optional(),
   requirements: z.string().trim().max(2000).optional().default(''),
 });

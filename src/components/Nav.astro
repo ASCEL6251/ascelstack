@@ -8,10 +8,11 @@ interface Props {
   tone?: 'light' | 'dark';
 }
 
-// Order is fixed: Logo · Services · Automation · Industries · Process · CTA
+// Order: Logo · Services · Automation · About · Industries · Process · CTA
 const links = [
   { href: '/services', label: 'Services' },
   { href: '/automation', label: 'Automation' },
+  { href: '/about', label: 'About' },
   { href: '/#industries', label: 'Industries' },
   { href: '/#process', label: 'Process' },
 ];
@@ -35,6 +36,7 @@ const menu: { label: string; href: string; sub?: Sub[]; all?: string }[] = [
     })),
   },
   { label: 'Automation', href: '/automation' },
+  { label: 'About', href: '/about' },
   {
     label: 'Industries',
     href: '/#industries',
@@ -68,10 +70,6 @@ const menu: { label: string; href: string; sub?: Sub[]; all?: string }[] = [
         }
       </nav>
 
-      <a href="/account" class="nav-icon" aria-label="Account" data-account-link>
-        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" /></svg>
-        <span class="nav-avatar" data-avatar hidden></span>
-      </a>
       <a href="/cart" class="nav-icon" aria-label="Your estimate">
         <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.4 11.2a1 1 0 0 0 1 .8h9.2a1 1 0 0 0 1-.8L21 8H6.2" /><circle cx="9.5" cy="20" r="1.3" /><circle cx="17.5" cy="20" r="1.3" /></svg>
         <span class="nav-count" data-cart-count hidden>0</span>
@@ -84,12 +82,12 @@ const menu: { label: string; href: string; sub?: Sub[]; all?: string }[] = [
         </span>
       </a>
 
-      <a href="/dashboard" class="nav-portal" aria-label="Client Portal" title="Client Portal">
+      <a href="/dashboard" class="nav-portal" aria-label="Client Portal" title="Client Portal" data-portal-link>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
           <circle cx="12" cy="7" r="4"></circle>
         </svg>
-        <span class="nav-portal-label">Portal</span>
+        <span class="nav-portal-label" data-portal-label>Portal</span>
       </a>
 
       <button
@@ -164,7 +162,6 @@ const menu: { label: string; href: string; sub?: Sub[]; all?: string }[] = [
     <div class="mnav-foot" style={`--i:${menu.length}`}>
       <div class="mnav-acct">
         <a href="/cart" class="mnav-acct-link">Your estimate <span class="mono" data-cart-count-m>0</span></a>
-        <a href="/account" class="mnav-acct-link" data-account-label-m>Sign in</a>
       </div>
       <a href="/contact" class="mnav-cta">
         Start a project <span aria-hidden="true">→</span>
@@ -713,12 +710,21 @@ const menu: { label: string; href: string; sub?: Sub[]; all?: string }[] = [
     }
     lastCount = n;
   });
-  const avatar = document.querySelector<HTMLElement>('[data-avatar]')!;
-  const acctM = document.querySelector<HTMLElement>('[data-account-label-m]')!;
+  const portalLabel = document.querySelector<HTMLElement>('[data-portal-label]');
+  const portalLink = document.querySelector<HTMLAnchorElement>('[data-portal-link]');
+  const mnavPortal = document.querySelector<HTMLAnchorElement>('.mnav-portal-link');
   onAuth((u) => {
-    avatar.hidden = !u;
-    avatar.textContent = u ? u.name.trim().charAt(0).toUpperCase() : '';
-    acctM.textContent = u ? 'Account' : 'Sign in';
+    if (portalLabel) {
+      portalLabel.textContent = u ? (u.name.split(' ')[0] || 'Dashboard') : 'Portal';
+    }
+    if (portalLink) {
+      portalLink.href = u ? '/dashboard' : '/login';
+      portalLink.title = u ? `Signed in as ${u.name}` : 'Client Portal';
+    }
+    if (mnavPortal) {
+      mnavPortal.href = u ? '/dashboard' : '/login';
+      mnavPortal.innerHTML = `${u ? 'Client Dashboard' : 'Client Portal'} <span aria-hidden="true">→</span>`;
+    }
   });
 
   const nav = document.querySelector<HTMLElement>('[data-nav]')!;

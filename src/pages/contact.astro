@@ -4,91 +4,349 @@ import { coreCategories, services } from '../data/catalog';
 
 const lookup = Object.fromEntries(services.map((s) => [s.id, { name: s.name, cat: s.category }]));
 const catSlugs = Object.fromEntries(coreCategories.map((c) => [c.name, c.slug]));
+
+const contactChannels = [
+  {
+    label: 'New Projects & Enquiries',
+    val: 'hello@ascelstack.com',
+    href: 'mailto:hello@ascelstack.com',
+    sub: 'Architecture reviews & project scopes',
+    badge: '1 business day SLA',
+  },
+  {
+    label: 'Client Support & Portal',
+    val: 'support@ascelstack.com',
+    href: 'mailto:support@ascelstack.com',
+    sub: 'For active deployments & accounts',
+    badge: 'Mon–Sat, 10–19 IST',
+  },
+  {
+    label: 'Direct Phone & WhatsApp',
+    val: '+91 98300 89000',
+    href: 'tel:+919830089000',
+    sub: 'Instant coordination for urgent briefs',
+    badge: 'Direct line',
+  },
+  {
+    label: 'Careers & Talent',
+    val: 'careers@ascelstack.com',
+    href: 'mailto:careers@ascelstack.com',
+    sub: 'Engineers, strategists & legal associates',
+    badge: 'Always hiring',
+  },
+];
+
+const offices = [
+  {
+    city: 'Kolkata (Headquarters)',
+    role: 'Corporate Headquarters & Compliance Operations',
+    address: 'Sector V, Bidhannagar, Salt Lake, Kolkata, West Bengal 700091, India',
+    hours: 'Mon–Sat, 10:00–19:00 IST',
+  },
+  {
+    city: 'Bengaluru',
+    role: 'Engineering & AI Automation Studio',
+    address: '100 Feet Road, HAL 2nd Stage, Indiranagar, Bengaluru, Karnataka 560038, India',
+    hours: 'Mon–Sat, 10:00–19:00 IST',
+  },
+];
+
+const faqs = [
+  {
+    q: 'How quickly do you reply to new enquiries?',
+    a: 'Every enquiry is reviewed directly by a systems architect. We review your submission and reply with initial thoughts, questions, or a suggested diagnostic call within one business day.',
+  },
+  {
+    q: 'Can we hire Ascelstack for a single service or layer?',
+    a: 'Yes, absolutely. Many of our clients start with a single, high-stakes service—such as an automated CRM workflow, a brand identity, a Shopify store, or a corporate GST filing—and then expand into a unified stack over time as trust is built.',
+  },
+  {
+    q: 'Do you sign Non-Disclosure Agreements (NDAs)?',
+    a: 'Yes. We treat every conversation and all business data with strict confidentiality. If your team requires a signed mutual NDA before sharing architecture diagrams, product specs, or financials, mention it in the form or email us at hello@ascelstack.com and we will countersign within 4 hours.',
+  },
+  {
+    q: 'Do you work with businesses outside India?',
+    a: 'Yes. We build software, design brands, manage cloud infrastructure, and automate workflows for clients across the US, UK, UAE, Southeast Asia, and Europe. Payment can be settled via international wire, Stripe, or corporate cards in USD, EUR, GBP, or AED.',
+  },
+  {
+    q: 'How are projects scoped and priced?',
+    a: 'We dislike open-ended hourly billing that rewards slow work. We work either on fixed-price milestones with clear acceptance criteria, or on predictable monthly retainers with guaranteed SLA response times and weekly sprint reporting.',
+  },
+];
 ---
 
-<Base title="Start a project" description="Tell Ascelstack what you want to build, grow or automate.">
-  <section class="contact">
+<Base
+  title="Contact Us"
+  description="Start a project with Ascelstack. Reach our systems architects for software, AI automation, growth, or compliance under one roof."
+>
+  <!-- Hero & Primary Form Section -->
+  <section class="contact-hero">
     <div class="wrap contact-grid">
+      <!-- Left Column: Details & Philosophy -->
       <div class="contact-side">
         <p class="eyebrow" data-reveal>Start a project</p>
         <h1 class="display h1" data-reveal>Tell us where <em>it hurts.</em></h1>
         <p class="lead" data-reveal>
-          A missing website, a team buried in spreadsheets, a licence you haven't filed. Describe it in your own words.
-          We reply within one working day.<span class="temp"></span>
+          A missing website, an operations team drowning in spreadsheets, or a licence you haven't filed.
+          Describe it in your own words. An Ascelstack architect replies within one working day.
         </p>
-        <dl class="contact-direct" data-reveal>
-          <div><dt class="mono">Email</dt><dd><a href="mailto:hello@ascelstack.com" class="temp">hello@ascelstack.com</a></dd></div>
-          <div><dt class="mono">Hours</dt><dd class="temp">Mon–Sat, 10:00–19:00 IST</dd></div>
-        </dl>
-      </div>
 
-      <form class="form" data-form novalidate>
-        <div class="form-picked" data-picked hidden>
-          <span class="mono">Enquiring about</span>
-          <strong data-picked-name></strong>
-          <input type="hidden" name="service" data-picked-input />
-          <button type="button" class="picked-clear" data-picked-clear aria-label="Remove selected service">×</button>
-        </div>
-
-        <fieldset class="field">
-          <legend class="mono">What do you need?</legend>
-          <div class="chips">
+        <!-- Channels list -->
+        <div class="channels-box" data-reveal>
+          <span class="mono channels-h">Direct Channels</span>
+          <div class="channels-list">
             {
-              coreCategories.map((c) => (
-                <label class="chip">
-                  <input type="checkbox" name="areas" value={c.slug} />
-                  <span>{c.short}</span>
-                </label>
+              contactChannels.map((c) => (
+                <div class="channel-item">
+                  <div class="channel-info">
+                    <span class="channel-label mono">{c.label}</span>
+                    <a href={c.href} class="channel-val">{c.val}</a>
+                    <span class="channel-sub">{c.sub}</span>
+                  </div>
+                  <span class="channel-badge mono">{c.badge}</span>
+                </div>
               ))
             }
           </div>
-        </fieldset>
-
-        <div class="row">
-          <label class="field">
-            <span class="mono">Name</span>
-            <input name="name" required autocomplete="name" />
-          </label>
-          <label class="field">
-            <span class="mono">Email</span>
-            <input name="email" type="email" required autocomplete="email" />
-          </label>
         </div>
-        <div class="row">
-          <label class="field">
-            <span class="mono">Phone / WhatsApp <em>optional</em></span>
-            <input name="phone" type="tel" autocomplete="tel" />
-          </label>
-          <label class="field">
-            <span class="mono">Business name <em>optional</em></span>
-            <input name="company" autocomplete="organization" />
-          </label>
-        </div>
-        <label class="field">
-          <span class="mono">Budget</span>
-          <select name="budget">
-            <option value="">Not sure yet</option>
-            <option>Under ₹50,000</option>
-            <option>₹50,000 – ₹2,00,000</option>
-            <option>₹2,00,000 – ₹10,00,000</option>
-            <option>₹10,00,000+</option>
-          </select>
-        </label>
-        <label class="field">
-          <span class="mono">Tell us about it</span>
-          <textarea name="message" rows="5" required placeholder="What do you do today, and what would you like to stop doing by hand?"></textarea>
-        </label>
 
-        <p class="form-error" data-error hidden>Please add your name, a valid email and a short message.</p>
-        <button class="btn form-submit" type="submit">Send enquiry <span class="arrow">→</span></button>
-        <p class="mono form-fine">Draft site: this form is not connected yet and nothing is sent.</p>
-
-        <div class="form-done" data-done hidden>
-          <img src="/brand/mark.svg" alt="" width="56" height="56" />
-          <h2 class="display h3">Thanks, we've got it.</h2>
-          <p>Expect a reply within one working day.</p>
+        <!-- SLA Guarantee Card -->
+        <div class="sla-card" data-reveal>
+          <div class="sla-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          </div>
+          <div>
+            <strong class="sla-title">Guaranteed 24-Hour Review</strong>
+            <p class="sla-desc">No junior sales reps. You will talk directly to engineers and operators who know how to build and ship.</p>
+          </div>
         </div>
-      </form>
+      </div>
+
+      <!-- Right Column: Interactive Consultation Form -->
+      <div class="form-container" data-reveal>
+        <form class="form" data-form novalidate>
+          <div class="form-picked" data-picked hidden>
+            <span class="mono">Enquiring about</span>
+            <strong data-picked-name></strong>
+            <input type="hidden" name="service" data-picked-input />
+            <button type="button" class="picked-clear" data-picked-clear aria-label="Remove selected service">×</button>
+          </div>
+
+          <fieldset class="field">
+            <legend class="mono">What disciplines do you need?</legend>
+            <div class="chips">
+              {
+                coreCategories.map((c) => (
+                  <label class="chip">
+                    <input type="checkbox" name="areas" value={c.slug} />
+                    <span>{c.short}</span>
+                  </label>
+                ))
+              }
+            </div>
+          </fieldset>
+
+          <div class="row">
+            <label class="field">
+              <span class="mono">Your Name *</span>
+              <input name="name" required placeholder="Priya Sharma" autocomplete="name" />
+            </label>
+            <label class="field">
+              <span class="mono">Work Email *</span>
+              <input name="email" type="email" required placeholder="priya@company.com" autocomplete="email" />
+            </label>
+          </div>
+
+          <div class="row">
+            <label class="field">
+              <span class="mono">Phone / WhatsApp <em>optional</em></span>
+              <input name="phone" type="tel" placeholder="+91 98765 43210" autocomplete="tel" />
+            </label>
+            <label class="field">
+              <span class="mono">Company / Business Name</span>
+              <input name="company" placeholder="Acme Foods / Nova Labs" autocomplete="organization" />
+            </label>
+          </div>
+
+          <div class="row">
+            <label class="field">
+              <span class="mono">Business Category</span>
+              <select name="category">
+                <option value="">Select your type</option>
+                <option value="startup">Tech Startup / SaaS</option>
+                <option value="ecommerce">E-Commerce & D2C Brand</option>
+                <option value="restaurant">Restaurant, Café & Food Chain</option>
+                <option value="retail">Retail & Manufacturing</option>
+                <option value="services">Professional Services / Agency</option>
+                <option value="other">Other</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span class="mono">Estimated Budget</span>
+              <select name="budget">
+                <option value="">Not sure yet / Exploratory</option>
+                <option value="under50k">Under ₹50,000</option>
+                <option value="50k-200k">₹50,000 – ₹2,00,000</option>
+                <option value="200k-1m">₹2,00,000 – ₹10,00,000</option>
+                <option value="1m-plus">₹10,00,000+ ($12k+ USD)</option>
+              </select>
+            </label>
+          </div>
+
+          <label class="field">
+            <span class="mono">Tell us about your project or bottleneck *</span>
+            <textarea
+              name="message"
+              rows="4"
+              required
+              placeholder="What does your team do today by hand? What systems need to be built, upgraded, or automated?"
+            ></textarea>
+          </label>
+
+          <p class="form-error" data-error hidden>Please fill out your name, a valid email address, and a message description.</p>
+
+          <div class="form-foot">
+            <button class="btn form-submit" type="submit">
+              Send enquiry <span class="arrow">→</span>
+            </button>
+            <span class="mono privacy-note">
+              Confidential by default. We never share your data.
+            </span>
+          </div>
+
+          <!-- Dynamic Success Card -->
+          <div class="form-done" data-done hidden>
+            <div class="done-icon">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#5980A6" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <h2 class="display h3">Enquiry received.</h2>
+            <p class="done-lead">
+              Thank you for reaching out. A systems architect is reviewing your brief.
+            </p>
+            <div class="ticket-box">
+              <span class="mono ticket-lbl">Reference ID</span>
+              <strong class="ticket-id" data-ticket-id>ASC-2026-0000</strong>
+            </div>
+            <p class="done-sub">
+              Expect our comprehensive initial review at <strong data-reply-email>your email</strong> within one working day.
+            </p>
+            <button type="button" class="btn btn-ghost done-reset" data-reset-form>
+              Submit another enquiry
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- How an Engagement Runs -->
+  <section class="section on-ink process-section">
+    <div class="wrap">
+      <div class="proc-head">
+        <div>
+          <p class="eyebrow" data-reveal>What Happens Next</p>
+          <h2 class="display h2" data-reveal>From first brief to <em>live deployment.</em></h2>
+        </div>
+        <p class="lead" data-reveal>
+          No endless discovery meetings or bureaucratic delays. A transparent, 4-step path to shipping.
+        </p>
+      </div>
+
+      <div class="proc-steps">
+        <div class="step-card" data-reveal>
+          <span class="mono step-num">01</span>
+          <h3 class="step-title">Architectural Review</h3>
+          <p class="step-desc">Within 24 hours of receiving your brief, our lead architect audits the problem and maps the technical or operational requirements.</p>
+          <span class="mono step-sla">Day 1</span>
+        </div>
+
+        <div class="step-card" data-reveal>
+          <span class="mono step-num">02</span>
+          <h3 class="step-title">Diagnostic Call</h3>
+          <p class="step-desc">A focused, 30-minute session with our tech and operations lead. No sales pitches—just frank analysis of tools, timelines, and costs.</p>
+          <span class="mono step-sla">Days 2–3</span>
+        </div>
+
+        <div class="step-card" data-reveal>
+          <span class="mono step-num">03</span>
+          <h3 class="step-title">Fixed Blueprint & SOW</h3>
+          <p class="step-desc">You receive a modular proposal detailing deliverables, milestone payments, tech stack specifications, and human sign-off guardrails.</p>
+          <span class="mono step-sla">Week 1</span>
+        </div>
+
+        <div class="step-card" data-reveal>
+          <span class="mono step-num">04</span>
+          <h3 class="step-title">Sprint Kickoff</h3>
+          <p class="step-desc">Our pod spins up your repository, cloud environment, and tracking dashboard. Weekly demos ensure complete visibility at every stage.</p>
+          <span class="mono step-sla">Week 2</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Offices & Physical Presence -->
+  <section class="section offices-section">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow" data-reveal>Our Presence</p>
+        <h2 class="display h2" data-reveal>Where we <em>operate.</em></h2>
+        <p class="lead" data-reveal>
+          While our systems run in the cloud worldwide, our engineering and compliance pods work from two of India’s top tech hubs.
+        </p>
+      </div>
+
+      <div class="offices-grid">
+        {
+          offices.map((o) => (
+            <div class="office-card" data-reveal>
+              <div class="office-top">
+                <h3 class="display office-city">{o.city}</h3>
+                <span class="mono office-role">{o.role}</span>
+              </div>
+              <p class="office-addr">{o.address}</p>
+              <div class="office-meta">
+                <div>
+                  <span class="mono meta-lbl">Operating Hours</span>
+                  <span class="meta-val">{o.hours}</span>
+                </div>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Accordion -->
+  <section class="section faq-section">
+    <div class="wrap">
+      <div class="faq-layout">
+        <div class="faq-side">
+          <p class="eyebrow" data-reveal>Got Questions?</p>
+          <h2 class="display h2" data-reveal>Common <em>questions</em> about working together.</h2>
+          <p class="lead" data-reveal>
+            Have a custom requirement or need an immediate NDA signed before sending specs?
+            Drop a line to <a href="mailto:hello@ascelstack.com" class="faq-mail">hello@ascelstack.com</a>.
+          </p>
+        </div>
+
+        <div class="faq-list" data-reveal>
+          {
+            faqs.map((f, i) => (
+              <details class="faq-item" open={i === 0}>
+                <summary class="faq-summary">
+                  <span class="faq-q">{f.q}</span>
+                  <span class="faq-icon" aria-hidden="true">+</span>
+                </summary>
+                <div class="faq-answer">
+                  <p>{f.a}</p>
+                </div>
+              </details>
+            ))
+          }
+        </div>
+      </div>
     </div>
   </section>
 </Base>
@@ -104,6 +362,10 @@ const catSlugs = Object.fromEntries(coreCategories.map((c) => [c.name, c.slug]))
   };
   const form = document.querySelector<HTMLFormElement>('[data-form]')!;
   const picked = form.querySelector<HTMLElement>('[data-picked]')!;
+  const doneCard = form.querySelector<HTMLElement>('[data-done]')!;
+  const ticketIdEl = form.querySelector<HTMLElement>('[data-ticket-id]')!;
+  const replyEmailEl = form.querySelector<HTMLElement>('[data-reply-email]')!;
+  const resetBtn = form.querySelector<HTMLButtonElement>('[data-reset-form]');
   const params = new URLSearchParams(location.search);
 
   const check = (slug: string) => {
@@ -114,14 +376,14 @@ const catSlugs = Object.fromEntries(coreCategories.map((c) => [c.name, c.slug]))
   const sid = params.get('service');
   if (sid && lookup[sid]) {
     picked.hidden = false;
-    picked.querySelector('[data-picked-name]')!.textContent = `${lookup[sid].name} · ${sid}`;
+    picked.querySelector('[data-picked-name]')!.textContent = `${lookup[sid].name} (${sid})`;
     picked.querySelector<HTMLInputElement>('[data-picked-input]')!.value = sid;
     if (catSlugs[lookup[sid].cat]) check(catSlugs[lookup[sid].cat]);
   }
   const cat = params.get('category');
   if (cat) check(cat);
 
-  picked.querySelector('[data-picked-clear]')!.addEventListener('click', () => {
+  picked.querySelector('[data-picked-clear]')?.addEventListener('click', () => {
     picked.hidden = true;
     picked.querySelector<HTMLInputElement>('[data-picked-input]')!.value = '';
   });
@@ -129,20 +391,47 @@ const catSlugs = Object.fromEntries(coreCategories.map((c) => [c.name, c.slug]))
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const data = new FormData(form);
-    const email = String(data.get('email') ?? '');
-    const ok = data.get('name') && /.+@.+\..+/.test(email) && data.get('message');
+    const name = String(data.get('name') ?? '').trim();
+    const email = String(data.get('email') ?? '').trim();
+    const message = String(data.get('message') ?? '').trim();
+
+    const ok = name.length > 1 && /.+@.+\..+/.test(email) && message.length > 5;
     form.querySelector<HTMLElement>('[data-error]')!.hidden = !!ok;
     if (!ok) return;
-    // TEMP: wire to a backend / email service before launch.
-    form.classList.add('is-done');
-    form.querySelector<HTMLElement>('[data-done]')!.hidden = false;
+
+    // Generate random reference ID
+    const refCode = `ASC-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    if (ticketIdEl) ticketIdEl.textContent = refCode;
+    if (replyEmailEl) replyEmailEl.textContent = email;
+
+    // Persist in localStorage for customer reference
+    try {
+      const stored = JSON.parse(localStorage.getItem('ascelstack_enquiries') || '[]');
+      stored.unshift({
+        id: refCode,
+        date: new Date().toISOString(),
+        name,
+        email,
+        message,
+        service: data.get('service') || null,
+      });
+      localStorage.setItem('ascelstack_enquiries', JSON.stringify(stored.slice(0, 5)));
+    } catch (_) {}
+
+    doneCard.hidden = false;
+  });
+
+  resetBtn?.addEventListener('click', () => {
+    form.reset();
+    doneCard.hidden = true;
   });
 </script>
 
 <style>
-  .contact {
+  /* ------------------------------------------------------------- Contact Hero */
+  .contact-hero {
     padding-top: calc(var(--nav-h) + clamp(3rem, 7vw, 6rem));
-    padding-bottom: 8rem;
+    padding-bottom: clamp(4rem, 7vw, 7rem);
     background:
       radial-gradient(45% 60% at 0% 0%, rgba(148, 188, 227, 0.3), transparent 70%),
       var(--paper);
@@ -157,19 +446,117 @@ const catSlugs = Object.fromEntries(coreCategories.map((c) => [c.name, c.slug]))
     position: sticky;
     top: calc(var(--nav-h) + 2rem);
     display: grid;
-    gap: 1.5rem;
+    gap: 1.75rem;
   }
-  .contact-side .h1 { font-size: clamp(2.75rem, 1.5rem + 4vw, 5.5rem); }
-  .contact-direct { display: grid; gap: 1rem; margin: 1rem 0 0; }
-  .contact-direct div { display: grid; gap: 0.2rem; padding-top: 1rem; border-top: 1px solid var(--line); }
-  .contact-direct dt { color: var(--text-muted); text-transform: uppercase; }
-  .contact-direct dd { margin: 0; font-family: var(--font-display); font-size: 1.35rem; }
+  .contact-side .h1 {
+    font-size: clamp(2.75rem, 1.5rem + 4vw, 5.5rem);
+    line-height: 1;
+  }
 
+  /* Channels list */
+  .channels-box {
+    display: grid;
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
+  .channels-h {
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+  }
+  .channels-list {
+    display: grid;
+    gap: 0.75rem;
+  }
+  .channel-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1rem;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    transition: border-color 0.25s, transform 0.25s;
+  }
+  .channel-item:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .channel-info {
+    display: grid;
+    gap: 0.2rem;
+  }
+  .channel-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .channel-val {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    color: var(--ink);
+    transition: color 0.2s;
+  }
+  .channel-val:hover {
+    color: var(--accent);
+  }
+  .channel-sub {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+  .channel-badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--tint) 25%, transparent);
+    color: var(--ink);
+    border: 1px solid rgba(89, 128, 166, 0.25);
+  }
+
+  /* SLA Card */
+  .sla-card {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    padding: 1.25rem;
+    background: color-mix(in srgb, var(--tint) 14%, var(--paper-raised));
+    border: 1px dashed var(--accent);
+    border-radius: var(--radius);
+  }
+  .sla-icon {
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--paper);
+    flex: none;
+  }
+  .sla-title {
+    display: block;
+    font-size: 0.95rem;
+    color: var(--ink);
+    margin-bottom: 0.2rem;
+  }
+  .sla-desc {
+    font-size: 0.84rem;
+    line-height: 1.5;
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  /* ------------------------------------------------------------- Form */
+  .form-container {
+    position: relative;
+  }
   .form {
     position: relative;
     display: grid;
     gap: 1.25rem;
-    padding: clamp(1.5rem, 4vw, 3rem);
+    padding: clamp(1.75rem, 4vw, 3rem);
     background: var(--paper-raised);
     border: 1px solid var(--line);
     border-radius: var(--radius-l);
@@ -185,7 +572,7 @@ const catSlugs = Object.fromEntries(coreCategories.map((c) => [c.name, c.slug]))
     background: var(--ink);
     color: var(--paper);
   }
-  .form-picked .mono { color: var(--tint); text-transform: uppercase; }
+  .form-picked .mono { color: var(--tint); text-transform: uppercase; font-size: 0.75rem; }
   .form-picked strong { font-weight: 500; }
   .picked-clear {
     margin-left: auto;
@@ -196,10 +583,12 @@ const catSlugs = Object.fromEntries(coreCategories.map((c) => [c.name, c.slug]))
     background: none;
     color: var(--paper);
     cursor: pointer;
+    display: grid;
+    place-items: center;
   }
   .field { display: grid; gap: 0.5rem; border: 0; padding: 0; margin: 0; min-width: 0; }
   .field > .mono,
-  .field legend { color: var(--text-muted); text-transform: uppercase; padding: 0; margin-bottom: 0.5rem; }
+  .field legend { color: var(--text-muted); text-transform: uppercase; padding: 0; margin-bottom: 0.4rem; font-size: 0.75rem; }
   .field em { font-style: normal; text-transform: none; opacity: 0.6; }
   .field input,
   .field select,
@@ -209,6 +598,7 @@ const catSlugs = Object.fromEntries(coreCategories.map((c) => [c.name, c.slug]))
     background: var(--paper);
     border: 1px solid var(--line);
     border-radius: var(--radius-s);
+    font-size: 0.95rem;
     transition: border-color 0.3s, box-shadow 0.3s;
   }
   .field textarea { resize: vertical; }
@@ -222,37 +612,273 @@ const catSlugs = Object.fromEntries(coreCategories.map((c) => [c.name, c.slug]))
   .chip input { position: absolute; opacity: 0; pointer-events: none; }
   .chip span {
     display: inline-block;
-    padding: 0.5rem 0.95rem;
+    padding: 0.45rem 0.9rem;
     border: 1px solid var(--line);
     border-radius: 999px;
-    font-size: 0.875rem;
+    font-size: 0.85rem;
     cursor: pointer;
+    background: var(--paper);
     transition: background 0.25s, color 0.25s, border-color 0.25s;
   }
   .chip span:hover { border-color: var(--ink); }
   .chip input:checked + span { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-  .chip input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-  .form-error { color: #9a3b2e; font-size: 0.9rem; }
-  .form-submit { justify-self: start; }
-  .form-fine { color: var(--text-muted); opacity: 0.8; }
+  .form-error {
+    color: #9a3b2e;
+    font-size: 0.9rem;
+    padding: 0.75rem;
+    background: rgba(154, 59, 46, 0.08);
+    border-radius: var(--radius-s);
+    border: 1px solid rgba(154, 59, 46, 0.2);
+    margin: 0;
+  }
 
+  .form-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+  }
+  .privacy-note {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  /* Success card */
   .form-done {
     position: absolute;
     inset: 0;
-    display: grid;
-    place-content: center;
-    justify-items: center;
-    gap: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     text-align: center;
+    padding: clamp(2rem, 5vw, 4rem);
     background: var(--paper-raised);
     border-radius: inherit;
+    gap: 1.25rem;
   }
-  .form-done p { color: var(--text-muted); }
+  .done-icon {
+    width: 68px;
+    height: 68px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--tint) 25%, transparent);
+    border: 1px solid var(--accent);
+  }
+  .done-lead {
+    font-size: 1.15rem;
+    color: var(--text);
+    max-width: 32ch;
+  }
+  .ticket-box {
+    display: inline-flex;
+    flex-direction: column;
+    padding: 0.85rem 1.5rem;
+    border-radius: var(--radius);
+    background: var(--ink);
+    color: var(--paper);
+    gap: 0.25rem;
+  }
+  .ticket-lbl {
+    font-size: 0.68rem;
+    color: var(--tint);
+    text-transform: uppercase;
+  }
+  .ticket-id {
+    font-family: var(--font-mono);
+    font-size: 1.2rem;
+    letter-spacing: 0.08em;
+  }
+  .done-sub {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    max-width: 36ch;
+  }
+  .done-reset {
+    margin-top: 0.5rem;
+  }
+
+  /* ------------------------------------------------------------- Process */
+  .proc-head {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+    align-items: end;
+    margin-bottom: clamp(3rem, 5vw, 5rem);
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--line-on-ink);
+  }
+  .proc-steps {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+  }
+  .step-card {
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 1.75rem;
+    background: var(--ink-raised);
+    border: 1px solid var(--line-on-ink);
+    border-radius: var(--radius);
+  }
+  .step-num {
+    color: var(--tint);
+    font-size: 1.1rem;
+    margin-bottom: 1.25rem;
+  }
+  .step-title {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    line-height: 1.2;
+    margin-bottom: 0.75rem;
+    color: var(--text-on-ink);
+  }
+  .step-desc {
+    font-size: 0.88rem;
+    line-height: 1.6;
+    color: var(--text-on-ink-muted);
+    margin-bottom: 1.5rem;
+  }
+  .step-sla {
+    margin-top: auto;
+    font-size: 0.75rem;
+    color: var(--tint);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* ------------------------------------------------------------- Offices */
+  .offices-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+  }
+  .office-card {
+    padding: clamp(2rem, 4vw, 3rem);
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-l);
+    display: grid;
+    gap: 1.25rem;
+  }
+  .office-city {
+    font-size: 1.85rem;
+    color: var(--ink);
+  }
+  .office-role {
+    display: block;
+    color: var(--accent);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 0.35rem;
+  }
+  .office-addr {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+  }
+  .office-meta {
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+  }
+  .meta-lbl {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+  }
+  .meta-val {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  /* ------------------------------------------------------------- FAQ */
+  .faq-layout {
+    display: grid;
+    grid-template-columns: 5fr 7fr;
+    gap: clamp(2.5rem, 6vw, 6rem);
+    align-items: start;
+  }
+  .faq-side {
+    position: sticky;
+    top: calc(var(--nav-h) + 2rem);
+    display: grid;
+    gap: 1.25rem;
+  }
+  .faq-mail {
+    color: var(--accent);
+    border-bottom: 1px solid currentColor;
+  }
+  .faq-list {
+    display: grid;
+    gap: 1rem;
+  }
+  .faq-item {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper-raised);
+    overflow: hidden;
+    transition: border-color 0.25s;
+  }
+  .faq-item[open] {
+    border-color: var(--ink);
+  }
+  .faq-summary {
+    padding: 1.25rem 1.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    user-select: none;
+  }
+  .faq-summary::-webkit-details-marker { display: none; }
+  .faq-q {
+    font-size: 1.05rem;
+    color: var(--ink);
+  }
+  .faq-icon {
+    font-family: var(--font-mono);
+    font-size: 1.4rem;
+    color: var(--accent);
+    line-height: 1;
+    transition: transform 0.25s;
+  }
+  .faq-item[open] .faq-icon {
+    transform: rotate(45deg);
+  }
+  .faq-answer {
+    padding: 0 1.5rem 1.5rem;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.65;
+  }
+
+  /* ------------------------------------------------------------- Responsive */
+  @media (max-width: 1024px) {
+    .proc-steps { grid-template-columns: repeat(2, 1fr); }
+    .proc-head { grid-template-columns: 1fr; }
+  }
 
   @media (max-width: 900px) {
     .contact-grid { grid-template-columns: 1fr; }
     .contact-side { position: static; }
     .row { grid-template-columns: 1fr; }
+    .faq-layout { grid-template-columns: 1fr; }
+    .faq-side { position: static; }
+    .offices-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 600px) {
+    .proc-steps { grid-template-columns: 1fr; }
   }
 </style>

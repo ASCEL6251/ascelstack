@@ -6,6 +6,8 @@ import Logo from '../components/Logo.astro';
 import { getAuthenticatedUser } from '../lib/auth';
 import { db, services, serviceRequests, businesses, activityLogs } from '../db';
 import { eq, desc, asc } from 'drizzle-orm';
+import { getPricing, cardPrice, formatINR } from '../lib/pricing';
+import rawPricing from '../data/pricing.json';
 import '../styles/global.css';
 
 // 1. Server-side authentication check
@@ -99,6 +101,7 @@ const initialData = {
   requests: customerRequests,
   activities: recentActivities,
   allServices,
+  pricing: rawPricing,
   stats: {
     total: totalServicesCount,
     active: activeServicesCount,
@@ -606,30 +609,37 @@ const initialData = {
 
                   <!-- Scrollable Service Cards List -->
                   <div class="planner-services-list" id="planner-services-container">
-                    {allServices.map((svc) => (
-                      <label
-                        class="svc-select-item"
-                        data-svc-id={svc.id}
-                        data-svc-code={svc.code || ''}
-                        data-svc-name={svc.name}
-                        data-svc-layer={svc.layer}
-                        data-svc-discipline={svc.discipline}
-                        data-svc-desc={svc.description}
-                        data-search={`${svc.name.toLowerCase()} ${svc.discipline.toLowerCase()} ${(svc.code || '').toLowerCase()} ${svc.description.toLowerCase()}`}
-                      >
-                        <input type="checkbox" class="planner-svc-checkbox" value={svc.id} />
-                        <div class="svc-select-body">
-                          <div class="svc-select-top">
-                            <span class="mono svc-select-code">{svc.code}</span>
-                            <span class={`layer-tag layer-${svc.layer}`}>{svc.layer}</span>
-                            <span class="svc-select-disc">{svc.discipline}</span>
-                            <span class="mono svc-select-base-price" data-base-price>Est. Base</span>
+                    {allServices.map((svc) => {
+                      const p = svc.code ? getPricing(svc.code) : undefined;
+                      const price = p ? cardPrice(p) : null;
+                      const basePriceLabel = price ? `${price.prefix ? price.prefix + ' ' : ''}${price.amount}` : 'On quote';
+                      const rawBaseCost = p?.small?.price ?? p?.mid?.price ?? (p?.packages?.[0]?.price ?? 15000);
+                      return (
+                        <label
+                          class="svc-select-item"
+                          data-svc-id={svc.id}
+                          data-svc-code={svc.code || ''}
+                          data-svc-name={svc.name}
+                          data-svc-layer={svc.layer}
+                          data-svc-discipline={svc.discipline}
+                          data-svc-desc={svc.description}
+                          data-svc-price={rawBaseCost}
+                          data-search={`${svc.name.toLowerCase()} ${svc.discipline.toLowerCase()} ${(svc.code || '').toLowerCase()} ${svc.description.toLowerCase()}`}
+                        >
+                          <input type="checkbox" class="planner-svc-checkbox" value={svc.id} />
+                          <div class="svc-select-body">
+                            <div class="svc-select-top">
+                              <span class="mono svc-select-code">{svc.code}</span>
+                              <span class={`layer-tag layer-${svc.layer}`}>{svc.layer}</span>
+                              <span class="svc-select-disc">{svc.discipline}</span>
+                              <span class="mono svc-select-base-price" data-base-price>{basePriceLabel}</span>
+                            </div>
+                            <strong class="svc-select-title">{svc.name}</strong>
+                            <p class="svc-select-desc">{svc.description}</p>
                           </div>
-                          <strong class="svc-select-title">{svc.name}</strong>
-                          <p class="svc-select-desc">{svc.description}</p>
-                        </div>
-                      </label>
-                    ))}
+                        </label>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -826,6 +836,12 @@ const initialData = {
                           <span class="meta-k">Discipline</span>
                           <span class="meta-v">{req.service.discipline}</span>
                         </div>
+                        {req.service.code && getPricing(req.service.code) && (
+                          <div>
+                            <span class="meta-k">Price Tag</span>
+                            <span class="meta-v mono">{cardPrice(getPricing(req.service.code)!).prefix} {cardPrice(getPricing(req.service.code)!).amount}</span>
+                          </div>
+                        )}
                         <div>
                           <span class="meta-k">Requested On</span>
                           <span class="meta-v mono">
@@ -930,6 +946,9 @@ const initialData = {
               <div class="explore-grid" id="explore-cards-grid">
                 {allServices.map((svc) => {
                   const isRequested = customerRequests.some((r) => r.serviceId === svc.id);
+                  const p = svc.code ? getPricing(svc.code) : undefined;
+                  const price = p ? cardPrice(p) : null;
+                  const typeLabel = p ? { package: '5 packages', fixed: 'Fixed price', starting: 'Starting price' }[p.type] : '';
                   return (
                     <article
                       class="explore-card"
@@ -947,6 +966,18 @@ const initialData = {
                       <h3 class="display explore-card-name">{svc.name}</h3>
                       <p class="explore-card-desc">{svc.description}</p>
                       <span class="mono explore-discipline-tag">{svc.discipline}</span>
+
+                      {price && (
+                        <div class="explore-card-price">
+                          <span class="mono explore-price-type">{typeLabel}</span>
+                          <span class="explore-price-row">
+                            {price.prefix && <span class="explore-price-from">{price.prefix}</span>}
+                            <strong class="explore-price-amt">{price.amount}</strong>
+                            <span class="explore-price-unit">{price.unit}</span>
+                          </span>
+                          {p?.market && <span class="explore-market" title="India market rate, 2026">Market: {p.market}</span>}
+                        </div>
+                      )}
 
                       <div class="explore-card-footer">
                         {isRequested ? (
@@ -1184,6 +1215,14 @@ const initialData = {
           <input type="hidden" name="serviceId" id="modal-svc-id" />
 
           <p class="modal-desc" id="modal-svc-desc"></p>
+
+          <div class="modal-price-box" id="modal-svc-price-box" hidden>
+            <span class="mono text-xs text-muted" id="modal-svc-price-type">PRICING</span>
+            <div class="modal-price-row">
+              <strong class="modal-price-val" id="modal-svc-price-val">₹0</strong>
+              <span class="modal-price-unit" id="modal-svc-price-unit"></span>
+            </div>
+          </div>
 
           <label class="field">
             <span class="mono">Associate with Business</span>
@@ -1680,28 +1719,27 @@ const initialData = {
       let selectedServiceIds = new Set<string>();
 
       function getServiceBaseMetrics(svc: any) {
-        const disciplineRate = DISCIPLINE_BASE_RATES[svc.discipline] || { inr: 42000, hours: 42, weeks: 2.5 };
-        let cost = disciplineRate.inr;
-        let hours = disciplineRate.hours;
-        let weeks = disciplineRate.weeks;
+        const code = svc.code || '';
+        const p = state.pricing?.[code];
+        let cost = p?.small?.price ?? p?.mid?.price ?? (p?.packages?.[0]?.price ?? null);
+        if (cost === null || cost <= 0) {
+          const disciplineRate = DISCIPLINE_BASE_RATES[svc.discipline] || { inr: 15000, hours: 20, weeks: 1.5 };
+          cost = disciplineRate.inr;
+        }
 
-        const nameLower = (svc.name || '').toLowerCase();
-        if (nameLower.includes('saas') || nameLower.includes('web application') || nameLower.includes('mobile app')) {
-          cost = 85000;
-          hours = 90;
-          weeks = 4.5;
-        } else if (nameLower.includes('agent') || nameLower.includes('ai') || nameLower.includes('automation')) {
-          cost = 70000;
-          hours = 75;
-          weeks = 3.5;
-        } else if (nameLower.includes('gst') || nameLower.includes('trademark') || nameLower.includes('registration')) {
-          cost = 22000;
-          hours = 20;
-          weeks = 1.5;
-        } else if (nameLower.includes('brand') || nameLower.includes('logo') || nameLower.includes('identity')) {
-          cost = 38000;
-          hours = 40;
-          weeks = 2.0;
+        let hours = Math.max(2, Math.round(cost / 800));
+        let weeks = cost < 3000 ? 0.5 : cost < 15000 ? 1 : cost < 50000 ? 2 : cost < 150000 ? 4 : 8;
+
+        if (p?.packages?.[0]?.delivery) {
+          const d = p.packages[0].delivery.toLowerCase();
+          if (d.includes('day')) {
+            const days = parseInt(d) || 3;
+            weeks = Math.max(0.5, Math.round((days / 7) * 10) / 10);
+            hours = Math.max(4, Math.round(days * 4));
+          } else if (d.includes('week')) {
+            weeks = parseInt(d) || 2;
+            hours = Math.max(15, weeks * 15);
+          }
         }
 
         return { cost, hours, weeks };
@@ -1910,14 +1948,28 @@ const initialData = {
         }
       }
 
-      // Populate base prices
-      document.querySelectorAll<HTMLElement>('.svc-select-item').forEach((item) => {
-        const disc = item.dataset.svcDiscipline || '';
-        const name = item.dataset.svcName || '';
-        const { cost } = getServiceBaseMetrics({ discipline: disc, name });
-        const priceSpan = item.querySelector<HTMLElement>('[data-base-price]');
-        if (priceSpan) priceSpan.textContent = formatMoney(cost);
-      });
+      // Update base prices in planner list
+      function updatePlannerBasePriceLabels() {
+        document.querySelectorAll<HTMLElement>('.svc-select-item').forEach((item) => {
+          const code = item.dataset.svcCode || '';
+          const name = item.dataset.svcName || '';
+          const { cost } = getServiceBaseMetrics({ code, name });
+          const priceSpan = item.querySelector<HTMLElement>('[data-base-price]');
+          const p = state.pricing?.[code];
+          const isStarting = p?.type === 'starting' || p?.type === 'package';
+          const prefix = isStarting ? 'From ' : '';
+          if (priceSpan) {
+            if (p && (p.small?.price !== null || p.mid?.price !== null || p.packages?.[0]?.price !== null)) {
+              priceSpan.textContent = `${prefix}${formatMoney(cost)}`;
+            } else {
+              priceSpan.textContent = 'On quote';
+            }
+          }
+        });
+      }
+
+      // Initial populate
+      updatePlannerBasePriceLabels();
 
       // Checkbox changes
       const serviceCheckboxes = document.querySelectorAll<HTMLInputElement>('.planner-svc-checkbox');
@@ -1955,14 +2007,7 @@ const initialData = {
           btn.classList.add('is-active');
           plannerCurrency = (btn.dataset.curr as 'INR' | 'USD') || 'INR';
 
-          document.querySelectorAll<HTMLElement>('.svc-select-item').forEach((item) => {
-            const disc = item.dataset.svcDiscipline || '';
-            const name = item.dataset.svcName || '';
-            const { cost } = getServiceBaseMetrics({ discipline: disc, name });
-            const priceSpan = item.querySelector<HTMLElement>('[data-base-price]');
-            if (priceSpan) priceSpan.textContent = formatMoney(cost);
-          });
-
+          updatePlannerBasePriceLabels();
           recalculateEstimate();
         });
       });
@@ -2299,11 +2344,31 @@ const initialData = {
       document.querySelectorAll('[data-action="open-add-service-modal"]').forEach((btn) => {
         btn.addEventListener('click', (e) => {
           const target = e.currentTarget as HTMLElement;
+          const code = target.dataset.code || '';
           (document.getElementById('modal-svc-id') as HTMLInputElement).value = target.dataset.id || '';
           document.getElementById('modal-svc-name')!.textContent = target.dataset.name || '';
-          document.getElementById('modal-svc-code')!.textContent = target.dataset.code || '';
+          document.getElementById('modal-svc-code')!.textContent = code;
           document.getElementById('modal-svc-layer')!.textContent = `${target.dataset.layer?.toUpperCase()} LAYER`;
           document.getElementById('modal-svc-desc')!.textContent = target.dataset.desc || '';
+
+          const priceBox = document.getElementById('modal-svc-price-box');
+          const p = state.pricing?.[code];
+          if (p && priceBox) {
+            const isPkg = p.type === 'package';
+            const cost = p.small?.price ?? p.mid?.price ?? (p.packages?.[0]?.price ?? null);
+            const amt = cost !== null ? formatMoney(cost) : 'On quote';
+            const prefix = (p.type === 'starting' || isPkg) && cost !== null ? 'From ' : '';
+            const unit = isPkg ? 'one-time (5 packages available)' : (p.small?.unit || 'one-time');
+            const typeLabel = isPkg ? '5 PACKAGES AVAILABLE' : p.type === 'fixed' ? 'FIXED PRICE' : 'STARTING PRICE';
+
+            document.getElementById('modal-svc-price-type')!.textContent = typeLabel;
+            document.getElementById('modal-svc-price-val')!.textContent = `${prefix}${amt}`;
+            document.getElementById('modal-svc-price-unit')!.textContent = `· ${unit}`;
+            priceBox.hidden = false;
+          } else if (priceBox) {
+            priceBox.hidden = true;
+          }
+
           if (modalAddService) modalAddService.hidden = false;
         });
       });
@@ -3915,6 +3980,68 @@ const initialData = {
       .explore-card-name { font-family: var(--font-display); font-size: 1.35rem; line-height: 1.15; }
       .explore-card-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.45; }
       .explore-discipline-tag { font-size: 0.72rem; color: var(--accent); }
+      .explore-card-price {
+        display: grid;
+        gap: 0.15rem;
+        margin-top: 0.25rem;
+        padding-top: 0.65rem;
+        border-top: 1px dashed var(--line);
+      }
+      .explore-price-type {
+        color: var(--text-muted);
+        text-transform: uppercase;
+        font-size: 0.65rem;
+      }
+      .explore-price-row {
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+      }
+      .explore-price-from {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+      }
+      .explore-price-amt {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: var(--ink);
+        letter-spacing: -0.01em;
+      }
+      .explore-price-unit {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+      }
+      .explore-market {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        opacity: 0.85;
+        line-height: 1.35;
+      }
+
+      .modal-price-box {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+        padding: 0.75rem 1rem;
+        background: var(--paper-sunk);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-s);
+      }
+      .modal-price-row {
+        display: flex;
+        align-items: baseline;
+        gap: 0.4rem;
+      }
+      .modal-price-val {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--ink);
+      }
+      .modal-price-unit {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+      }
       .explore-card-footer { margin-top: auto; padding-top: 0.75rem; }
       .btn-primary-pill {
         background: var(--ink);

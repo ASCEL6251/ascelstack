@@ -52,8 +52,8 @@ export function parseUnit(unit: string): { recurrence: Recurrence; per: string |
   else if (/per year/.test(u)) recurrence = 'year';
 
   // "per server / month" → per server; "per SKU" → per SKU
-  const m = u.match(/^per ([a-z ]+?)(?:\s*\/.*)?(?:\s*\(.*\))?(?: \+.*)?$/);
-  const per = m && !['month', 'quarter', 'year'].includes(m[1].trim()) ? m[1].trim() : null;
+  const m = unit.trim().match(/^per ([a-z ]+?)(?:\s*\/.*)?(?:\s*\(.*\))?(?: \+.*)?$/i);
+  const per = m && !['month', 'quarter', 'year'].includes(m[1].trim().toLowerCase()) ? m[1].trim() : null;
   return { recurrence, per };
 }
 

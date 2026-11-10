@@ -84,11 +84,12 @@ export const POST: APIRoute = async (context) => {
     const { serviceId, requirements } = parsed.data;
     let businessId = parsed.data.businessId;
 
-    // Verify service exists
+    // Verify service exists (by UUID, code, or slug)
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(serviceId);
     const [service] = await db
       .select()
       .from(services)
-      .where(eq(services.id, serviceId))
+      .where(isUuid ? eq(services.id, serviceId) : or(eq(services.code, serviceId), eq(services.slug, serviceId)))
       .limit(1);
 
     if (!service) {
@@ -134,7 +135,7 @@ export const POST: APIRoute = async (context) => {
       .where(
         and(
           eq(serviceRequests.businessId, businessId),
-          eq(serviceRequests.serviceId, serviceId),
+          eq(serviceRequests.serviceId, service.id),
           inArray(serviceRequests.status, ['pending', 'reviewing', 'approved', 'active'])
         )
       )
@@ -157,7 +158,7 @@ export const POST: APIRoute = async (context) => {
       .values({
         businessId,
         userId: authData.user.id,
-        serviceId,
+        serviceId: service.id,
         requirements: requirements || null,
         status: 'pending',
       })

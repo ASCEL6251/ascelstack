@@ -2086,5 +2086,14 @@
     "description": "End-to-end digital transformation support",
     "priority": "future",
     "notes": ""
+  },
+  {
+    "id": "ASC-0233",
+    "category": "Business Registration, Licensing & Compliance",
+    "subcategory": "Other Business Certifications & Registrations",
+    "name": "Detailed Project Report (DPR)",
+    "description": "For government schemes and bank/NBFC loan applications",
+    "priority": "core",
+    "notes": ""
   }
 ]

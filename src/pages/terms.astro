@@ -1,0 +1,554 @@
+---
+import Base from '../layouts/Base.astro';
+
+const lastUpdated = 'November 10, 2026';
+
+const sections = [
+  { id: 'acceptance', title: '1. Acceptance & Scope' },
+  { id: 'engagement-model', title: '2. Engagement Models & SOWs' },
+  { id: 'three-layers', title: '3. Scope Across the Three Layers' },
+  { id: 'client-obligations', title: '4. Client Responsibilities' },
+  { id: 'fees-payments', title: '5. Fees, Invoicing & Taxes' },
+  { id: 'intellectual-property', title: '6. Intellectual Property & Code' },
+  { id: 'automation-sla', title: '7. AI Automation & Third-Party APIs' },
+  { id: 'compliance-disclaimer', title: '8. Regulatory Filings Disclaimer' },
+  { id: 'confidentiality', title: '9. Confidentiality & Non-Disclosure' },
+  { id: 'liability', title: '10. Warranties & Limitation of Liability' },
+  { id: 'termination', title: '11. Term & Offboarding' },
+  { id: 'governing-law', title: '12. Governing Law & Dispute Resolution' },
+  { id: 'notices', title: '13. Legal Notices & Contact' },
+];
+---
+
+<Base
+  title="Terms & Conditions"
+  description="Master Terms and Conditions governing services provided by Ascelstack Technologies across our Build, Grow, and Run layers."
+>
+  <header class="legal-hero">
+    <div class="wrap">
+      <div class="legal-head">
+        <p class="eyebrow" data-reveal>Master Service Agreement</p>
+        <h1 class="display h1 legal-title" data-reveal>
+          Terms & <em>Conditions</em>
+        </h1>
+        <div class="legal-meta" data-reveal>
+          <span class="mono">Effective Date: {lastUpdated}</span>
+          <span class="mono">Applicability: Build · Grow · Run</span>
+          <span class="mono">Document: AGR-MSA-2026-v2</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap legal-layout">
+    <!-- Sticky Table of Contents -->
+    <aside class="legal-nav" aria-label="Table of contents">
+      <div class="legal-nav-inner">
+        <span class="mono legal-nav-h">Agreement Index</span>
+        <ul>
+          {
+            sections.map((s) => (
+              <li>
+                <a href={`#${s.id}`} class="legal-nav-link">
+                  {s.title}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        <div class="nav-cta-box">
+          <span class="mono cta-lbl">Legal Enquiries</span>
+          <a href="mailto:legal@ascelstack.com" class="cta-link">legal@ascelstack.com</a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Agreement Content -->
+    <main class="legal-body">
+      <!-- Section 1 -->
+      <section id="acceptance" class="legal-section">
+        <h2 class="display legal-h2">1. Acceptance & Scope</h2>
+        <p>
+          These Terms and Conditions (“Terms”, “Agreement”) constitute a legally binding contract between
+          <strong>Ascelstack Technologies Private Limited</strong> (“Ascelstack”, “we”, “our”, or “us”) and the
+          individual, company, or entity (“Client”, “you”, or “your”) that procures, accesses, or licenses
+          services from Ascelstack.
+        </p>
+        <p>
+          By signing a Statement of Work (“SOW”), submitting a project order via our website, approving an
+          estimate, or using our Client Portal, you confirm that you have read, understood, and agreed to be
+          bound by these Terms. If you are entering into this Agreement on behalf of a corporate entity, you
+          warrant that you possess full legal authority to bind that entity.
+        </p>
+      </section>
+
+      <!-- Section 2 -->
+      <section id="engagement-model" class="legal-section">
+        <h2 class="display legal-h2">2. Engagement Models & Statements of Work</h2>
+        <p>
+          All specific deliverables, timelines, pricing, and operational specifications are formalized through
+          mutually agreed Statements of Work (SOWs) or digital service orders. In the event of any express
+          conflict between these Terms and a signed SOW, the provisions of the specific SOW shall prevail.
+        </p>
+        <div class="legal-box-grid">
+          <div class="legal-box">
+            <h3 class="legal-box-title">Fixed-Scope Milestones</h3>
+            <p>For custom software development, brand identities, e-commerce stores, and initial system setups. Invoiced against defined deliverables and acceptance milestones.</p>
+          </div>
+          <div class="legal-box">
+            <h3 class="legal-box-title">Monthly Managed Retainers</h3>
+            <p>For continuous growth, marketplace acceleration, ongoing operational support, and infrastructure management. Invoiced monthly in advance with guaranteed support SLAs.</p>
+          </div>
+          <div class="legal-box">
+            <h3 class="legal-box-title">Automation & Care</h3>
+            <p>For monitoring, bug fixing, and continuous optimization of deployed AI agents and automated pipelines, with weekly health reports and error-rate monitoring.</p>
+          </div>
+          <div class="legal-box">
+            <h3 class="legal-box-title">Statutory Filings</h3>
+            <p>Fixed-fee filings for company incorporation, GST returns, trademark registrations, and licenses, executed through certified professionals.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 3 -->
+      <section id="three-layers" class="legal-section">
+        <h2 class="display legal-h2">3. Scope Across the Three Layers</h2>
+        <p>
+          Ascelstack packages services across three connected operational layers:
+        </p>
+        <ul>
+          <li>
+            <strong>Build Layer (Digital Foundations):</strong> Custom web platforms, mobile applications,
+            cloud architecture, enterprise APIs, and bespoke AI agents. Delivered in demoable sprint cycles.
+            Client maintains 10 business days upon delivery to conduct user acceptance testing (UAT).
+          </li>
+          <li>
+            <strong>Grow Layer (Acquisition & Brand):</strong> Performance marketing, marketplace management
+            (Amazon, Flipkart, Swiggy, Zomato), search engine optimization, and brand design. Advertising
+            spends are directly funded by Client through Client’s own billing accounts with ad platforms.
+          </li>
+          <li>
+            <strong>Run Layer (Operations & Compliance):</strong> ERP configurations, CRM pipelines, POS systems,
+            automated reconciliation, and statutory regulatory filings (GST, FSSAI, MCA, Trademark).
+          </li>
+        </ul>
+      </section>
+
+      <!-- Section 4 -->
+      <section id="client-obligations" class="legal-section">
+        <h2 class="display legal-h2">4. Client Responsibilities</h2>
+        <p>To ensure project momentum and avoid delivery bottlenecks, Client agrees to:</p>
+        <ul>
+          <li><strong>Timely Approvals:</strong> Review and provide written approval or consolidated feedback on sprint demos, design mockups, and milestone deliverables within five (5) business days of submission.</li>
+          <li><strong>Prerequisite Assets:</strong> Furnish necessary brand assets, product catalogues, API access credentials, and statutory identity documentation in a timely manner.</li>
+          <li><strong>Accuracy of Records:</strong> Provide truthful, accurate, and up-to-date financial, corporate, and operational records for all tax and regulatory filings.</li>
+          <li><strong>Authorized Points of Contact:</strong> Designate a primary decision-maker authorized to approve scope adjustments and sign off on project completion.</li>
+        </ul>
+      </section>
+
+      <!-- Section 5 -->
+      <section id="fees-payments" class="legal-section">
+        <h2 class="display legal-h2">5. Fees, Invoicing & Taxes</h2>
+        <p>
+          Pricing for all services is outlined in the applicable SOW or service catalog:
+        </p>
+        <ul>
+          <li><strong>Invoicing Schedules:</strong> Fixed-price projects require an initial deposit (typically 40–50%) prior to sprint kickoff, with subsequent milestone disbursements tied to acceptance milestones. Monthly retainers are invoiced on the 1st of each calendar month.</li>
+          <li><strong>Payment Terms:</strong> Invoices are payable within seven (7) days of issuance. Late payments past fifteen (15) days may incur statutory interest at 1.5% per month or result in temporary suspension of active build environments or ad campaigns.</li>
+          <li><strong>Applicable Taxes:</strong> Unless expressly stated otherwise, all prices quoted are exclusive of Indian Goods and Services Tax (GST at 18%) or applicable foreign withholding taxes, which shall be charged additionally on the invoice.</li>
+          <li><strong>Refund Policy:</strong> Work delivered and signed off in accordance with agreed SOW criteria is non-refundable. For monthly retainers, fees cover allocated pod bandwidth for that billing cycle.</li>
+        </ul>
+      </section>
+
+      <!-- Section 6 -->
+      <section id="intellectual-property" class="legal-section">
+        <h2 class="display legal-h2">6. Intellectual Property & Code Ownership</h2>
+        <div class="highlight-card">
+          <strong class="highlight-title">Full Bespoke Code & Asset Ownership</strong>
+          <p>
+            Upon receipt of full and final payment for the applicable project or milestone, <strong>all copyright,
+            title, and intellectual property rights in the bespoke source code, visual designs, brand guidelines,
+            and database schemas created specifically for Client</strong> shall transfer exclusively to Client.
+          </p>
+        </div>
+        <p>
+          <strong>Ascelstack Core Libraries:</strong> Ascelstack retains ownership of its pre-existing proprietary
+          utility libraries, reusable workflow automation templates, developer scaffolding, and foundational tools
+          (“Ascelstack Background IP”). Ascelstack grants Client a perpetual, irrevocable, worldwide, royalty-free,
+          non-exclusive license to use, execute, and modify such Background IP solely as integrated within Client’s
+          custom deliverables.
+        </p>
+      </section>
+
+      <!-- Section 7 -->
+      <section id="automation-sla" class="legal-section">
+        <h2 class="display legal-h2">7. AI Automation & Third-Party APIs</h2>
+        <p>
+          Ascelstack designs resilient, self-healing automation workflows and AI agents. However, automated
+          workflows invariably interface with external third-party systems:
+        </p>
+        <ul>
+          <li><strong>Third-Party Dependencies:</strong> Ascelstack is not liable for service interruptions, API rate limits, pricing revisions, or unilateral feature deprecations caused by third-party platforms (including WhatsApp Business API / Meta, OpenAI, Anthropic, Google, Shopify, Swiggy, Zomato, or Indian Government portals).</li>
+          <li><strong>Human Guardrails:</strong> Client agrees that autonomous AI agents deployed for customer service, order triage, or document extraction operate under probabilistic models. Irreversible financial or statutory actions must be configured with human sign-off checkpoints.</li>
+          <li><strong>Workflow Maintenance:</strong> Retainer clients receive proactive monitoring, error retry queues, and rapid patching if third-party webhook contracts change.</li>
+        </ul>
+      </section>
+
+      <!-- Section 8 -->
+      <section id="compliance-disclaimer" class="legal-section">
+        <h2 class="display legal-h2">8. Regulatory Filings Disclaimer</h2>
+        <div class="warning-box">
+          <strong class="warning-title">Important Statutory Notice</strong>
+          <p>
+            Ascelstack Technologies provides technology facilitation, application preparation, and filing support
+            through licensed Chartered Accountants, Company Secretaries, and Legal Associates. <strong>The final
+            grant, rejection, issuance, or timeline of any license, incorporation certificate, trademark registration,
+            or GST number remains the sovereign prerogative of the respective statutory authority</strong> (including
+            the Ministry of Corporate Affairs, GSTN, Food Safety and Standards Authority of India, or IP India).
+          </p>
+        </div>
+        <p>
+          Ascelstack is not responsible for delays or queries resulting from government server downtime, retroactive
+          statutory amendments, or defective documents provided by the Client.
+        </p>
+      </section>
+
+      <!-- Section 9 -->
+      <section id="confidentiality" class="legal-section">
+        <h2 class="display legal-h2">9. Confidentiality & Non-Disclosure</h2>
+        <p>
+          Both parties agree to hold in strict confidence all proprietary technical, financial, and business
+          information disclosed by either party during the term of the engagement and for three (3) years thereafter.
+        </p>
+        <p>
+          Confidential Information shall not include information that: (a) is or becomes publicly available without
+          breach of this Agreement; (b) was already known to the receiving party prior to disclosure; (c) is independently
+          developed without reference to the disclosing party's Confidential Information; or (d) is required to be
+          disclosed by law or court order.
+        </p>
+      </section>
+
+      <!-- Section 10 -->
+      <section id="liability" class="legal-section">
+        <h2 class="display legal-h2">10. Warranties & Limitation of Liability</h2>
+        <p>
+          Ascelstack warrants that all services will be executed in a professional, workmanlike manner conforming
+          to recognized industry software engineering and operational standards.
+        </p>
+        <ul>
+          <li><strong>Disclaimer:</strong> Except as expressly provided, Services are provided on an “as is” and “as available” basis without warranty of any kind, whether express, implied, statutory, or otherwise.</li>
+          <li><strong>Consequential Damages:</strong> Neither party shall be liable for indirect, incidental, special, consequential, or punitive damages, including loss of profits, data, or business goodwill, even if advised of the possibility of such damages.</li>
+          <li><strong>Liability Cap:</strong> The total aggregate liability of Ascelstack arising out of or relating to any engagement shall not exceed the total fees actually paid by Client to Ascelstack under the specific Statement of Work giving rise to the claim during the three (3) months immediately preceding the event.</li>
+        </ul>
+      </section>
+
+      <!-- Section 11 -->
+      <section id="termination" class="legal-section">
+        <h2 class="display legal-h2">11. Term & Offboarding</h2>
+        <p>
+          This Agreement remains in effect until terminated. Either party may terminate an ongoing retainer for
+          convenience by providing thirty (30) days’ prior written notice. Either party may terminate immediately
+          upon written notice if the other party commits a material breach and fails to remedy it within fifteen (15)
+          days of receiving formal notice.
+        </p>
+        <p>
+          <strong>Offboarding Assistance:</strong> Upon contract completion and receipt of outstanding dues, Ascelstack
+          will deliver all code repositories, documentation, environment secrets, and credentials in an organized,
+          frictionless handoff.
+        </p>
+      </section>
+
+      <!-- Section 12 -->
+      <section id="governing-law" class="legal-section">
+        <h2 class="display legal-h2">12. Governing Law & Dispute Resolution</h2>
+        <p>
+          This Agreement shall be governed by, construed, and enforced in accordance with the substantive laws of
+          the <strong>Republic of India</strong>, without regard to its conflict of law principles.
+        </p>
+        <p>
+          Any dispute, controversy, or claim arising out of or relating to this contract shall first be subject
+          to good-faith negotiation for thirty (30) days. If unresolved, the dispute shall be finally settled by
+          binding arbitration administered in accordance with the <strong>Arbitration and Conciliation Act, 1996</strong>.
+          The seat and venue of arbitration shall be Kolkata or Bengaluru, India, and the proceedings shall be conducted
+          in the English language before a sole mutually agreed arbitrator.
+        </p>
+      </section>
+
+      <!-- Section 13 -->
+      <section id="notices" class="legal-section">
+        <h2 class="display legal-h2">13. Legal Notices & Contact</h2>
+        <p>
+          All formal legal notices, claims, or contract inquiries must be delivered in writing to the following
+          dedicated channels:
+        </p>
+        <div class="officer-card">
+          <div class="officer-info">
+            <strong class="officer-name">Legal & Contract Administration</strong>
+            <span class="officer-entity">Ascelstack Technologies Private Limited</span>
+            <span class="officer-loc">Sector V, Bidhannagar, Salt Lake, Kolkata, West Bengal 700091, India</span>
+          </div>
+          <div class="officer-contact">
+            <div>
+              <span class="mono">Formal Legal Notices</span>
+              <a href="mailto:legal@ascelstack.com" class="officer-link">legal@ascelstack.com</a>
+            </div>
+            <div>
+              <span class="mono">Executive Escalations</span>
+              <a href="mailto:hello@ascelstack.com" class="officer-link">hello@ascelstack.com</a>
+            </div>
+            <div>
+              <span class="mono">Official Phone</span>
+              <span class="officer-sla">+91 (033) 4000 8900</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</Base>
+
+<style>
+  /* ------------------------------------------------------------- Legal Hero */
+  .legal-hero {
+    padding-top: calc(var(--nav-h) + clamp(3.5rem, 7vw, 6rem));
+    padding-bottom: clamp(3rem, 5vw, 4.5rem);
+    background:
+      radial-gradient(50% 60% at 50% 0%, rgba(148, 188, 227, 0.25), transparent 75%),
+      var(--paper);
+    border-bottom: 1px solid var(--line);
+  }
+  .legal-head {
+    max-width: 860px;
+    display: grid;
+    gap: 1.25rem;
+  }
+  .legal-title {
+    font-size: clamp(2.75rem, 1.8rem + 4vw, 5.5rem);
+    line-height: 1;
+  }
+  .legal-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+  }
+
+  /* ------------------------------------------------------------- Legal Layout */
+  .legal-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: clamp(2.5rem, 5vw, 6rem);
+    padding-block: clamp(3.5rem, 6vw, 6rem);
+    align-items: start;
+  }
+
+  /* Sticky Navigation */
+  .legal-nav {
+    position: sticky;
+    top: calc(var(--nav-h) + 2rem);
+  }
+  .legal-nav-inner {
+    display: grid;
+    gap: 1rem;
+    padding: 1.75rem 1.5rem;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+  .legal-nav-h {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+  }
+  .legal-nav ul {
+    display: grid;
+    gap: 0.45rem;
+  }
+  .legal-nav-link {
+    display: block;
+    font-size: 0.86rem;
+    color: var(--text-muted);
+    padding: 0.25rem 0;
+    transition: color 0.2s, transform 0.2s;
+  }
+  .legal-nav-link:hover {
+    color: var(--ink);
+    transform: translateX(3px);
+  }
+  .nav-cta-box {
+    margin-top: 0.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+    display: grid;
+    gap: 0.25rem;
+  }
+  .cta-lbl {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+  .cta-link {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    color: var(--accent);
+  }
+
+  /* ------------------------------------------------------------- Legal Body */
+  .legal-body {
+    display: grid;
+    gap: clamp(3rem, 5vw, 4.5rem);
+    font-size: 1.02rem;
+    line-height: 1.75;
+    color: var(--text);
+  }
+  .legal-section {
+    display: grid;
+    gap: 1.25rem;
+    scroll-margin-top: calc(var(--nav-h) + 3rem);
+  }
+  .legal-h2 {
+    font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.5rem);
+    color: var(--ink);
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .legal-section p {
+    color: var(--text);
+    margin: 0;
+  }
+  .legal-section ul {
+    display: grid;
+    gap: 0.75rem;
+    padding-left: 1.25rem;
+    list-style: disc;
+  }
+  .legal-section li {
+    padding-left: 0.35rem;
+  }
+
+  /* Grid of info boxes */
+  .legal-box-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin-top: 0.5rem;
+  }
+  .legal-box {
+    padding: 1.5rem;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    display: grid;
+    gap: 0.5rem;
+  }
+  .legal-box-title {
+    font-size: 1.1rem;
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .legal-box p {
+    font-size: 0.88rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+  }
+
+  /* Highlight card (Code ownership) */
+  .highlight-card {
+    padding: 1.75rem;
+    background: color-mix(in srgb, var(--tint) 15%, var(--paper-raised));
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    display: grid;
+    gap: 0.5rem;
+  }
+  .highlight-title {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    color: var(--ink);
+  }
+  .highlight-card p {
+    color: var(--text);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  /* Warning box */
+  .warning-box {
+    padding: 1.75rem;
+    background: rgba(180, 100, 30, 0.08);
+    border: 1px solid rgba(180, 100, 30, 0.3);
+    border-radius: var(--radius);
+    display: grid;
+    gap: 0.5rem;
+  }
+  .warning-title {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    color: #92400e;
+  }
+  .warning-box p {
+    color: var(--text);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  /* Officer card */
+  .officer-card {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    padding: 2rem;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+  .officer-info {
+    display: grid;
+    gap: 0.4rem;
+  }
+  .officer-name {
+    font-size: 1.25rem;
+    color: var(--ink);
+  }
+  .officer-entity {
+    font-size: 0.95rem;
+    color: var(--text);
+  }
+  .officer-loc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .officer-contact {
+    display: grid;
+    gap: 1rem;
+  }
+  .officer-contact .mono {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 0.2rem;
+  }
+  .officer-link {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    color: var(--accent);
+  }
+  .officer-sla {
+    font-size: 0.85rem;
+    color: var(--text);
+  }
+
+  /* ------------------------------------------------------------- Responsive */
+  @media (max-width: 900px) {
+    .legal-layout { grid-template-columns: 1fr; }
+    .legal-nav { display: none; }
+    .legal-box-grid { grid-template-columns: 1fr; }
+    .officer-card { grid-template-columns: 1fr; }
+  }
+</style>

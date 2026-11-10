@@ -1,0 +1,776 @@
+---
+import Base from '../layouts/Base.astro';
+import Logo from '../components/Logo.astro';
+import { counts } from '../data/catalog';
+
+const stats = [
+  { value: `${counts.core}`, label: 'Live services', sub: 'Across 8 core disciplines today' },
+  { value: '3', label: 'Connected layers', sub: 'Build, Grow, Run on one foundation' },
+  { value: '24h', label: 'Architecture response', sub: 'Direct review by a systems architect' },
+  { value: '1', label: 'Single partner', sub: 'Zero vendor finger-pointing' },
+];
+
+const layers = [
+  {
+    tag: 'Build',
+    color: '#94BCE3',
+    num: '01',
+    headline: 'Digital foundations that do not break under scale.',
+    desc: 'Custom web platforms, mobile apps, enterprise APIs, internal portals, and bespoke AI agents. Built cleanly from day one with modern architectures, type safety, and zero bloat.',
+    disciplines: ['Software & Web Development', 'AI & Automation Engineering', 'IT & Cloud Infrastructure', 'Corporate Tech Solutions'],
+  },
+  {
+    tag: 'Grow',
+    color: '#5980A6',
+    num: '02',
+    headline: 'Repeatable acquisition, high-converting brand identity.',
+    desc: 'Getting found, chosen, and paid. Data-backed performance marketing, multi-channel marketplace acceleration (Amazon, Flipkart, Swiggy, Zomato), organic SEO, and distinctive visual design.',
+    disciplines: ['Digital & Performance Marketing', 'Brand Strategy & Creative', 'E-commerce & Marketplace Expansion', 'Education & Sales Training'],
+  },
+  {
+    tag: 'Run',
+    color: '#1D2D3D',
+    num: '03',
+    headline: 'Daily operations and compliance moving on autopilot.',
+    desc: 'The unglamorous machinery that keeps businesses alive: CRM pipelines, ERP integration, inventory sync, kitchen display systems, payroll, and 75+ statutory compliance and licensing filings.',
+    disciplines: ['Business Operations & ERP', 'Restaurant & Food Systems', 'Registrations, GST & Legal Compliance', 'HR & Team Recruitment'],
+  },
+];
+
+const principles = [
+  {
+    num: '01',
+    title: 'Connected by default',
+    desc: 'Every tool, script, and database we deploy speaks to the rest of the business. A GST registration feeds the payment gateway; the store inventory triggers production workflows; ad campaigns feed CRM pipelines automatically.',
+  },
+  {
+    num: '02',
+    title: 'No vanity deliverables',
+    desc: 'We do not sell 100-page slide decks or unmaintainable prototypes. We measure software in uptime and response time, marketing in qualified revenue, and compliance in clean, penalty-free audits.',
+  },
+  {
+    num: '03',
+    title: 'Humans at the helm, AI at the engine',
+    desc: 'We build autonomous AI agents to eliminate repetitive data entry, file parsing, and customer triage. But every sensitive step—statutory filings, financial transactions, and refunds—is locked behind human sign-off.',
+  },
+  {
+    num: '04',
+    title: 'Skin in the game',
+    desc: 'Clear scope, flat pricing, milestone-driven billing, and weekly sprint demos. When you work with Ascelstack, you work with an owner-minded partner whose incentives align with your bottom line.',
+  },
+];
+
+const comparison = [
+  {
+    aspect: 'Point of Contact',
+    patchwork: '5–8 different agencies, freelancers, and accountants who blame each other when systems fail.',
+    ascelstack: 'One unified team and dedicated lead architect accountable for your entire operational stack.',
+  },
+  {
+    aspect: 'Data & Systems',
+    patchwork: 'Disconnected silos. Orders in Shopify, leads in WhatsApp, receipts in Excel, taxes filed late.',
+    ascelstack: 'A single shared data layer. Real-time synchronisation across inventory, billing, CRM, and accounts.',
+  },
+  {
+    aspect: 'Automation',
+    patchwork: 'Manual copy-pasting between browser tabs, lost emails, and staff drowning in repetitive chores.',
+    ascelstack: 'Autonomous workflows and AI agents handling order triage, document parsing, and invoice reconciliation.',
+  },
+  {
+    aspect: 'Cost Structure',
+    patchwork: 'Compounding retainers, surprise hourly overages, hidden markups, and duplicative tool subscriptions.',
+    ascelstack: 'Transparent pricing, predictable monthly retainers, and modular services that scale as you grow.',
+  },
+];
+---
+
+<Base
+  title="About Us"
+  description="Ascelstack replaces the agency patchwork with one connected stack. Software, marketing, operations, AI automation, and compliance under one roof."
+>
+  <!-- Hero -->
+  <section class="about-hero">
+    <div class="wrap">
+      <div class="hero-content">
+        <p class="eyebrow" data-reveal>About Ascelstack</p>
+        <h1 class="display h1 hero-title" data-reveal>
+          The antidote to <br /><em>vendor chaos.</em>
+        </h1>
+        <p class="lead hero-lead" data-reveal>
+          Most growing businesses do not stall for lack of ambition. They get buried under the weight of
+          five mismatched agencies, ten freelancers, and thirty unintegrated tools.
+          Ascelstack is the single partner that unifies the whole stack.
+        </p>
+
+        <div class="hero-actions" data-reveal>
+          <a href="/contact" class="btn">
+            Start a project <span class="arrow">→</span>
+          </a>
+          <a href="/services" class="btn btn-ghost">
+            Explore 232 services
+          </a>
+        </div>
+      </div>
+
+      <!-- Quick stats banner -->
+      <div class="stats-grid" data-reveal>
+        {
+          stats.map((s) => (
+            <div class="stat-card">
+              <span class="display stat-val">{s.value}</span>
+              <strong class="stat-label">{s.label}</strong>
+              <span class="mono stat-sub">{s.sub}</span>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- The Origin Story & Problem Statement -->
+  <section class="section story-section">
+    <div class="wrap">
+      <div class="story-grid">
+        <div class="story-side">
+          <p class="eyebrow" data-reveal>The Problem</p>
+          <h2 class="display h2 story-h2" data-reveal>
+            The <em>fragmentation tax</em> is killing business velocity.
+          </h2>
+        </div>
+
+        <div class="story-body" data-reveal>
+          <p class="story-p">
+            Ask any founder or operating partner how their business runs behind the curtain.
+            You will hear the same story: a web agency that built a site without checking the inventory API;
+            a marketing firm spending ad dollars on leads that drop into an unmonitored inbox; a chartered
+            accountant pleading for GST invoices stored across three WhatsApp groups; and custom software
+            that broke the moment the freelancer stopped replying.
+          </p>
+          <p class="story-p">
+            The business owner becomes the glue—spending late nights reconciling spreadsheets, copying customer
+            addresses between portals, and coordinating vendors who do not know each other.
+          </p>
+          <blockquote class="story-quote">
+            “We did not start Ascelstack to be another agency. We started it to build what we wished existed:
+            a single engineering and operations house capable of designing the brand, writing the software,
+            accelerating the revenue, and automating the operations.”
+          </blockquote>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- The Three Layers Deep-Dive -->
+  <section class="section on-ink layers-section">
+    <div class="wrap">
+      <div class="layers-head">
+        <div>
+          <p class="eyebrow" data-reveal>The Framework</p>
+          <h2 class="display h2" data-reveal>Three layers. <em>One continuous stack.</em></h2>
+        </div>
+        <p class="lead" data-reveal>
+          Every business requires three fundamental engines to thrive. Our Layered A emblem is built
+          from the exact same three components.
+        </p>
+      </div>
+
+      <div class="layers-cards">
+        {
+          layers.map((l) => (
+            <div class="layer-card" data-reveal>
+              <div class="layer-top">
+                <span class="mono layer-num">{l.num}</span>
+                <span class="layer-pill" style={`--tag-color: ${l.color}`}>{l.tag}</span>
+              </div>
+              <h3 class="display layer-title">{l.headline}</h3>
+              <p class="layer-desc">{l.desc}</p>
+              <div class="layer-disciplines">
+                <span class="mono layer-subhead">Core Disciplines</span>
+                <ul>
+                  {l.disciplines.map((d) => (
+                    <li>
+                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5" />
+                        <path d="M5.5 8L7 9.5L10.5 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                      </svg>
+                      <span>{d}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Patchwork vs Stack Comparison -->
+  <section class="section compare-section">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow" data-reveal>The Difference</p>
+        <h2 class="display h2" data-reveal>The agency circus vs. <em>The Ascelstack model.</em></h2>
+        <p class="lead" data-reveal>
+          Compare the typical status quo against an engineered stack built for compound efficiency.
+        </p>
+      </div>
+
+      <div class="compare-table-wrap" data-reveal>
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th class="mono th-aspect">Dimension</th>
+              <th class="th-patchwork">
+                <span class="tag-status is-bad">The Vendor Patchwork</span>
+              </th>
+              <th class="th-ascelstack">
+                <span class="tag-status is-good">The Ascelstack Stack</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              comparison.map((c) => (
+                <tr>
+                  <td class="mono td-aspect">{c.aspect}</td>
+                  <td class="td-patchwork">{c.patchwork}</td>
+                  <td class="td-ascelstack">
+                    <svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span>{c.ascelstack}</span>
+                  </td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Operating Principles -->
+  <section class="section principles-section">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow" data-reveal>Our Code of Craft</p>
+        <h2 class="display h2" data-reveal>Principles we <em>never negotiate.</em></h2>
+        <p class="lead" data-reveal>
+          These four rules dictate how we design architecture, deploy code, and run client relationships.
+        </p>
+      </div>
+
+      <div class="principles-grid">
+        {
+          principles.map((p) => (
+            <div class="principle-card" data-reveal>
+              <span class="mono principle-num">{p.num}</span>
+              <h3 class="display principle-title">{p.title}</h3>
+              <p class="principle-desc">{p.desc}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Cross-Functional Pods -->
+  <section class="section on-ink pods-section">
+    <div class="wrap">
+      <div class="pods-intro">
+        <div class="pods-text">
+          <p class="eyebrow" data-reveal>How We Deliver</p>
+          <h2 class="display h2" data-reveal>Cross-functional <em>delivery pods.</em></h2>
+          <p class="lead" data-reveal>
+            Instead of siloing departments into isolated rooms, every Ascelstack engagement is run
+            by a multi-disciplinary pod tailored to your industry.
+          </p>
+        </div>
+        <div class="pods-badge" data-reveal>
+          <Logo tone="light" size={48} />
+          <span class="mono pods-tag">In-House Pod Model</span>
+        </div>
+      </div>
+
+      <div class="pods-grid">
+        <div class="pod-card" data-reveal>
+          <div class="pod-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+          </div>
+          <h3 class="display pod-name">Software & Cloud Pod</h3>
+          <p class="pod-desc">Full-stack software engineers, cloud architects, and database specialists who write production TypeScript, Go, and SQL designed to scale without technical debt.</p>
+        </div>
+
+        <div class="pod-card" data-reveal>
+          <div class="pod-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+          </div>
+          <h3 class="display pod-name">Growth & Commerce Pod</h3>
+          <p class="pod-desc">Performance marketers, copywriters, and marketplace managers with deep expertise in CAC optimization, Amazon/Flipkart algorithms, and DTC funnels.</p>
+        </div>
+
+        <div class="pod-card" data-reveal>
+          <div class="pod-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          </div>
+          <h3 class="display pod-name">Compliance & Legal Pod</h3>
+          <p class="pod-desc">Chartered accountants, company secretaries, and corporate legal associates who handle GST filings, MCA incorporation, trademark protection, and FSSAI licensing.</p>
+        </div>
+
+        <div class="pod-card" data-reveal>
+          <div class="pod-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          </div>
+          <h3 class="display pod-name">AI & Automation Pod</h3>
+          <p class="pod-desc">Workflow engineers and prompt architects who build durable background workers, automated reconciliation pipelines, and intelligent WhatsApp bots with human checkpoints.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="section about-cta">
+    <div class="wrap cta-wrap" data-reveal>
+      <p class="eyebrow">Ready for clarity?</p>
+      <h2 class="display h1 cta-h1">
+        Replace the vendor circus with <em>one unified stack.</em>
+      </h2>
+      <p class="lead cta-lead">
+        Tell us what you are building, running, or automating. We will review your current systems
+        and send back a clear architectural blueprint within one working day.
+      </p>
+      <div class="cta-btns">
+        <a href="/contact" class="btn">
+          Start a project <span class="arrow">→</span>
+        </a>
+        <a href="/services" class="btn btn-ghost">
+          Browse our catalogue
+        </a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* ------------------------------------------------------------- Hero */
+  .about-hero {
+    padding-top: calc(var(--nav-h) + clamp(3.5rem, 7vw, 6.5rem));
+    padding-bottom: clamp(4rem, 8vw, 7rem);
+    background:
+      radial-gradient(65% 50% at 50% 0%, rgba(148, 188, 227, 0.28), transparent 75%),
+      var(--paper);
+  }
+  .hero-content {
+    max-width: 860px;
+    display: grid;
+    gap: 1.5rem;
+  }
+  .hero-title {
+    font-size: clamp(3rem, 1.8rem + 4.5vw, 6.5rem);
+    line-height: 0.98;
+  }
+  .hero-lead {
+    font-size: clamp(1.15rem, 0.95rem + 0.7vw, 1.45rem);
+    max-width: 44ch;
+    color: var(--text-muted);
+  }
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  /* Stats grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-top: clamp(3.5rem, 6vw, 5.5rem);
+    padding-top: 2.5rem;
+    border-top: 1px solid var(--line);
+  }
+  .stat-card {
+    display: grid;
+    gap: 0.25rem;
+  }
+  .stat-val {
+    font-size: clamp(2.5rem, 1.8rem + 2vw, 4rem);
+    color: var(--ink);
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .stat-sub {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    line-height: 1.4;
+  }
+
+  /* ------------------------------------------------------------- Story section */
+  .story-grid {
+    display: grid;
+    grid-template-columns: 5fr 7fr;
+    gap: clamp(2.5rem, 5vw, 6rem);
+    align-items: start;
+  }
+  .story-side {
+    position: sticky;
+    top: calc(var(--nav-h) + 2rem);
+    display: grid;
+    gap: 1.25rem;
+  }
+  .story-h2 {
+    font-size: clamp(2.2rem, 1.4rem + 2.5vw, 3.8rem);
+  }
+  .story-body {
+    display: grid;
+    gap: 1.75rem;
+    font-size: 1.15rem;
+    line-height: 1.75;
+    color: var(--text-muted);
+  }
+  .story-p {
+    color: var(--text);
+  }
+  .story-quote {
+    margin: 1.5rem 0 0;
+    padding: 2rem 2.25rem;
+    background: var(--paper-raised);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-style: italic;
+    line-height: 1.5;
+    color: var(--ink);
+    box-shadow: 0 20px 40px -30px rgba(29, 45, 61, 0.2);
+  }
+
+  /* ------------------------------------------------------------- Layers Section */
+  .layers-section {
+    padding-block: clamp(5rem, 7vw, 9rem);
+  }
+  .layers-head {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+    align-items: end;
+    margin-bottom: clamp(3rem, 5vw, 5rem);
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--line-on-ink);
+  }
+  .layers-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+  .layer-card {
+    display: flex;
+    flex-direction: column;
+    padding: clamp(1.75rem, 3vw, 2.5rem);
+    background: var(--ink-raised);
+    border: 1px solid var(--line-on-ink);
+    border-radius: var(--radius-l);
+    transition: transform 0.4s var(--ease-out), border-color 0.3s;
+  }
+  .layer-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(148, 188, 227, 0.35);
+  }
+  .layer-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  .layer-num {
+    color: var(--tint);
+    font-size: 0.85rem;
+  }
+  .layer-pill {
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 600;
+    background: color-mix(in srgb, var(--tag-color) 20%, transparent);
+    color: var(--tag-color);
+    border: 1px solid color-mix(in srgb, var(--tag-color) 40%, transparent);
+  }
+  .layer-title {
+    font-size: clamp(1.4rem, 1.1rem + 0.8vw, 1.85rem);
+    line-height: 1.2;
+    margin-bottom: 1rem;
+    color: var(--text-on-ink);
+  }
+  .layer-desc {
+    color: var(--text-on-ink-muted);
+    font-size: 0.95rem;
+    line-height: 1.65;
+    margin-bottom: 2rem;
+  }
+  .layer-disciplines {
+    margin-top: auto;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line-on-ink);
+  }
+  .layer-subhead {
+    display: block;
+    color: var(--tint);
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.75rem;
+  }
+  .layer-disciplines ul {
+    display: grid;
+    gap: 0.5rem;
+  }
+  .layer-disciplines li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.88rem;
+    color: var(--text-on-ink);
+  }
+  .layer-disciplines svg {
+    flex: none;
+    color: var(--tint);
+  }
+
+  /* ------------------------------------------------------------- Comparison table */
+  .section-head {
+    max-width: 720px;
+    display: grid;
+    gap: 1.25rem;
+    margin-bottom: clamp(3rem, 5vw, 4.5rem);
+  }
+  .compare-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-l);
+    background: var(--paper-raised);
+    box-shadow: 0 30px 60px -40px rgba(29, 45, 61, 0.2);
+  }
+  .compare-table {
+    width: 100%;
+    min-width: 680px;
+    border-collapse: collapse;
+    text-align: left;
+  }
+  .compare-table th {
+    padding: 1.4rem 1.75rem;
+    border-bottom: 1px solid var(--line);
+    background: var(--paper);
+  }
+  .th-aspect { width: 22%; color: var(--text-muted); font-size: 0.78rem; text-transform: uppercase; }
+  .th-patchwork { width: 39%; }
+  .th-ascelstack { width: 39%; background: color-mix(in srgb, var(--tint) 12%, transparent); }
+
+  .tag-status {
+    display: inline-block;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+  .tag-status.is-bad {
+    background: rgba(180, 50, 40, 0.1);
+    color: #a82a20;
+    border: 1px solid rgba(180, 50, 40, 0.2);
+  }
+  .tag-status.is-good {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .compare-table td {
+    padding: 1.4rem 1.75rem;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+  .compare-table tr:last-child td { border-bottom: 0; }
+  .td-aspect {
+    font-weight: 500;
+    color: var(--text-muted);
+  }
+  .td-patchwork {
+    color: var(--text-muted);
+    background: var(--paper-raised);
+  }
+  .td-ascelstack {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    color: var(--ink);
+    font-weight: 500;
+    background: color-mix(in srgb, var(--tint) 8%, var(--paper-raised));
+  }
+  .check-icon {
+    flex: none;
+    margin-top: 0.2rem;
+    color: var(--accent);
+  }
+
+  /* ------------------------------------------------------------- Principles */
+  .principles-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+  }
+  .principle-card {
+    display: grid;
+    gap: 1rem;
+    padding: 2rem 1.75rem;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    transition: transform 0.3s var(--ease-out), box-shadow 0.3s;
+  }
+  .principle-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 40px -25px rgba(29, 45, 61, 0.2);
+  }
+  .principle-num {
+    font-size: 1.1rem;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .principle-title {
+    font-size: 1.4rem;
+    line-height: 1.15;
+    color: var(--ink);
+  }
+  .principle-desc {
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+  }
+
+  /* ------------------------------------------------------------- Pods */
+  .pods-section {
+    padding-block: clamp(5rem, 7vw, 9rem);
+  }
+  .pods-intro {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 2rem;
+    margin-bottom: clamp(3rem, 5vw, 5rem);
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--line-on-ink);
+  }
+  .pods-text {
+    max-width: 680px;
+    display: grid;
+    gap: 1rem;
+  }
+  .pods-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.75rem;
+  }
+  .pods-tag {
+    color: var(--tint);
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .pods-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+  }
+  .pod-card {
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 1.75rem;
+    background: var(--ink-raised);
+    border: 1px solid var(--line-on-ink);
+    border-radius: var(--radius);
+    transition: transform 0.3s;
+  }
+  .pod-card:hover { transform: translateY(-3px); }
+  .pod-icon {
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--tint) 15%, transparent);
+    color: var(--tint);
+    margin-bottom: 1.25rem;
+  }
+  .pod-name {
+    font-size: 1.35rem;
+    line-height: 1.2;
+    margin-bottom: 0.75rem;
+    color: var(--text-on-ink);
+  }
+  .pod-desc {
+    font-size: 0.88rem;
+    line-height: 1.65;
+    color: var(--text-on-ink-muted);
+  }
+
+  /* ------------------------------------------------------------- CTA */
+  .about-cta {
+    background:
+      radial-gradient(60% 60% at 50% 100%, rgba(89, 128, 166, 0.2), transparent 75%),
+      var(--paper);
+    padding-block: clamp(5rem, 8vw, 9rem);
+    text-align: center;
+  }
+  .cta-wrap {
+    max-width: 800px;
+    margin-inline: auto;
+    display: grid;
+    gap: 1.5rem;
+    justify-items: center;
+  }
+  .cta-h1 {
+    font-size: clamp(2.5rem, 1.8rem + 3.5vw, 4.5rem);
+  }
+  .cta-lead {
+    margin-inline: auto;
+    font-size: 1.15rem;
+  }
+  .cta-btns {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 1rem;
+  }
+
+  /* ------------------------------------------------------------- Responsive */
+  @media (max-width: 1080px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .layers-cards { grid-template-columns: 1fr; }
+    .layers-head { grid-template-columns: 1fr; }
+    .principles-grid { grid-template-columns: repeat(2, 1fr); }
+    .pods-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 768px) {
+    .story-grid { grid-template-columns: 1fr; }
+    .story-side { position: static; }
+    .pods-intro { flex-direction: column; align-items: flex-start; }
+    .pods-badge { align-items: flex-start; }
+    .principles-grid { grid-template-columns: 1fr; }
+    .pods-grid { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
