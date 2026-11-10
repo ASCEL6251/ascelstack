@@ -74,6 +74,7 @@ const totalUserSpent = userQuotations
   title={user.fullName || 'User Profile'}
   activeNav="users"
   breadcrumbs={[{ label: 'Users', href: '/admin/users' }, { label: user.fullName || user.email }]}
+  session={session}
 >
   <div class="user-detail-layout">
     <!-- Back button header -->

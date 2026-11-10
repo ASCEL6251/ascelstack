@@ -69,7 +69,7 @@ const totalLogs = allLogs.length;
 const totalPages = Math.ceil(totalLogs / limit) || 1;
 ---
 
-<AdminLayout title="Activity Logs" activeNav="logs" breadcrumbs={[{ label: 'Activity Logs' }]}>
+<AdminLayout title="Activity Logs" activeNav="logs" breadcrumbs={[{ label: 'Activity Logs' }]} session={session}>
   <div class="card-panel">
     <div class="panel-header-flex">
       <div>

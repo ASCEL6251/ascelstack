@@ -2,6 +2,7 @@
 export const prerender = false;
 
 import Logo from '../components/Logo.astro';
+import type { AdminSession } from '../lib/admin-auth';
 import { getAdminSession } from '../lib/admin-auth';
 import '../styles/global.css';
 
@@ -9,6 +10,7 @@ interface Props {
   title?: string;
   activeNav?: 'overview' | 'users' | 'quotations' | 'logs' | 'settings';
   breadcrumbs?: { label: string; href?: string }[];
+  session?: AdminSession | null;
 }
 
 const {
@@ -18,7 +20,10 @@ const {
 } = Astro.props;
 
 // 1. Strict Server-Side Authorization Check on every admin page
-const session = await getAdminSession(Astro);
+let session = Astro.props.session;
+if (!session) {
+  session = await getAdminSession(Astro);
+}
 if (!session) {
   return Astro.redirect('/admin/login');
 }
@@ -60,7 +65,7 @@ if (!session) {
 
         <div class="sidebar-admin-badge">
           <span class="mono admin-badge-tag">ADMINISTRATOR</span>
-          <span class="admin-badge-name" title={session.email}>{session.name || session.email}</span>
+          <span class="admin-badge-name" title={session?.email || 'admin@ascelstack.com'}>{session?.name || session?.email || 'Administrator'}</span>
         </div>
 
         <nav class="sidebar-nav" aria-label="Admin Navigation">
@@ -170,17 +175,17 @@ if (!session) {
             </div>
 
             <!-- Admin Profile Indicator -->
-            <div class="admin-topbar-profile" title={`Authorized Admin: ${session.email}`}>
-              {session.avatarUrl ? (
-                <img src={session.avatarUrl} alt={session.name} class="admin-avatar-img" />
+            <div class="admin-topbar-profile" title={`Authorized Admin: ${session?.email || 'admin@ascelstack.com'}`}>
+              {session?.avatarUrl ? (
+                <img src={session.avatarUrl} alt={session?.name || 'Admin'} class="admin-avatar-img" />
               ) : (
                 <div class="admin-avatar-placeholder mono">
-                  {session.name ? session.name[0].toUpperCase() : 'A'}
+                  {session?.name ? session.name[0].toUpperCase() : 'A'}
                 </div>
               )}
               <div class="admin-topbar-details">
-                <span class="admin-topbar-name">{session.name || 'Administrator'}</span>
-                <span class="mono admin-topbar-email">{session.email}</span>
+                <span class="admin-topbar-name">{session?.name || 'Administrator'}</span>
+                <span class="mono admin-topbar-email">{session?.email || 'admin@ascelstack.com'}</span>
               </div>
             </div>
           </div>
@@ -208,7 +213,7 @@ if (!session) {
           </button>
         </div>
         <p class="modal-desc">
-          You are currently signed in as <strong>{session.email}</strong>. Logging out will clear your secure administrator session cookie.
+          You are currently signed in as <strong>{session?.email || 'Administrator'}</strong>. Logging out will clear your secure administrator session cookie.
         </p>
         <div class="modal-actions modal-actions-logout">
           <button type="button" class="btn btn-ghost" data-close-modal>Stay signed in</button>

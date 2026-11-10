@@ -12,82 +12,97 @@ if (!session) {
   return Astro.redirect('/admin/login');
 }
 
-// 1. Database Queries for Real Statistics
-const [{ totalUsers }] = await db
-  .select({ totalUsers: sql<number>`count(*)::int` })
-  .from(users);
+// 1. Database Queries for Real Statistics with Safe Fallbacks
+let totalUsers = 0;
+let newUsers = 0;
+let totalQuotations = 0;
+let pendingQuotations = 0;
+let recentQuotations: any[] = [];
+let recentHistory: any[] = [];
 
-const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-const [{ newUsers }] = await db
-  .select({ newUsers: sql<number>`count(*)::int` })
-  .from(users)
-  .where(gte(users.createdAt, thirtyDaysAgo));
+try {
+  const usersCountResult = await db
+    .select({ totalUsers: sql<number>`count(*)::int` })
+    .from(users);
+  totalUsers = usersCountResult[0]?.totalUsers || 0;
 
-const [{ totalQuotations }] = await db
-  .select({ totalQuotations: sql<number>`count(*)::int` })
-  .from(quotations);
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const newUsersResult = await db
+    .select({ newUsers: sql<number>`count(*)::int` })
+    .from(users)
+    .where(gte(users.createdAt, thirtyDaysAgo));
+  newUsers = newUsersResult[0]?.newUsers || 0;
 
-const [{ pendingQuotations }] = await db
-  .select({ pendingQuotations: sql<number>`count(*)::int` })
-  .from(quotations)
-  .where(
-    inArray(quotations.quotationStatus, [
-      'New Inquiry',
-      'Under Review',
-      'Processing',
-      'Estimation in Progress',
-      'Quotation Prepared',
-      'Awaiting Customer Approval',
-    ])
-  );
+  const totalQuotationsResult = await db
+    .select({ totalQuotations: sql<number>`count(*)::int` })
+    .from(quotations);
+  totalQuotations = totalQuotationsResult[0]?.totalQuotations || 0;
+
+  const pendingResult = await db
+    .select({ pendingQuotations: sql<number>`count(*)::int` })
+    .from(quotations)
+    .where(
+      inArray(quotations.quotationStatus, [
+        'New Inquiry',
+        'Under Review',
+        'Processing',
+        'Estimation in Progress',
+        'Quotation Prepared',
+        'Awaiting Customer Approval',
+      ])
+    );
+  pendingQuotations = pendingResult[0]?.pendingQuotations || 0;
+
+  // 2. Fetch Recent Real Quotations & Inquiries from Neon DB
+  recentQuotations = await db
+    .select({
+      id: quotations.id,
+      quotationNumber: quotations.quotationNumber,
+      projectTitle: quotations.projectTitle,
+      quotationStatus: quotations.quotationStatus,
+      paymentStatus: quotations.paymentStatus,
+      projectProgress: quotations.projectProgress,
+      finalQuotationAmount: quotations.finalQuotationAmount,
+      currency: quotations.currency,
+      createdAt: quotations.createdAt,
+      customer: {
+        id: users.id,
+        fullName: users.fullName,
+        email: users.email,
+      },
+    })
+    .from(quotations)
+    .innerJoin(users, eq(quotations.userId, users.id))
+    .orderBy(desc(quotations.createdAt))
+    .limit(6);
+
+  // 3. Fetch Recent Change History from Neon DB
+  recentHistory = await db
+    .select({
+      id: quotationHistory.id,
+      quotationId: quotationHistory.quotationId,
+      fieldChanged: quotationHistory.fieldChanged,
+      previousValue: quotationHistory.previousValue,
+      newValue: quotationHistory.newValue,
+      description: quotationHistory.description,
+      adminEmail: quotationHistory.adminEmail,
+      createdAt: quotationHistory.createdAt,
+      quotationNumber: quotations.quotationNumber,
+    })
+    .from(quotationHistory)
+    .leftJoin(quotations, eq(quotationHistory.quotationId, quotations.id))
+    .orderBy(desc(quotationHistory.createdAt))
+    .limit(6);
+} catch (dbErr) {
+  console.warn('Non-fatal error loading admin dashboard metrics:', dbErr);
+}
 
 // Calculate percentage for circular indicators
 const pendingPct = totalQuotations > 0 ? Math.round((pendingQuotations / totalQuotations) * 100) : 0;
 const newUsersPct = totalUsers > 0 ? Math.round((newUsers / totalUsers) * 100) : 0;
-
-// 2. Fetch Recent Real Quotations & Inquiries from Neon DB
-const recentQuotations = await db
-  .select({
-    id: quotations.id,
-    quotationNumber: quotations.quotationNumber,
-    projectTitle: quotations.projectTitle,
-    quotationStatus: quotations.quotationStatus,
-    paymentStatus: quotations.paymentStatus,
-    projectProgress: quotations.projectProgress,
-    finalQuotationAmount: quotations.finalQuotationAmount,
-    currency: quotations.currency,
-    createdAt: quotations.createdAt,
-    customer: {
-      id: users.id,
-      fullName: users.fullName,
-      email: users.email,
-    },
-  })
-  .from(quotations)
-  .innerJoin(users, eq(quotations.userId, users.id))
-  .orderBy(desc(quotations.createdAt))
-  .limit(6);
-
-// 3. Fetch Recent Change History from Neon DB
-const recentHistory = await db
-  .select({
-    id: quotationHistory.id,
-    quotationId: quotationHistory.quotationId,
-    fieldChanged: quotationHistory.fieldChanged,
-    previousValue: quotationHistory.previousValue,
-    newValue: quotationHistory.newValue,
-    description: quotationHistory.description,
-    adminEmail: quotationHistory.adminEmail,
-    createdAt: quotationHistory.createdAt,
-    quotationNumber: quotations.quotationNumber,
-  })
-  .from(quotationHistory)
-  .leftJoin(quotations, eq(quotationHistory.quotationId, quotations.id))
-  .orderBy(desc(quotationHistory.createdAt))
-  .limit(6);
 ---
 
-<AdminLayout title="Overview" activeNav="overview" breadcrumbs={[{ label: 'Overview' }]}>
+<AdminLayout title="Overview" activeNav="overview" breadcrumbs={[{ label: 'Overview' }]} session={session}>
   <!-- Dashboard Hero Welcome Card -->
   <div class="dash-welcome-card">
     <div class="welcome-copy">

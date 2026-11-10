@@ -16,46 +16,62 @@ const COOKIE_NAME = '__asc_admin_session';
 const DEFAULT_SESSION_DURATION = 8 * 60 * 60; // 8 hours in seconds
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
+const DEFAULT_AUTHORIZED_ADMINS = [
+  'basakarnab430@gmail.com',
+  'sujoymoulick05@gmail.com',
+  'souvikchowdhury5756@gmail.com',
+  'ascelstack.servise@gmail.com',
+];
+
 /**
  * Get server environment variable safely across Node, Vite, Astro, and Cloudflare Worker runtimes
  */
 export function getEnvVariable(name: string, context?: APIContext | any): string | undefined {
-  // 1. Process environment (Node.js & Cloudflare Workers with nodejs_compat)
+  // 1. Cloudflare Workers context.locals.cfContext.env (Astro 6 & 7 Cloudflare adapter)
+  try {
+    const cfEnv = context?.locals?.cfContext?.env;
+    if (cfEnv && cfEnv[name]) {
+      return cfEnv[name];
+    }
+  } catch {}
+
+  // 2. Process environment (Node.js & Cloudflare Workers with nodejs_compat)
   if (typeof process !== 'undefined' && process.env?.[name]) {
     return process.env[name];
   }
-  // 2. Vite / Astro import.meta.env
+
+  // 3. Vite / Astro import.meta.env
   if (typeof import.meta !== 'undefined' && (import.meta as any).env?.[name]) {
     return (import.meta as any).env[name];
   }
-  // 3. Safe fallback for Cloudflare runtime bindings (wrapped in try/catch to guard against Astro v6+ getter deprecation)
+
+  // 4. Safe fallback for older Cloudflare runtime bindings
   try {
     const cfEnv = context?.locals?.runtime?.env;
     if (cfEnv && cfEnv[name]) {
       return cfEnv[name];
     }
   } catch {}
+
   return undefined;
 }
 
 /**
  * Retrieve and parse the authorized ADMIN_EMAILS from Cloudflare / runtime environment
  * Parses comma-separated values, trims whitespace, converts to lowercase, and validates email syntax.
- * Fails closed (empty array) if missing, empty, or unparseable.
+ * Merges with the authorized admin team list so admins are never accidentally locked out.
  */
 export function getAuthorizedAdminEmails(context?: APIContext | any): string[] {
   const raw = getEnvVariable('ADMIN_EMAILS', context);
-  if (!raw || typeof raw !== 'string') {
-    return [];
-  }
+  const parsed =
+    raw && typeof raw === 'string'
+      ? raw
+          .split(',')
+          .map((e) => e.trim().toLowerCase())
+          .filter((e) => e.length > 0 && EMAIL_REGEX.test(e))
+      : [];
 
-  const emails = raw
-    .split(',')
-    .map((e) => e.trim().toLowerCase())
-    .filter((e) => e.length > 0 && EMAIL_REGEX.test(e));
-
-  // Return unique normalized email list
-  return Array.from(new Set(emails));
+  return Array.from(new Set([...DEFAULT_AUTHORIZED_ADMINS, ...parsed]));
 }
 
 /**
@@ -221,6 +237,48 @@ export async function getClerkAdminUser(
     return null;
   }
 
+  // 1. Check Neon database for existing synced user
+  try {
+    const { eq } = await import('drizzle-orm');
+    const { users } = await import('../db');
+    const [dbUser] = await db
+      .select()
+      .from(users)
+      .where(eq(users.clerkUserId, auth.userId))
+      .limit(1);
+
+    if (dbUser && dbUser.email) {
+      return {
+        email: dbUser.email.trim().toLowerCase(),
+        name: dbUser.fullName || dbUser.email.split('@')[0],
+        avatarUrl: dbUser.avatarUrl || '',
+        userId: auth.userId,
+      };
+    }
+  } catch (dbErr) {
+    // Non-blocking
+  }
+
+  // 2. Check auth.sessionClaims if populated in the Clerk JWT
+  if (auth.sessionClaims) {
+    const claims = auth.sessionClaims as any;
+    const claimEmail =
+      claims.email ||
+      claims.primary_email ||
+      claims.email_address ||
+      claims.sub_email ||
+      (Array.isArray(claims.email_addresses) && claims.email_addresses[0]?.email_address);
+    if (claimEmail && typeof claimEmail === 'string') {
+      return {
+        email: claimEmail.trim().toLowerCase(),
+        name: claims.name || claims.first_name || claimEmail.split('@')[0],
+        avatarUrl: claims.picture || claims.image_url || '',
+        userId: auth.userId,
+      };
+    }
+  }
+
+  // 3. Query Clerk API
   try {
     let client;
     try {
@@ -240,23 +298,40 @@ export async function getClerkAdminUser(
       clerkUserData.emailAddresses?.[0]?.emailAddress ||
       '';
 
-    if (!email) return null;
+    if (email) {
+      const name =
+        `${clerkUserData.firstName || ''} ${clerkUserData.lastName || ''}`.trim() ||
+        clerkUserData.username ||
+        email.split('@')[0];
+      const avatarUrl = clerkUserData.imageUrl || '';
 
-    const name =
-      `${clerkUserData.firstName || ''} ${clerkUserData.lastName || ''}`.trim() ||
-      clerkUserData.username ||
-      email.split('@')[0];
-    const avatarUrl = clerkUserData.imageUrl || '';
+      // Sync into Neon users table if not present
+      try {
+        const { eq } = await import('drizzle-orm');
+        const { users } = await import('../db');
+        const [existing] = await db.select().from(users).where(eq(users.clerkUserId, auth.userId)).limit(1);
+        if (!existing) {
+          await db.insert(users).values({
+            clerkUserId: auth.userId,
+            email: email.trim().toLowerCase(),
+            fullName: name,
+            avatarUrl,
+          });
+        }
+      } catch {}
 
-    return {
-      email: email.trim().toLowerCase(),
-      name,
-      avatarUrl,
-      userId: auth.userId,
-    };
+      return {
+        email: email.trim().toLowerCase(),
+        name,
+        avatarUrl,
+        userId: auth.userId,
+      };
+    }
   } catch (err) {
-    return null;
+    console.warn('Clerk user lookup error in getClerkAdminUser:', err);
   }
+
+  return null;
 }
 
 /**
@@ -292,14 +367,6 @@ export async function getAdminSession(context: APIContext | { request: Request; 
       iat: now,
       exp: now + DEFAULT_SESSION_DURATION,
     };
-
-    // Attempt to issue __asc_admin_session cookie on Astro response if headers available
-    try {
-      if ((context as any).response?.headers) {
-        const sessionToken = await createAdminSessionToken(session, context);
-        setAdminSessionCookie((context as any).response.headers, sessionToken, context.request);
-      }
-    } catch {}
 
     return session;
   }

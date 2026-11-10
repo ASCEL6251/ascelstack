@@ -18,6 +18,6 @@
   // Sensitive secrets (DATABASE_URL, CLERK_SECRET_KEY, ADMIN_SESSION_SECRET)
   // are encrypted at rest and managed via Cloudflare Secrets / Dashboard.
   "vars": {
-    "ADMIN_EMAILS": "basakarnab430@gmail.com,sujoymoulick05@gmail.com,souvikchowdhury5756@gmail.com"
+    "ADMIN_EMAILS": "basakarnab430@gmail.com,sujoymoulick05@gmail.com,souvikchowdhury5756@gmail.com,ascelstack.servise@gmail.com"
   }
 }

@@ -13,7 +13,7 @@ const hasGoogleClientId = Boolean(getEnvVariable('GOOGLE_CLIENT_ID', Astro));
 const hasDbUrl = Boolean(getEnvVariable('DATABASE_URL', Astro));
 ---
 
-<AdminLayout title="Admin Settings" activeNav="settings" breadcrumbs={[{ label: 'Settings' }]}>
+<AdminLayout title="Admin Settings" activeNav="settings" breadcrumbs={[{ label: 'Settings' }]} session={session}>
   <div class="settings-grid">
     <!-- Card 1: Cloudflare ADMIN_EMAILS Access Control -->
     <div class="card-panel">

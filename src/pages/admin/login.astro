@@ -90,7 +90,7 @@ if (clerkUser) {
             </p>
           </div>
 
-          <!-- Alert for unauthorized Clerk accounts -->
+          <!-- IF user is signed in to Clerk with an unauthorized account, ONLY show the Access Restricted card and Sign Out button (prevents client redirect loop) -->
           {unauthorizedEmail && (
             <div class="alert-box alert-error" id="unauthorized-alert">
               <div class="alert-icon">✕</div>
@@ -103,7 +103,7 @@ if (clerkUser) {
                 <div class="alert-switch-wrap">
                   <SignOutButton redirectUrl="/admin/login">
                     <button type="button" class="btn-switch-account mono">
-                      Sign Out &amp; Switch Account →
+                      Sign Out &amp; Switch Account &rarr;
                     </button>
                   </SignOutButton>
                 </div>
@@ -111,61 +111,63 @@ if (clerkUser) {
             </div>
           )}
 
-          <!-- Primary Clerk Sign-In Widget -->
-          <div class="clerk-admin-container">
-            <SignIn
-              routing="hash"
-              forceRedirectUrl="/admin"
-              signUpUrl=""
-              appearance={{
-                variables: {
-                  colorPrimary: '#1D2D3D',
-                  colorBackground: '#fafafb',
-                  colorText: '#1D1F20',
-                  colorInputBackground: '#F2F2F3',
-                  colorInputText: '#1D1F20',
-                  fontFamily: "'Inter Tight', system-ui, sans-serif",
-                  borderRadius: '10px',
-                },
-                elements: {
-                  rootBox: {
-                    width: '100%',
+          <!-- Primary Clerk Sign-In Widget (rendered ONLY when not signed in) -->
+          {!unauthorizedEmail && (
+            <div class="clerk-admin-container">
+              <SignIn
+                routing="hash"
+                forceRedirectUrl="/admin"
+                signUpUrl=""
+                appearance={{
+                  variables: {
+                    colorPrimary: '#1D2D3D',
+                    colorBackground: '#fafafb',
+                    colorText: '#1D1F20',
+                    colorInputBackground: '#F2F2F3',
+                    colorInputText: '#1D1F20',
+                    fontFamily: "'Inter Tight', system-ui, sans-serif",
+                    borderRadius: '10px',
                   },
-                  card: {
-                    border: '1px solid rgba(29, 45, 61, 0.12)',
-                    boxShadow: '0 16px 36px -18px rgba(29, 45, 61, 0.25)',
-                    backgroundColor: '#fafafb',
-                    padding: '2rem 1.75rem',
-                  },
-                  headerTitle: {
-                    fontFamily: "'Bacasime Antique', Georgia, serif",
-                    fontSize: '1.6rem',
-                    fontWeight: '400',
-                    color: '#1D2D3D',
-                  },
-                  headerSubtitle: {
-                    color: '#5D5D60',
-                    fontSize: '0.9rem',
-                  },
-                  formButtonPrimary: {
-                    backgroundColor: '#1D2D3D',
-                    color: '#F2F2F3',
-                    borderRadius: '999px',
-                    fontWeight: '600',
-                    fontSize: '0.95rem',
-                    padding: '0.75rem 1.5rem',
-                    transition: 'all 0.25s ease',
-                    '&:hover': {
-                      backgroundColor: '#5980A6',
+                  elements: {
+                    rootBox: {
+                      width: '100%',
+                    },
+                    card: {
+                      border: '1px solid rgba(29, 45, 61, 0.12)',
+                      boxShadow: '0 16px 36px -18px rgba(29, 45, 61, 0.25)',
+                      backgroundColor: '#fafafb',
+                      padding: '2rem 1.75rem',
+                    },
+                    headerTitle: {
+                      fontFamily: "'Bacasime Antique', Georgia, serif",
+                      fontSize: '1.6rem',
+                      fontWeight: '400',
+                      color: '#1D2D3D',
+                    },
+                    headerSubtitle: {
+                      color: '#5D5D60',
+                      fontSize: '0.9rem',
+                    },
+                    formButtonPrimary: {
+                      backgroundColor: '#1D2D3D',
+                      color: '#F2F2F3',
+                      borderRadius: '999px',
+                      fontWeight: '600',
+                      fontSize: '0.95rem',
+                      padding: '0.75rem 1.5rem',
+                      transition: 'all 0.25s ease',
+                      '&:hover': {
+                        backgroundColor: '#5980A6',
+                      },
+                    },
+                    footerAction: {
+                      display: 'none',
                     },
                   },
-                  footerAction: {
-                    display: 'none',
-                  },
-                },
-              }}
-            />
-          </div>
+                }}
+              />
+            </div>
+          )}
 
           <div class="login-footer-info">
             <p class="mono text-muted">

@@ -68,7 +68,7 @@ const userList = await db
 const totalPages = Math.ceil(totalCount / limit) || 1;
 ---
 
-<AdminLayout title="User Management" activeNav="users" breadcrumbs={[{ label: 'Users' }]}>
+<AdminLayout title="User Management" activeNav="users" breadcrumbs={[{ label: 'Users' }]} session={session}>
   <div class="card-panel">
     <!-- Panel Header -->
     <div class="panel-header-flex">
