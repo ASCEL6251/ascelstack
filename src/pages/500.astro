@@ -344,4 +344,9 @@ const errorMessage = error instanceof Error ? error.message : typeof error === '
     .e500-art { order: -1; padding-block: 2.5rem; }
     .e500-grid { grid-template-columns: 1fr; }
   }
+
+  @media (max-width: 480px) {
+    .e500-btns { flex-direction: column; width: 100%; }
+    .e500-btns .btn { width: 100%; justify-content: center; }
+  }
 </style>

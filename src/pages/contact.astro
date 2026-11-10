@@ -880,5 +880,17 @@ const faqs = [
 
   @media (max-width: 600px) {
     .proc-steps { grid-template-columns: 1fr; }
+    .proc-head { margin-bottom: 2rem; }
+  }
+
+  @media (max-width: 480px) {
+    .form { padding: 1.25rem 1rem; }
+    .form-foot { flex-direction: column; align-items: stretch; }
+    .form-foot .btn { width: 100%; justify-content: center; }
+    .channel-item { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+    .sla-card { flex-direction: column; gap: 0.75rem; }
+    .office-card { padding: 1.5rem 1.25rem; }
+    .faq-summary { padding: 1rem 1.15rem; }
+    .faq-answer { padding: 0 1.15rem 1.25rem; }
   }
 </style>

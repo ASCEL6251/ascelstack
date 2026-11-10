@@ -191,9 +191,12 @@ import Base from '../layouts/Base.astro';
     .est-sum { position: static; }
   }
   @media (max-width: 520px) {
-    .est-lines :global(.line) { grid-template-columns: 1fr; }
+    .est-size { width: 100%; }
+    .seg { width: 100%; display: flex; }
+    .seg button { flex: 1 1 50%; text-align: center; padding: 0.5rem 0.6rem; font-size: 0.78rem; }
+    .est-lines :global(.line) { grid-template-columns: 1fr; padding: 1rem; }
     .est-lines :global(.line-total) { text-align: left; }
-    .seg button { padding: 0.5rem 0.8rem; font-size: 0.8rem; }
+    .sum-card { padding: 1.25rem 1rem; }
   }
 
   @media print {

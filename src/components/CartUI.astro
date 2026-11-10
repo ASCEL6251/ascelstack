@@ -101,6 +101,22 @@
     font-weight: 600;
     font-size: 0.8rem;
   }
+
+  @media (max-width: 540px) {
+    .pkg {
+      width: calc(100vw - 1rem);
+      max-height: calc(100dvh - 1rem);
+      border-radius: var(--radius);
+    }
+    .pkg-inner { padding: 1rem; gap: 1rem; }
+    .pkg-opt { padding: 0.75rem 0.85rem; }
+    .toast {
+      padding: 0.65rem 0.65rem 0.65rem 1rem;
+      font-size: 0.82rem;
+      gap: 0.6rem;
+      max-width: calc(100vw - 1.5rem);
+    }
+  }
 </style>
 
 <script>

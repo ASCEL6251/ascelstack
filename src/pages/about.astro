@@ -773,4 +773,13 @@ const comparison = [
     .pods-grid { grid-template-columns: 1fr; }
     .stats-grid { grid-template-columns: 1fr 1fr; }
   }
+
+  @media (max-width: 480px) {
+    .stats-grid { grid-template-columns: 1fr; }
+    .hero-actions { flex-direction: column; width: 100%; }
+    .hero-actions .btn { width: 100%; justify-content: center; }
+    .story-quote { padding: 1.25rem 1.25rem; font-size: 1.1rem; }
+    .cta-btns { flex-direction: column; width: 100%; }
+    .cta-btns .btn { width: 100%; justify-content: center; }
+  }
 </style>

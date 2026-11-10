@@ -226,10 +226,26 @@ const byLayer = (l: Layer) => coreCategories.filter((c) => c.layer === l);
     .stack-rail { display: none; }
     .panel--intro .lead { font-size: 1rem; }
     .panel-ctas .btn { padding: 0.8rem 1.15rem; font-size: 0.875rem; }
-    .panel--layer .h2 { font-size: 3.25rem; }
+    .panel--layer .h2 { font-size: clamp(2.5rem, 2rem + 3vw, 3.25rem); }
     .panel .lead { font-size: 1rem; }
     .stack-fallback { right: 50%; top: 28%; width: 44vw; transform: translate(50%, -50%); }
     .stack-hint { display: none; }
+  }
+
+  @media (max-width: 500px) {
+    .panel,
+    .panel--intro {
+      bottom: max(2.25rem, calc(env(safe-area-inset-bottom, 0px) + 1.5rem));
+      gap: 0.75rem;
+    }
+    .panel-ctas {
+      flex-direction: column;
+      width: 100%;
+    }
+    .panel-ctas .btn {
+      width: 100%;
+      justify-content: center;
+    }
   }
 </style>
 

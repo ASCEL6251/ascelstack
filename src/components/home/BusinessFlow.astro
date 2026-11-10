@@ -308,6 +308,12 @@ const total = steps.reduce((a, s) => a + s.hours, 0);
     .orbit-note { display: none; }
     .orbit-labels :global(.orbit-label:not(.is-on)) { opacity: 0 !important; }
   }
+
+  @media (max-width: 480px) {
+    .orbit-title { font-size: 1.6rem; }
+    .step-title { font-size: 1.3rem; }
+    .orbit-steps { min-height: 13rem; }
+  }
 </style>
 
 <script>

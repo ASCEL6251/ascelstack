@@ -183,6 +183,13 @@ import { showcase } from '../../data/workflows';
     .sc-body { grid-template-columns: 1fr; padding-right: clamp(0.75rem, 2vw, 1.75rem); }
     .sc-copy { gap: 0.75rem; }
   }
+
+  @media (max-width: 540px) {
+    .sc-tab { min-width: 110px; padding: 0.55rem 0.75rem 0.5rem; font-size: 0.75rem; }
+    .sc-stats { gap: 1.25rem; flex-wrap: wrap; }
+    .sc-stats dt { font-size: 1.6rem; }
+    .sc-title { font-size: 1.6rem; }
+  }
 </style>
 
 <script>

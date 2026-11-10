@@ -100,7 +100,7 @@ const layer = LAYERS[cat.layer];
   .hero-inner { display: grid; gap: 1.5rem; }
   .hero-back { color: var(--muted); width: fit-content; }
   .hero-back:hover { color: var(--fg); }
-  .hero h1 { max-width: 16ch; font-size: clamp(2.5rem, 1.5rem + 4.5vw, 6rem); }
+  .hero h1 { max-width: 16ch; font-size: clamp(2.2rem, 1.4rem + 4vw, 5.5rem); }
   .hero-foot {
     display: flex;
     justify-content: space-between;
@@ -111,29 +111,39 @@ const layer = LAYERS[cat.layer];
     border-top: 1px solid color-mix(in srgb, var(--fg) 20%, transparent);
   }
   .hero-count { display: flex; align-items: baseline; gap: 0.6rem; }
-  .hero-count .display { font-size: clamp(3rem, 2rem + 3vw, 5rem); line-height: 1; }
+  .hero-count .display { font-size: clamp(2.5rem, 1.8rem + 2.5vw, 4.5rem); line-height: 1; }
   .hero-count .mono { color: var(--muted); text-transform: uppercase; }
 
-  .body { padding-block: clamp(3rem, 6vw, 5rem) 6rem; display: grid; gap: 3.5rem; }
+  .body { padding-block: clamp(2.5rem, 5vw, 4.5rem) 5rem; display: grid; gap: 3rem; }
   .sub-head {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    padding-bottom: 1rem;
+    padding-bottom: 0.9rem;
     margin-bottom: 1.25rem;
     border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+    gap: 0.5rem;
   }
   .sub-head .mono { color: var(--text-muted); }
   .cards {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
     gap: 1rem;
   }
+  @media (max-width: 580px) {
+    .cards {
+      grid-template-columns: 1fr;
+      gap: 0.85rem;
+    }
+  }
+
   .note {
-    padding: 1rem 1.25rem;
+    padding: 0.85rem 1.15rem;
     border-left: 2px solid var(--accent);
     background: var(--paper-sunk);
     font-size: 0.875rem;
+    line-height: 1.5;
     color: var(--text-muted);
   }
   .bundle {
@@ -142,7 +152,7 @@ const layer = LAYERS[cat.layer];
     align-items: center;
     gap: 2rem;
     flex-wrap: wrap;
-    padding: clamp(1.75rem, 4vw, 3rem);
+    padding: clamp(1.5rem, 4vw, 3rem);
     border-radius: var(--radius-l);
   }
   .bundle > div { display: grid; gap: 0.75rem; max-width: 36ch; }
@@ -150,13 +160,38 @@ const layer = LAYERS[cat.layer];
   .pager {
     display: flex;
     justify-content: space-between;
-    gap: 1rem;
+    gap: 1.5rem;
     padding-top: 2rem;
     border-top: 1px solid var(--line);
   }
   .pager-link { display: grid; gap: 0.35rem; }
-  .pager-link .mono { color: var(--text-muted); }
-  .pager-link .display { font-size: clamp(1.5rem, 1rem + 2vw, 2.5rem); transition: color 0.3s; }
+  .pager-link .mono { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; }
+  .pager-link .display { font-size: clamp(1.35rem, 1rem + 1.5vw, 2.25rem); transition: color 0.3s; }
   .pager-link:hover .display { color: var(--accent); }
   .pager-link--next { text-align: right; }
+
+  @media (max-width: 640px) {
+    .hero-foot {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1.25rem;
+    }
+    .bundle {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 1.5rem;
+      padding: 1.5rem 1.25rem;
+    }
+    .bundle .btn {
+      width: 100%;
+      justify-content: center;
+    }
+    .pager {
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    .pager-link--next {
+      text-align: left;
+    }
+  }
 </style>
