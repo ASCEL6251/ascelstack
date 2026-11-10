@@ -1,5 +1,19 @@
 ---
+export const prerender = false;
+
 import Base from '../layouts/Base.astro';
+import { getAuthenticatedUser } from '../lib/auth';
+
+const authData = await getAuthenticatedUser(Astro);
+const serverUser = authData
+  ? {
+      id: authData.user.id,
+      email: authData.user.email,
+      name: authData.user.fullName || authData.user.email,
+      company: authData.business?.businessName,
+      createdAt: authData.user.createdAt ? new Date(authData.user.createdAt).getTime() : Date.now(),
+    }
+  : null;
 ---
 
 <Base title="Your estimate" description="Build a project estimate from Ascelstack services and packages.">
@@ -9,13 +23,6 @@ import Base from '../layouts/Base.astro';
         <div>
           <p class="eyebrow">Your estimate</p>
           <h1 class="display h2">What your project <em>should cost.</em></h1>
-        </div>
-        <div class="est-size" role="radiogroup" aria-label="Business size">
-          <span class="mono">Pricing for</span>
-          <div class="seg">
-            <button type="button" role="radio" data-size="small">Small business</button>
-            <button type="button" role="radio" data-size="mid">Mid-size business</button>
-          </div>
         </div>
       </header>
 
@@ -42,6 +49,7 @@ import Base from '../layouts/Base.astro';
       </div>
     </div>
   </section>
+  <script id="server-auth-data" type="application/json" set:html={JSON.stringify(serverUser)}></script>
 </Base>
 
 <style>
@@ -58,20 +66,6 @@ import Base from '../layouts/Base.astro';
   }
   .est-head > div:first-child { display: grid; gap: 1rem; }
   .est-head h1 { font-size: clamp(2.25rem, 1.4rem + 3vw, 4rem); }
-  .est-size { display: grid; gap: 0.5rem; }
-  .est-size .mono { color: var(--text-muted); text-transform: uppercase; }
-  .seg { display: inline-flex; padding: 4px; border-radius: 999px; background: var(--paper-sunk); }
-  .seg button {
-    padding: 0.55rem 1rem;
-    border: 0;
-    border-radius: 999px;
-    background: none;
-    font-size: 0.875rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.25s, color 0.25s;
-  }
-  .seg button[aria-checked='true'] { background: var(--ink); color: var(--paper); }
 
   .est-grid { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 2rem; align-items: start; }
   .est-sum { position: sticky; top: calc(var(--nav-h) + 1rem); display: grid; gap: 1rem; }
@@ -113,48 +107,77 @@ import Base from '../layouts/Base.astro';
     border-top: 1px dashed var(--line);
   }
   .est-lines :global(.line-ctrl select) {
-    padding: 0.5rem 0.75rem;
+    padding: 0.4rem 0.65rem;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-s);
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    max-width: 100%;
+  }
+  .est-lines :global(.qty) {
+    display: inline-flex;
+    align-items: center;
     border: 1px solid var(--line);
     border-radius: var(--radius-s);
     background: var(--paper);
-    font-size: 0.875rem;
-    max-width: 100%;
+    overflow: hidden;
   }
-  .est-lines :global(.qty) { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 999px; }
-  .est-lines :global(.qty button) { width: 34px; height: 34px; border: 0; background: none; font-size: 1.05rem; cursor: pointer; border-radius: 50%; }
-  .est-lines :global(.qty button:hover) { background: var(--paper-sunk); }
-  .est-lines :global(.qty input) { width: 44px; border: 0; background: none; text-align: center; font-weight: 600; -moz-appearance: textfield; }
-  .est-lines :global(.qty input::-webkit-inner-spin-button) { -webkit-appearance: none; }
-  .est-lines :global(.qty-label) { font-size: 0.8rem; color: var(--text-muted); }
-  .est-lines :global(.line-remove) {
-    margin-left: auto;
+  .est-lines :global(.qty button) {
+    width: 28px;
+    height: 28px;
     border: 0;
     background: none;
-    color: var(--text-muted);
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     cursor: pointer;
-    text-decoration: underline;
-    text-underline-offset: 3px;
+  }
+  .est-lines :global(.qty button:hover) { background: var(--paper-sunk); }
+  .est-lines :global(.qty input) {
+    width: 44px;
+    height: 28px;
+    border: 0;
+    border-inline: 1px solid var(--line);
+    text-align: center;
+    font-size: 0.85rem;
+    background: none;
+    -moz-appearance: textfield;
+  }
+  .est-lines :global(.qty input::-webkit-outer-spin-button),
+  .est-lines :global(.qty input::-webkit-inner-spin-button) { -webkit-appearance: none; margin: 0; }
+  .est-lines :global(.qty-label) { font-size: 0.78rem; color: var(--text-muted); }
+  .est-lines :global(.line-remove) {
+    margin-left: auto;
+    background: none;
+    border: 0;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
   }
   .est-lines :global(.line-remove:hover) { color: #9a3b2e; }
 
   .est-lines :global(.empty) {
     display: grid;
     gap: 1rem;
-    justify-items: start;
-    padding: clamp(2rem, 5vw, 3.5rem);
+    padding: clamp(2rem, 5vw, 4rem);
+    background: var(--paper-raised);
     border: 1px dashed var(--line);
-    border-radius: var(--radius-l);
+    border-radius: var(--radius);
+    text-align: center;
+    place-items: center;
+    max-width: 480px;
+    margin: 2rem auto;
   }
-  .est-lines :global(.empty p) { color: var(--text-muted); max-width: 44ch; }
+  .est-lines :global(.empty p) { color: var(--text-muted); max-width: 38ch; }
 
   .sum-card {
     display: grid;
-    gap: 1.1rem;
-    padding: 1.5rem;
-    border-radius: var(--radius-l);
+    gap: 1.25rem;
+    padding: clamp(1.25rem, 3vw, 1.75rem);
     background: var(--ink);
     color: var(--paper);
+    border-radius: var(--radius);
   }
   .sum-title { color: var(--text-on-ink-muted); text-transform: uppercase; }
   .sum-card :global(.grp) { display: grid; gap: 0.35rem; padding-bottom: 1rem; border-bottom: 1px solid var(--line-on-ink); }
@@ -205,6 +228,10 @@ import Base from '../layouts/Base.astro';
     text-align: center;
     cursor: pointer;
   }
+  .sum-act :global(.ghost:hover) {
+    background: rgba(242, 242, 243, 0.08);
+    border-color: var(--tint);
+  }
   .sum-act :global(textarea) {
     width: 100%;
     min-height: 70px;
@@ -218,31 +245,71 @@ import Base from '../layouts/Base.astro';
   }
   .sum-act :global(.who) { font-size: 0.8rem; color: var(--text-on-ink-muted); }
 
+  .sum-act :global(.user-badge-bar) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.55rem 0.85rem;
+    background: rgba(242, 242, 243, 0.08);
+    border: 1px solid var(--line-on-ink);
+    border-radius: var(--radius-s);
+    margin-top: 0.25rem;
+  }
+  .sum-act :global(.user-status) {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+  .sum-act :global(.user-dot) {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #16a34a;
+    flex: none;
+    box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.3);
+  }
+  .sum-act :global(.user-email) {
+    font-size: 0.78rem;
+    color: var(--text-on-ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sum-act :global(.switch-link) {
+    font-size: 0.74rem;
+    color: var(--tint);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    flex: none;
+  }
+  .sum-act :global(.switch-link:hover) {
+    color: var(--paper);
+  }
+
   @media (max-width: 960px) {
     .est-grid { grid-template-columns: 1fr; }
     .est-sum { position: static; }
   }
   @media (max-width: 520px) {
-    .est-size { width: 100%; }
-    .seg { width: 100%; display: flex; }
-    .seg button { flex: 1 1 50%; text-align: center; padding: 0.5rem 0.6rem; font-size: 0.78rem; }
     .est-lines :global(.line) { grid-template-columns: 1fr; padding: 1rem; }
     .est-lines :global(.line-total) { text-align: left; }
     .sum-card { padding: 1.25rem 1rem; }
   }
 
   @media print {
-    :global(.nav), :global(.footer), :global(footer), :global(.toast), .est-size, .sum-act, .proto-note, .est-lines :global(.line-ctrl) { display: none !important; }
+    :global(.nav), :global(.footer), :global(footer), :global(.toast), .sum-act, .proto-note, .est-lines :global(.line-ctrl) { display: none !important; }
     .est-grid { grid-template-columns: 1fr; }
     .sum-card { background: none; color: var(--ink); border: 1px solid var(--line); }
   }
 </style>
 
 <script>
-  import { onCart, getCart, setQty, removeItem, setPackage, setSize, clearCart } from '../lib/cart';
+  import { onCart, getCart, setQty, removeItem, setPackage, clearCart } from '../lib/cart';
   import { buildEstimate } from '../lib/estimate';
   import { formatINR, RECURRENCE_LABEL, RECURRENCE_SUFFIX } from '../lib/pricing';
-  import { getUser, onAuth } from '../lib/mock-auth';
+  import { getUser, onAuth, setCachedUser } from '../lib/mock-auth';
   import { submitEstimate } from '../lib/api';
 
   const linesEl = document.querySelector<HTMLElement>('[data-lines]')!;
@@ -250,7 +317,33 @@ import Base from '../layouts/Base.astro';
   const onQuoteEl = document.querySelector<HTMLElement>('[data-onquote]')!;
   const actionsEl = document.querySelector<HTMLElement>('[data-actions]')!;
   const startingNote = document.querySelector<HTMLElement>('[data-starting-note]')!;
-  const sizeBtns = [...document.querySelectorAll<HTMLButtonElement>('[data-size]')];
+
+  // Seed server-authenticated user immediately from SSR payload
+  try {
+    const rawData = document.getElementById('server-auth-data')?.textContent;
+    if (rawData) {
+      const parsed = JSON.parse(rawData);
+      if (parsed && parsed.email) {
+        setCachedUser(parsed);
+      }
+    }
+  } catch (e) {}
+
+  // Also query sync endpoint to handle fresh client sessions
+  fetch('/api/customer/sync')
+    .then((r) => r.ok ? r.json() : null)
+    .then((data) => {
+      if (data?.user) {
+        setCachedUser({
+          id: data.user.id,
+          name: data.user.fullName || data.user.email,
+          email: data.user.email,
+          company: data.business?.businessName,
+          createdAt: data.user.createdAt ? new Date(data.user.createdAt).getTime() : Date.now(),
+        });
+      }
+    })
+    .catch(() => {});
 
   const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
   let note = '';
@@ -259,7 +352,6 @@ import Base from '../layouts/Base.astro';
   function render() {
     const cart = getCart();
     const est = buildEstimate(cart);
-    sizeBtns.forEach((b) => b.setAttribute('aria-checked', String(b.dataset.size === cart.size)));
 
     if (!est.lines.length) {
       linesEl.innerHTML = `<div class="empty">
@@ -280,7 +372,7 @@ import Base from '../layouts/Base.astro';
                 .join('')}</select>`
             : '';
           const pkg = p.packages?.find((k) => k.key === l.pkg);
-          const detail = p.type === 'package' ? '' : p[cart.size].detail;
+          const detail = p.type === 'package' ? '' : (p['small']?.detail || '');
           return `<article class="line" data-id="${l.id}" data-pkg-key="${esc(l.pkg ?? '')}">
             <div class="line-main">
               <span class="mono line-meta">${l.id} · ${esc(l.category)}</span>
@@ -344,10 +436,16 @@ import Base from '../layouts/Base.astro';
       return;
     }
     actionsEl.innerHTML = `<label class="who" for="est-note">Anything we should know? <em>(optional)</em></label>
-      <textarea id="est-note" data-note placeholder="Timeline, budget, links…">${esc(note)}</textarea>
-      <button type="button" class="btn" data-submit ${busy ? 'disabled' : ''}>${busy ? 'Submitting…' : 'Submit estimate'} <span class="arrow">→</span></button>
+      <textarea id="est-note" data-note placeholder="Timeline, budget, requirements, links…">${esc(note)}</textarea>
+      <button type="button" class="btn" data-submit ${busy ? 'disabled' : ''}>${busy ? 'Submitting to Portal…' : 'Submit estimate'} <span class="arrow">→</span></button>
       <button type="button" class="ghost" data-print>Print / save as PDF</button>
-      <span class="who">Signed in as ${esc(user.email)}</span>`;
+      <div class="user-badge-bar">
+        <div class="user-status">
+          <span class="user-dot"></span>
+          <span class="user-email">Signed in as <strong>${esc(user.email)}</strong></span>
+        </div>
+        <a href="/login?redirect=/cart" class="switch-link">Switch</a>
+      </div>`;
   }
 
   // ---- events (delegated, survive re-render)
@@ -371,7 +469,6 @@ import Base from '../layouts/Base.astro';
     if (t.matches('[data-qty]')) setQty(id, pkg, Number(t.value));
     if (t.matches('[data-pkg]')) setPackage(id, pkg, t.value);
   });
-  sizeBtns.forEach((b) => b.addEventListener('click', () => setSize(b.dataset.size as 'small' | 'mid')));
 
   actionsEl.addEventListener('input', (e) => {
     if ((e.target as HTMLElement).matches('[data-note]')) note = (e.target as HTMLTextAreaElement).value;
@@ -381,7 +478,10 @@ import Base from '../layouts/Base.astro';
     if (t.closest('[data-print]')) return window.print();
     if (!t.closest('[data-submit]') || busy) return;
     const user = getUser();
-    if (!user) return (location.href = '/login?redirect=/cart');
+    if (!user) {
+      location.href = '/login?redirect=/cart';
+      return;
+    }
     busy = true;
     renderActions(true);
     try {

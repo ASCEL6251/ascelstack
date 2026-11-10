@@ -69,6 +69,20 @@ export function getUser(): User | null {
   return null;
 }
 
+export function setCachedUser(u: User | null) {
+  cachedUser = u;
+  listeners.forEach((fn) => {
+    try {
+      fn(cachedUser);
+    } catch (e) {
+      console.warn('Auth listener error:', e);
+    }
+  });
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(AUTH_EVENT, { detail: cachedUser }));
+  }
+}
+
 export function onAuth(cb: (user: User | null) => void): () => void {
   listeners.add(cb);
   const u = getUser();
