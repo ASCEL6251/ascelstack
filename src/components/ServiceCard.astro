@@ -15,28 +15,29 @@ const open = p ? p.status === 'open' : s.priority === 'core';
 const typeLabel = p ? { package: '5 packages', fixed: 'Fixed price', starting: 'Starting price' }[p.type] : '';
 ---
 
-<article class:list={['card', `card--${layer}`, { 'card--future': !open }]} data-card data-search={search}>
+<article
+  class:list={['card', `card--${layer}`, { 'card--future': !open }]}
+  data-card
+  data-service-code={s.id}
+  data-search={search}
+>
   <div class="card-top">
     <span class="mono card-id">{s.id}</span>
-    {!open && <span class="card-badge">Coming soon</span>}
+    <span class="card-badge card-badge--soon" data-badge-soon hidden={open}>Coming soon</span>
     {shared && <span class="card-badge card-badge--soft">Shared</span>}
   </div>
   <h3 class="card-name">{s.name}</h3>
   <p class="card-desc">{s.description}</p>
-  {
-    price && (
-      <div class="card-price">
-        <span class="mono card-price-type">{typeLabel}</span>
-        <span class="card-price-row">
-          {price.prefix && <span class="card-price-from">{price.prefix}</span>}
-          <strong class="card-price-amt">{price.amount}</strong>
-          <span class="card-price-unit">{price.unit}</span>
-        </span>
-        {p?.market && <span class="card-market" title="India market rate, 2026">Market: {p.market}</span>}
-      </div>
-    )
-  }
-  <div class="card-actions">
+  <div class="card-price" data-card-price>
+    <span class="mono card-price-type" data-price-type>{typeLabel}</span>
+    <span class="card-price-row">
+      <span class="card-price-from" data-price-from hidden={!price?.prefix}>{price?.prefix || ''}</span>
+      <strong class="card-price-amt" data-price-amt>{price?.amount || 'On quote'}</strong>
+      <span class="card-price-unit" data-price-unit>{price?.unit || ''}</span>
+    </span>
+    <span class="card-market" data-price-market title="India market rate, 2026">{p?.market ? `Market: ${p.market}` : ''}</span>
+  </div>
+  <div class="card-actions" data-card-actions>
     {
       open && p ? (
         <button type="button" class="card-add" data-add={s.id}>
@@ -49,7 +50,7 @@ const typeLabel = p ? { package: '5 packages', fixed: 'Fixed price', starting: '
         </a>
       )
     }
-    {open && <a class="card-link" href={`/contact?service=${s.id}`}>Enquire</a>}
+    <a class="card-link" href={`/contact?service=${s.id}`} data-card-enquire hidden={!open}>Enquire</a>
   </div>
   <span class="card-strata" aria-hidden="true"><i></i><i></i><i></i></span>
 </article>
@@ -210,6 +211,22 @@ const typeLabel = p ? { package: '5 packages', fixed: 'Fixed price', starting: '
   .card--run .card-strata i:nth-child(3) { background: var(--layer); }
 
   .card--future { background: transparent; border-style: dashed; }
+
+  @keyframes liveCardFlash {
+    0% {
+      transform: translateY(-4px) scale(1.02);
+      border-color: #4ade80;
+      box-shadow: 0 0 25px rgba(74, 222, 128, 0.45);
+    }
+    100% {
+      transform: none;
+      box-shadow: none;
+    }
+  }
+
+  .card.is-live-updated {
+    animation: liveCardFlash 1.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
 
   @media (max-width: 480px) {
     .card {

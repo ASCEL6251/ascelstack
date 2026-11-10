@@ -132,6 +132,7 @@
   import { addItem, onCart, getCart } from '../lib/cart';
   import { getPricing, formatINR } from '../lib/pricing';
   import raw from '../data/services.json';
+  import '../scripts/realtime-pricing';
 
   const names = Object.fromEntries((raw as { id: string; name: string }[]).map((s) => [s.id, s.name]));
   const dialog = document.querySelector<HTMLDialogElement>('[data-pkg-dialog]')!;

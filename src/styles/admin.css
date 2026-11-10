@@ -175,6 +175,22 @@ body.admin-sidebar-locked {
   letter-spacing: 0.05em;
 }
 
+.count-pill {
+  margin-left: auto;
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.nav-item.is-active .count-pill {
+  background: rgba(148, 188, 227, 0.25);
+  color: var(--tint);
+}
+
 .sidebar-footer {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   padding-top: 1rem;

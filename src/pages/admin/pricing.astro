@@ -1,0 +1,1937 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getAdminSession } from '../../lib/admin-auth';
+import { db, services, servicePricing } from '../../db';
+import { dbRowToPricing, staticPricing, type Pricing, formatINR, cardPrice } from '../../lib/pricing';
+import { asc } from 'drizzle-orm';
+
+// 1. Strict Server-Side Session Check
+const session = await getAdminSession(Astro);
+if (!session) {
+  return Astro.redirect('/admin/login');
+}
+
+// 2. Fetch all services and live pricing records from Neon PostgreSQL
+let allServices: any[] = [];
+let pricingMap: Record<string, Pricing> = { ...staticPricing };
+
+try {
+  allServices = await db
+    .select({
+      id: services.id,
+      code: services.code,
+      name: services.name,
+      slug: services.slug,
+      description: services.description,
+      layer: services.layer,
+      discipline: services.discipline,
+      availabilityStatus: services.availabilityStatus,
+    })
+    .from(services)
+    .orderBy(asc(services.code));
+
+  const pricingRows = await db.select().from(servicePricing);
+  for (const row of pricingRows) {
+    if (row.serviceCode) {
+      pricingMap[row.serviceCode] = dbRowToPricing(row);
+    }
+  }
+} catch (err) {
+  console.warn('Neon query in admin/pricing, using static fallback:', err);
+}
+
+// Ensure all 233 services exist in list
+const serviceItems = allServices.map((svc) => {
+  const code = svc.code || '';
+  const p = pricingMap[code] || staticPricing[code] || {
+    id: code,
+    status: svc.availabilityStatus === 'live' ? 'open' : 'soon',
+    type: 'starting',
+    small: { price: null, text: 'On quote', unit: 'one-time', detail: '' },
+    mid: { price: null, text: 'On quote', unit: 'one-time', detail: '' },
+    billing: 'Project',
+    market: '',
+    notes: '',
+  };
+  return {
+    ...svc,
+    pricing: p,
+    cardPricing: cardPrice(p),
+  };
+});
+
+const totalCount = serviceItems.length;
+const liveCount = serviceItems.filter((s) => s.pricing.status === 'open').length;
+const soonCount = serviceItems.filter((s) => s.pricing.status === 'soon').length;
+const packageCount = serviceItems.filter((s) => s.pricing.type === 'package').length;
+const fixedCount = serviceItems.filter((s) => s.pricing.type === 'fixed').length;
+const startingCount = serviceItems.filter((s) => s.pricing.type === 'starting').length;
+
+// Collect unique disciplines for filtering
+const disciplines = Array.from(new Set(serviceItems.map((s) => s.discipline))).sort();
+---
+
+<AdminLayout
+  title="Service Pricing & Coming Soon Controls"
+  activeNav="pricing"
+  breadcrumbs={[{ label: 'Service Pricing' }]}
+  session={session}
+>
+  <!-- Page Header -->
+  <div class="pricing-admin-header">
+    <div>
+      <div class="header-tags">
+        <span class="eyebrow">Database Catalog Controls</span>
+        <span class="live-sync-pill">
+          <span class="live-dot"></span> Neon Real-Time Sync
+        </span>
+      </div>
+      <h1 class="display h2">Service Pricing & Availability</h1>
+      <p class="header-subtitle">
+        Directly modify pricing, tiers, and unplug "Coming Soon" across all {totalCount} catalogue services with instant real-time synchronization to the main website.
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <a href="/services" target="_blank" rel="noopener noreferrer" class="btn btn-outline" title="Open Main Website Service Catalogue in new tab">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+          <polyline points="15 3 21 3 21 9"></polyline>
+          <line x1="10" y1="14" x2="21" y2="3"></line>
+        </svg>
+        <span>View Live Site</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Metric Statistics Ribbon -->
+  <div class="pricing-stats-grid">
+    <div class="stat-box is-active-stat" data-stat-filter="all">
+      <span class="mono stat-label">Total Services</span>
+      <strong class="stat-number">{totalCount}</strong>
+      <span class="stat-desc">Complete catalog</span>
+    </div>
+
+    <div class="stat-box stat-live" data-stat-filter="open">
+      <span class="mono stat-label">Live / Open</span>
+      <strong class="stat-number text-success" id="stat-live-count">{liveCount}</strong>
+      <span class="stat-desc">Live on main site</span>
+    </div>
+
+    <div class="stat-box stat-soon" data-stat-filter="soon">
+      <span class="mono stat-label">Coming Soon</span>
+      <strong class="stat-number text-amber" id="stat-soon-count">{soonCount}</strong>
+      <span class="stat-desc">Click to unplug status</span>
+    </div>
+
+    <div class="stat-box" data-stat-filter="package">
+      <span class="mono stat-label">Package Services</span>
+      <strong class="stat-number text-accent">{packageCount}</strong>
+      <span class="stat-desc">Multi-tier (5 packages)</span>
+    </div>
+
+    <div class="stat-box" data-stat-filter="fixed">
+      <span class="mono stat-label">Fixed & Starting</span>
+      <strong class="stat-number">{fixedCount + startingCount}</strong>
+      <span class="stat-desc">{fixedCount} fixed · {startingCount} starting</span>
+    </div>
+  </div>
+
+  <!-- Filter & Search Toolbar -->
+  <div class="pricing-toolbar card-panel">
+    <div class="toolbar-search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon">
+        <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input
+        type="search"
+        id="search-input"
+        placeholder="Search 233 services by code (ASC-0001), name, or keyword..."
+        autocomplete="off"
+      />
+      <span class="mono search-count" id="search-count">{totalCount} services</span>
+    </div>
+
+    <div class="toolbar-filters">
+      <!-- Status Filter Tabs -->
+      <div class="filter-group">
+        <span class="filter-label mono">Status:</span>
+        <div class="segmented-control" id="status-filter">
+          <button type="button" class="seg-btn is-active" data-val="all">All</button>
+          <button type="button" class="seg-btn" data-val="open">Live Only</button>
+          <button type="button" class="seg-btn" data-val="soon">Coming Soon</button>
+        </div>
+      </div>
+
+      <!-- Layer Filter -->
+      <div class="filter-group">
+        <span class="filter-label mono">Layer:</span>
+        <select id="layer-filter" class="filter-select">
+          <option value="all">All Layers</option>
+          <option value="build">Build</option>
+          <option value="grow">Grow</option>
+          <option value="run">Run</option>
+        </select>
+      </div>
+
+      <!-- Discipline Filter -->
+      <div class="filter-group">
+        <span class="filter-label mono">Discipline:</span>
+        <select id="discipline-filter" class="filter-select">
+          <option value="all">All Disciplines ({disciplines.length})</option>
+          {disciplines.map((d) => <option value={d}>{d}</option>)}
+        </select>
+      </div>
+
+      <!-- Type Filter -->
+      <div class="filter-group">
+        <span class="filter-label mono">Type:</span>
+        <select id="type-filter" class="filter-select">
+          <option value="all">All Types</option>
+          <option value="package">Package (5 options)</option>
+          <option value="fixed">Fixed Price</option>
+          <option value="starting">Starting Price</option>
+        </select>
+      </div>
+
+      <button type="button" id="reset-filters-btn" class="btn btn-ghost btn-sm" title="Reset all filters">
+        Reset
+      </button>
+    </div>
+  </div>
+
+  <!-- Services Table Container -->
+  <div class="card-panel table-panel">
+    <div class="table-wrapper">
+      <table class="pricing-table" id="pricing-table">
+        <thead>
+          <tr>
+            <th class="col-code mono">Code</th>
+            <th class="col-name">Service & Discipline</th>
+            <th class="col-status">Status / Unplug</th>
+            <th class="col-type mono">Model</th>
+            <th class="col-small">Small Business Price</th>
+            <th class="col-mid">Mid-Size Price</th>
+            <th class="col-market">Market Benchmark</th>
+            <th class="col-actions text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody id="pricing-tbody">
+          {serviceItems.map((s) => {
+            const isOpen = s.pricing.status === 'open';
+            const price = s.cardPricing;
+            const searchHaystack = `${s.code} ${s.name} ${s.discipline} ${s.description} ${s.pricing.type} ${s.pricing.billing || ''}`.toLowerCase();
+            return (
+              <tr
+                class:list={['service-row', { 'is-soon': !isOpen }]}
+                data-code={s.code}
+                data-status={s.pricing.status}
+                data-layer={s.layer}
+                data-discipline={s.discipline}
+                data-type={s.pricing.type}
+                data-search={searchHaystack}
+              >
+                <!-- Code -->
+                <td class="col-code">
+                  <div class="code-wrapper">
+                    <span class="mono code-tag">{s.code}</span>
+                    <span class:list={['layer-tag-sm', `layer-${s.layer}`]}>{s.layer}</span>
+                  </div>
+                </td>
+
+                <!-- Name & Description -->
+                <td class="col-name">
+                  <div class="service-meta-box">
+                    <strong class="service-name">{s.name}</strong>
+                    <span class="service-desc">{s.description}</span>
+                    <span class="mono discipline-badge">{s.discipline}</span>
+                  </div>
+                </td>
+
+                <!-- Status & 1-Click Unplug Toggle -->
+                <td class="col-status">
+                  <div class="status-action-cell">
+                    <span class:list={['status-badge', isOpen ? 'badge-live' : 'badge-soon']} data-status-label>
+                      <span class="status-circle"></span>
+                      {isOpen ? 'LIVE' : 'COMING SOON'}
+                    </span>
+                    <button
+                      type="button"
+                      class="btn-toggle-status"
+                      data-action="toggle-status"
+                      data-code={s.code}
+                      data-target-status={isOpen ? 'soon' : 'open'}
+                      title={isOpen ? 'Change to Coming Soon' : 'Unplug Coming Soon and publish live pricing'}
+                    >
+                      {isOpen ? 'Set Coming Soon' : '⚡ Unplug (Go Live)'}
+                    </button>
+                  </div>
+                </td>
+
+                <!-- Pricing Model -->
+                <td class="col-type mono">
+                  <span class:list={['type-pill', `type-${s.pricing.type}`]}>
+                    {s.pricing.type === 'package' ? '5 Packages' : s.pricing.type === 'fixed' ? 'Fixed' : 'Starting'}
+                  </span>
+                  {s.pricing.billing && <span class="billing-hint">{s.pricing.billing}</span>}
+                </td>
+
+                <!-- Small Biz Price -->
+                <td class="col-small">
+                  <div class="price-val-box">
+                    <strong class="price-val">
+                      {s.pricing.small.price !== null ? formatINR(s.pricing.small.price) : (s.pricing.small.text || 'On quote')}
+                    </strong>
+                    {s.pricing.small.unit && <span class="unit-val mono">{s.pricing.small.unit}</span>}
+                  </div>
+                </td>
+
+                <!-- Mid-Size Price -->
+                <td class="col-mid">
+                  <div class="price-val-box">
+                    <strong class="price-val">
+                      {s.pricing.mid.price !== null ? formatINR(s.pricing.mid.price) : (s.pricing.mid.text || 'On quote')}
+                    </strong>
+                    {s.pricing.mid.unit && <span class="unit-val mono">{s.pricing.mid.unit}</span>}
+                  </div>
+                </td>
+
+                <!-- Market Benchmark -->
+                <td class="col-market">
+                  <span class="market-val" title={s.pricing.market || 'No market rate noted'}>
+                    {s.pricing.market || '—'}
+                  </span>
+                </td>
+
+                <!-- Actions -->
+                <td class="col-actions text-right">
+                  <div class="actions-group">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline btn-edit"
+                      data-action="edit-pricing"
+                      data-code={s.code}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                      </svg>
+                      <span>Edit</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      <!-- Empty State -->
+      <div class="pricing-empty" id="pricing-empty" hidden>
+        <p class="mono text-muted">No services match the current search or filters.</p>
+        <button type="button" class="btn btn-sm btn-outline" id="clear-search-btn">Clear Search & Filters</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide-Over Full Pricing Editor Drawer -->
+  <div class="pricing-drawer-backdrop" id="drawer-backdrop" hidden></div>
+  <aside class="pricing-drawer" id="pricing-drawer" aria-hidden="true">
+    <div class="drawer-header">
+      <div>
+        <div class="header-tags">
+          <span class="mono code-pill" id="drawer-code">ASC-0001</span>
+          <span class="mono discipline-badge" id="drawer-discipline">Discipline</span>
+        </div>
+        <h2 class="display h3" id="drawer-name">Service Name</h2>
+        <p class="drawer-desc" id="drawer-desc">Service description</p>
+      </div>
+      <button type="button" class="drawer-close" id="drawer-close-btn" aria-label="Close drawer">×</button>
+    </div>
+
+    <!-- Live Card Preview Card -->
+    <div class="drawer-preview-section">
+      <span class="mono preview-label">Live Site Preview</span>
+      <div class="preview-card" id="preview-card">
+        <div class="preview-top">
+          <span class="mono preview-id" id="preview-id">ASC-0001</span>
+          <span class="preview-badge" id="preview-badge" hidden>Coming soon</span>
+        </div>
+        <h3 class="preview-name" id="preview-name">Service Name</h3>
+        <p class="preview-desc" id="preview-desc">Service description</p>
+        <div class="preview-price-box" id="preview-price-box">
+          <span class="mono preview-type-label" id="preview-type-label">5 packages</span>
+          <div class="preview-price-row">
+            <span class="preview-prefix" id="preview-prefix">From</span>
+            <strong class="preview-amt" id="preview-amt">₹2,999</strong>
+            <span class="preview-unit" id="preview-unit">one-time</span>
+          </div>
+          <span class="preview-market" id="preview-market">Market: ₹10,000–₹80,000</span>
+        </div>
+        <div class="preview-cta-row">
+          <span class="preview-btn" id="preview-btn">Choose package +</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Drawer Form -->
+    <form class="drawer-form" id="pricing-form">
+      <input type="hidden" id="form-code" name="serviceCode" />
+
+      <!-- Section 1: Availability Status & Unplug Coming Soon -->
+      <div class="form-section">
+        <h3 class="form-section-title">Availability & "Coming Soon" Setting</h3>
+        <p class="form-section-desc">
+          Toggle between Live (prices active on website) and Coming Soon.
+        </p>
+        <div class="status-radio-grid">
+          <label class="status-radio-card" id="status-card-open">
+            <input type="radio" name="status" value="open" id="status-open-radio" />
+            <div class="radio-card-content">
+              <div class="radio-title-row">
+                <span class="status-circle-green"></span>
+                <strong>Live & Active (Unplugged)</strong>
+              </div>
+              <p>Prices displayed on main site. Users can choose packages or add to estimate immediately.</p>
+            </div>
+          </label>
+
+          <label class="status-radio-card" id="status-card-soon">
+            <input type="radio" name="status" value="soon" id="status-soon-radio" />
+            <div class="radio-card-content">
+              <div class="radio-title-row">
+                <span class="status-circle-amber"></span>
+                <strong>Coming Soon</strong>
+              </div>
+              <p>Displays "Coming soon" dashed card. Users register interest instead of adding to cart.</p>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Section 2: Pricing Type Model -->
+      <div class="form-section">
+        <h3 class="form-section-title">Pricing Model</h3>
+        <div class="form-grid-3">
+          <label class="model-radio-card">
+            <input type="radio" name="type" value="package" id="type-package" />
+            <span><strong>Package</strong><small>5 defined tiers (Starter, Basic, etc.)</small></span>
+          </label>
+          <label class="model-radio-card">
+            <input type="radio" name="type" value="fixed" id="type-fixed" />
+            <span><strong>Fixed Price</strong><small>Flat project or item rate</small></span>
+          </label>
+          <label class="model-radio-card">
+            <input type="radio" name="type" value="starting" id="type-starting" />
+            <span><strong>Starting Price</strong><small>"From ₹..." scope-based rate</small></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Section 3: Small Business Tier -->
+      <div class="form-section">
+        <h3 class="form-section-title">Small Business Pricing Tier</h3>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="smallPrice">Price (₹ INR, excl. GST)</label>
+            <div class="input-currency">
+              <span class="currency-prefix">₹</span>
+              <input type="number" id="smallPrice" name="smallPrice" min="0" step="1" placeholder="e.g. 2999" />
+            </div>
+            <span class="field-hint">Leave blank if custom/on-quote.</span>
+          </div>
+
+          <div class="form-group">
+            <label for="smallUnit">Billing Unit / Frequency</label>
+            <input type="text" id="smallUnit" name="smallUnit" placeholder="e.g. one-time, per month, per SKU" />
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="smallDetail">Price Details / Tier Summary</label>
+            <input type="text" id="smallDetail" name="smallDetail" placeholder="e.g. 5 packages from ₹2,999" />
+          </div>
+
+          <div class="form-group">
+            <label for="smallText">Non-numeric Text (when price is on quote / %)</label>
+            <input type="text" id="smallText" name="smallText" placeholder="e.g. 15% of campaign budget, On quote" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 4: Mid-Size Business Tier -->
+      <div class="form-section">
+        <h3 class="form-section-title">Mid-Size Business Pricing Tier</h3>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="midPrice">Price (₹ INR, excl. GST)</label>
+            <div class="input-currency">
+              <span class="currency-prefix">₹</span>
+              <input type="number" id="midPrice" name="midPrice" min="0" step="1" placeholder="e.g. 29999" />
+            </div>
+            <span class="field-hint">Leave blank if custom/on-quote.</span>
+          </div>
+
+          <div class="form-group">
+            <label for="midUnit">Billing Unit / Frequency</label>
+            <input type="text" id="midUnit" name="midUnit" placeholder="e.g. one-time, per month, per SKU" />
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="midDetail">Price Details / Tier Summary</label>
+            <input type="text" id="midDetail" name="midDetail" placeholder="e.g. Premium package ₹29,999" />
+          </div>
+
+          <div class="form-group">
+            <label for="midText">Non-numeric Text</label>
+            <input type="text" id="midText" name="midText" placeholder="e.g. Custom quote" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 5: Package Tiers Manager -->
+      <div class="form-section" id="packages-section">
+        <div class="section-head-with-action">
+          <div>
+            <h3 class="form-section-title">Package Tiers (Cart Picker)</h3>
+            <p class="form-section-desc">Manage specific options shown in the package selection popup.</p>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline" id="add-pkg-btn">+ Add Package</button>
+        </div>
+
+        <div class="packages-list" id="packages-list">
+          <!-- Dynamically populated package items -->
+        </div>
+      </div>
+
+      <!-- Section 6: Market Benchmark & Billing Notes -->
+      <div class="form-section">
+        <h3 class="form-section-title">Market Benchmark & Fine Print</h3>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="billing">Billing Model</label>
+            <input type="text" id="billing" name="billing" placeholder="e.g. One-time project, Monthly retainer" />
+          </div>
+
+          <div class="form-group">
+            <label for="market">India Market Rate Benchmark (2026)</label>
+            <input type="text" id="market" name="market" placeholder="e.g. ₹10,000–₹80,000 (freelancer)" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="notes">Customer-Facing Notes & Extra Costs</label>
+          <textarea id="notes" name="notes" rows="2" placeholder="e.g. Domain + hosting ₹3,000–₹8,000/yr extra. All prices excl. 18% GST."></textarea>
+        </div>
+      </div>
+
+      <!-- Drawer Footer Actions -->
+      <div class="drawer-footer">
+        <button type="button" class="btn btn-ghost" id="drawer-cancel-btn">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="save-pricing-btn">
+          <span class="btn-spinner" id="save-spinner" hidden></span>
+          <span id="save-btn-text">Save Changes to Neon DB</span>
+        </button>
+      </div>
+    </form>
+  </aside>
+
+  <!-- Toast Notification Container -->
+  <div class="admin-toast" id="admin-toast" role="status" aria-live="polite">
+    <span class="toast-dot"></span>
+    <span class="toast-message" id="toast-message">Pricing updated successfully!</span>
+  </div>
+
+  <!-- Store client-side initial services pricing cache for instant editor interactions -->
+  <script id="initial-pricing-data" type="application/json" set:html={JSON.stringify(pricingMap)}></script>
+  <script id="initial-services-data" type="application/json" set:html={JSON.stringify(serviceItems.map((s) => ({
+    code: s.code,
+    name: s.name,
+    discipline: s.discipline,
+    description: s.description,
+    layer: s.layer,
+  })))}></script>
+</AdminLayout>
+
+<style>
+  .pricing-admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .header-tags {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+  .live-sync-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.72rem;
+    font-family: var(--font-mono);
+    color: #4ade80;
+    background: rgba(74, 222, 128, 0.1);
+    border: 1px solid rgba(74, 222, 128, 0.25);
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    letter-spacing: 0.04em;
+  }
+  .live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 8px #4ade80;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+  }
+  .header-subtitle {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    max-width: 720px;
+    line-height: 1.5;
+    margin-top: 0.35rem;
+  }
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  /* Metric Statistics Ribbon */
+  .pricing-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .stat-box {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .stat-box:hover {
+    border-color: rgba(148, 188, 227, 0.4);
+    transform: translateY(-2px);
+  }
+  .stat-box.is-active-stat {
+    border-color: var(--tint);
+    background: rgba(148, 188, 227, 0.06);
+  }
+  .stat-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .stat-number {
+    font-size: 1.75rem;
+    font-weight: 800;
+    line-height: 1.1;
+    font-family: var(--font-body);
+  }
+  .stat-desc {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 0.15rem;
+  }
+
+  /* Toolbar */
+  .pricing-toolbar {
+    margin-bottom: 1.5rem;
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .toolbar-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+  .search-icon {
+    position: absolute;
+    left: 1rem;
+    color: var(--text-muted);
+    pointer-events: none;
+  }
+  .toolbar-search input {
+    width: 100%;
+    height: 44px;
+    padding: 0 7rem 0 2.8rem;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-size: 0.92rem;
+    transition: border-color 0.2s;
+  }
+  .toolbar-search input:focus {
+    border-color: var(--tint);
+    outline: none;
+  }
+  .search-count {
+    position: absolute;
+    right: 1rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+  .toolbar-filters {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+  }
+  .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .filter-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+  .segmented-control {
+    display: inline-flex;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-s);
+    padding: 2px;
+  }
+  .seg-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .seg-btn.is-active {
+    background: var(--paper-raised);
+    color: var(--text);
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .filter-select {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    color: var(--text);
+    padding: 0.4rem 0.85rem;
+    border-radius: var(--radius-s);
+    font-size: 0.82rem;
+    cursor: pointer;
+  }
+  .filter-select:focus {
+    border-color: var(--tint);
+    outline: none;
+  }
+
+  /* Table */
+  .table-panel {
+    padding: 0;
+    overflow: hidden;
+  }
+  .table-wrapper {
+    overflow-x: auto;
+    max-height: calc(100vh - 340px);
+    overflow-y: auto;
+  }
+  .pricing-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.88rem;
+  }
+  .pricing-table th {
+    position: sticky;
+    top: 0;
+    background: #141c24;
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--line);
+    z-index: 2;
+  }
+  .pricing-table td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    vertical-align: middle;
+  }
+  .service-row:hover {
+    background: rgba(148, 188, 227, 0.03);
+  }
+  .service-row.is-soon {
+    opacity: 0.88;
+  }
+
+  /* Columns */
+  .code-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .code-tag {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .layer-tag-sm {
+    display: inline-block;
+    width: fit-content;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .layer-build { background: rgba(148, 188, 227, 0.2); color: var(--tint); }
+  .layer-grow { background: rgba(235, 114, 59, 0.2); color: var(--accent); }
+  .layer-run { background: rgba(255, 255, 255, 0.15); color: #fff; }
+
+  .service-meta-box {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    max-width: 320px;
+  }
+  .service-name {
+    color: var(--text);
+    font-size: 0.92rem;
+    line-height: 1.25;
+  }
+  .service-desc {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .discipline-badge {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1px 6px;
+    border-radius: 3px;
+    width: fit-content;
+    margin-top: 0.15rem;
+  }
+
+  .status-action-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    letter-spacing: 0.04em;
+    width: fit-content;
+  }
+  .badge-live {
+    background: rgba(74, 222, 128, 0.15);
+    color: #4ade80;
+    border: 1px solid rgba(74, 222, 128, 0.3);
+  }
+  .badge-soon {
+    background: rgba(251, 191, 36, 0.12);
+    color: #fbbf24;
+    border: 1px dashed rgba(251, 191, 36, 0.35);
+  }
+  .status-circle {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .btn-toggle-status {
+    background: none;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    font-family: var(--font-mono);
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s;
+    width: fit-content;
+  }
+  .btn-toggle-status:hover {
+    border-color: var(--tint);
+    color: var(--text);
+    background: rgba(148, 188, 227, 0.08);
+  }
+
+  .type-pill {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text);
+  }
+  .type-package { background: rgba(148, 188, 227, 0.18); color: var(--tint); }
+  .type-fixed { background: rgba(74, 222, 128, 0.15); color: #4ade80; }
+  .type-starting { background: rgba(235, 114, 59, 0.15); color: var(--accent); }
+  .billing-hint {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+  }
+
+  .price-val-box {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+  .price-val {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .unit-val {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+  .market-val {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    max-width: 180px;
+  }
+
+  .pricing-empty {
+    padding: 3rem 1.5rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  /* Slide-over Drawer */
+  .pricing-drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 15, 22, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+  }
+  .pricing-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(680px, 100vw);
+    background: #111822;
+    border-left: 1px solid var(--line);
+    z-index: 101;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: -20px 0 60px rgba(0, 0, 0, 0.6);
+  }
+  .pricing-drawer.is-open {
+    transform: translateX(0);
+  }
+  .drawer-header {
+    padding: 1.5rem 1.5rem 1.25rem;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    position: sticky;
+    top: 0;
+    background: #111822;
+    z-index: 10;
+  }
+  .drawer-desc {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+  }
+  .drawer-close {
+    background: none;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    font-size: 1.3rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+  }
+  .drawer-close:hover {
+    color: #fff;
+    border-color: var(--tint);
+  }
+
+  /* Drawer Preview Card */
+  .drawer-preview-section {
+    padding: 1rem 1.5rem;
+    background: rgba(148, 188, 227, 0.04);
+    border-bottom: 1px solid var(--line);
+  }
+  .preview-label {
+    font-size: 0.68rem;
+    color: var(--tint);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  .preview-card {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    transition: all 0.3s ease;
+  }
+  .preview-card.is-soon-preview {
+    border-style: dashed;
+    background: transparent;
+  }
+  .preview-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .preview-id { color: var(--text-muted); font-size: 0.8rem; }
+  .preview-badge {
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 0.68rem;
+    font-weight: 500;
+  }
+  .preview-name {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 500;
+  }
+  .preview-desc { font-size: 0.82rem; color: var(--text-muted); }
+  .preview-price-box {
+    margin-top: 0.25rem;
+    padding-top: 0.6rem;
+    border-top: 1px dashed var(--line);
+    display: grid;
+    gap: 0.15rem;
+  }
+  .preview-type-label { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; }
+  .preview-price-row { display: flex; align-items: baseline; gap: 0.35rem; }
+  .preview-prefix { font-size: 0.78rem; color: var(--text-muted); }
+  .preview-amt { font-size: 1.15rem; font-weight: 800; color: #fff; }
+  .preview-unit { font-size: 0.78rem; color: var(--text-muted); }
+  .preview-market { font-size: 0.72rem; color: var(--text-muted); opacity: 0.85; }
+  .preview-cta-row { margin-top: 0.4rem; padding-top: 0.5rem; }
+  .preview-btn {
+    display: inline-block;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+
+  /* Drawer Form Sections */
+  .drawer-form {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .form-section {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+  .form-section-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .form-section-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: -0.4rem;
+    line-height: 1.4;
+  }
+  .section-head-with-action {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  /* Status Radio Cards */
+  .status-radio-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.85rem;
+  }
+  .status-radio-card {
+    position: relative;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-s);
+    padding: 0.85rem;
+    background: var(--paper);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    gap: 0.6rem;
+  }
+  .status-radio-card input {
+    margin-top: 3px;
+  }
+  .radio-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .radio-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.88rem;
+  }
+  .status-circle-green { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; }
+  .status-circle-amber { width: 8px; height: 8px; border-radius: 50%; background: #fbbf24; }
+  .radio-card-content p {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.35;
+  }
+  .status-radio-card:has(input:checked) {
+    border-color: var(--tint);
+    background: rgba(148, 188, 227, 0.08);
+  }
+
+  /* Model Radios */
+  .form-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.6rem;
+  }
+  .model-radio-card {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-s);
+    padding: 0.65rem 0.75rem;
+    background: var(--paper);
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+  }
+  .model-radio-card input { margin-top: 3px; }
+  .model-radio-card span { display: flex; flex-direction: column; font-size: 0.82rem; }
+  .model-radio-card small { font-size: 0.68rem; color: var(--text-muted); }
+  .model-radio-card:has(input:checked) {
+    border-color: var(--tint);
+    background: rgba(148, 188, 227, 0.08);
+  }
+
+  /* Form Inputs */
+  .form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.85rem;
+  }
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .form-group label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .input-currency {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .currency-prefix {
+    position: absolute;
+    left: 0.85rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+  .input-currency input {
+    padding-left: 2rem !important;
+  }
+  .form-group input, .form-group textarea {
+    width: 100%;
+    padding: 0.6rem 0.85rem;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-s);
+    color: var(--text);
+    font-size: 0.88rem;
+  }
+  .form-group input:focus, .form-group textarea:focus {
+    border-color: var(--tint);
+    outline: none;
+  }
+  .field-hint {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+  }
+
+  /* Packages List */
+  .packages-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+  .pkg-item-card {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-s);
+    padding: 0.85rem;
+    background: var(--paper);
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    position: relative;
+  }
+  .pkg-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .pkg-del-btn {
+    background: none;
+    border: none;
+    color: #ef4444;
+    font-size: 0.75rem;
+    cursor: pointer;
+    padding: 2px 6px;
+  }
+
+  /* Drawer Footer */
+  .drawer-footer {
+    position: sticky;
+    bottom: 0;
+    background: #111822;
+    border-top: 1px solid var(--line);
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    z-index: 10;
+  }
+  .btn-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 0.4rem;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Toast */
+  .admin-toast {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    background: #1e293b;
+    border: 1px solid rgba(148, 188, 227, 0.3);
+    border-radius: var(--radius);
+    padding: 0.85rem 1.25rem;
+    color: #fff;
+    font-size: 0.88rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    z-index: 200;
+    transform: translateY(120%);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .admin-toast.is-show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  .toast-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 6px #4ade80;
+  }
+
+  @media (max-width: 768px) {
+    .pricing-toolbar { padding: 0.85rem; }
+    .status-radio-grid, .form-grid-3, .form-row-2 { grid-template-columns: 1fr; }
+  }
+</style>
+
+<script>
+  // Client-side interactions for Service Pricing Admin
+  const pricingData = JSON.parse(document.getElementById('initial-pricing-data')!.textContent!);
+  const servicesData = JSON.parse(document.getElementById('initial-services-data')!.textContent!);
+  const servicesMap = new Map(servicesData.map((s: any) => [s.code, s]));
+
+  // BroadcastChannel for cross-tab instant real-time synchronization
+  const pricingChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('ascel_pricing') : null;
+
+  // DOM Elements
+  const searchInput = document.getElementById('search-input') as HTMLInputElement;
+  const searchCount = document.getElementById('search-count') as HTMLElement;
+  const statusFilter = document.getElementById('status-filter') as HTMLElement;
+  const layerFilter = document.getElementById('layer-filter') as HTMLSelectElement;
+  const disciplineFilter = document.getElementById('discipline-filter') as HTMLSelectElement;
+  const typeFilter = document.getElementById('type-filter') as HTMLSelectElement;
+  const resetFiltersBtn = document.getElementById('reset-filters-btn') as HTMLButtonElement;
+  const clearSearchBtn = document.getElementById('clear-search-btn') as HTMLButtonElement;
+  const tableRows = Array.from(document.querySelectorAll<HTMLTableRowElement>('.service-row'));
+  const emptyState = document.getElementById('pricing-empty') as HTMLElement;
+
+  // Stats Counters
+  const liveCountEl = document.getElementById('stat-live-count');
+  const soonCountEl = document.getElementById('stat-soon-count');
+
+  // Drawer Elements
+  const drawer = document.getElementById('pricing-drawer') as HTMLElement;
+  const drawerBackdrop = document.getElementById('drawer-backdrop') as HTMLElement;
+  const drawerCloseBtn = document.getElementById('drawer-close-btn') as HTMLButtonElement;
+  const drawerCancelBtn = document.getElementById('drawer-cancel-btn') as HTMLButtonElement;
+  const pricingForm = document.getElementById('pricing-form') as HTMLFormElement;
+  const saveBtn = document.getElementById('save-pricing-btn') as HTMLButtonElement;
+  const saveSpinner = document.getElementById('save-spinner') as HTMLElement;
+  const saveBtnText = document.getElementById('save-btn-text') as HTMLElement;
+
+  // Drawer Content Elements
+  const drawerCodeEl = document.getElementById('drawer-code') as HTMLElement;
+  const drawerDisciplineEl = document.getElementById('drawer-discipline') as HTMLElement;
+  const drawerNameEl = document.getElementById('drawer-name') as HTMLElement;
+  const drawerDescEl = document.getElementById('drawer-desc') as HTMLElement;
+
+  // Preview Elements
+  const previewCard = document.getElementById('preview-card') as HTMLElement;
+  const previewId = document.getElementById('preview-id') as HTMLElement;
+  const previewBadge = document.getElementById('preview-badge') as HTMLElement;
+  const previewName = document.getElementById('preview-name') as HTMLElement;
+  const previewDesc = document.getElementById('preview-desc') as HTMLElement;
+  const previewTypeLabel = document.getElementById('preview-type-label') as HTMLElement;
+  const previewPrefix = document.getElementById('preview-prefix') as HTMLElement;
+  const previewAmt = document.getElementById('preview-amt') as HTMLElement;
+  const previewUnit = document.getElementById('preview-unit') as HTMLElement;
+  const previewMarket = document.getElementById('preview-market') as HTMLElement;
+  const previewBtn = document.getElementById('preview-btn') as HTMLElement;
+
+  // Toast
+  const toast = document.getElementById('admin-toast') as HTMLElement;
+  const toastMessage = document.getElementById('toast-message') as HTMLElement;
+  let toastTimer = 0;
+
+  function showToast(msg: string) {
+    toastMessage.textContent = msg;
+    toast.classList.add('is-show');
+    clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(() => toast.classList.remove('is-show'), 3500);
+  }
+
+  // Filter State
+  let currentSearch = '';
+  let currentStatus = 'all';
+  let currentLayer = 'all';
+  let currentDiscipline = 'all';
+  let currentType = 'all';
+
+  function applyFilters() {
+    let visibleCount = 0;
+    const query = currentSearch.toLowerCase().trim();
+
+    for (const row of tableRows) {
+      const code = row.dataset.code || '';
+      const status = row.dataset.status || '';
+      const layer = row.dataset.layer || '';
+      const discipline = row.dataset.discipline || '';
+      const type = row.dataset.type || '';
+      const searchHaystack = row.dataset.search || '';
+
+      const matchSearch = !query || searchHaystack.includes(query) || code.toLowerCase().includes(query);
+      const matchStatus = currentStatus === 'all' || status === currentStatus;
+      const matchLayer = currentLayer === 'all' || layer === currentLayer;
+      const matchDiscipline = currentDiscipline === 'all' || discipline === currentDiscipline;
+      const matchType = currentType === 'all' || type === currentType;
+
+      const isMatch = matchSearch && matchStatus && matchLayer && matchDiscipline && matchType;
+      row.hidden = !isMatch;
+      if (isMatch) visibleCount++;
+    }
+
+    searchCount.textContent = `${visibleCount} of ${tableRows.length} services`;
+    emptyState.hidden = visibleCount > 0;
+  }
+
+  // Event Listeners for Filters
+  searchInput?.addEventListener('input', (e) => {
+    currentSearch = (e.target as HTMLInputElement).value;
+    applyFilters();
+  });
+
+  statusFilter?.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('.seg-btn');
+    if (!btn) return;
+    statusFilter.querySelectorAll('.seg-btn').forEach((b) => b.classList.remove('is-active'));
+    btn.classList.add('is-active');
+    currentStatus = btn.dataset.val || 'all';
+    applyFilters();
+  });
+
+  layerFilter?.addEventListener('change', () => {
+    currentLayer = layerFilter.value;
+    applyFilters();
+  });
+
+  disciplineFilter?.addEventListener('change', () => {
+    currentDiscipline = disciplineFilter.value;
+    applyFilters();
+  });
+
+  typeFilter?.addEventListener('change', () => {
+    currentType = typeFilter.value;
+    applyFilters();
+  });
+
+  function resetAllFilters() {
+    currentSearch = '';
+    currentStatus = 'all';
+    currentLayer = 'all';
+    currentDiscipline = 'all';
+    currentType = 'all';
+    if (searchInput) searchInput.value = '';
+    if (layerFilter) layerFilter.value = 'all';
+    if (disciplineFilter) disciplineFilter.value = 'all';
+    if (typeFilter) typeFilter.value = 'all';
+    statusFilter?.querySelectorAll('.seg-btn').forEach((b) => {
+      b.classList.toggle('is-active', (b as HTMLElement).dataset.val === 'all');
+    });
+    document.querySelectorAll('.stat-box').forEach((b) => b.classList.remove('is-active-stat'));
+    document.querySelector('.stat-box[data-stat-filter="all"]')?.classList.add('is-active-stat');
+    applyFilters();
+  }
+
+  resetFiltersBtn?.addEventListener('click', resetAllFilters);
+  clearSearchBtn?.addEventListener('click', resetAllFilters);
+
+  // Stat Boxes Quick Filter click
+  document.querySelectorAll<HTMLElement>('.stat-box').forEach((box) => {
+    box.addEventListener('click', () => {
+      document.querySelectorAll('.stat-box').forEach((b) => b.classList.remove('is-active-stat'));
+      box.classList.add('is-active-stat');
+      const val = box.dataset.statFilter;
+      if (val === 'open' || val === 'soon') {
+        currentStatus = val;
+        currentType = 'all';
+        statusFilter?.querySelectorAll('.seg-btn').forEach((b) => {
+          b.classList.toggle('is-active', (b as HTMLElement).dataset.val === val);
+        });
+      } else if (val === 'package' || val === 'fixed') {
+        currentType = val;
+        currentStatus = 'all';
+        if (typeFilter) typeFilter.value = val;
+      } else {
+        resetAllFilters();
+        return;
+      }
+      applyFilters();
+    });
+  });
+
+  // Quick 1-Click Status Toggle on Table Row
+  document.addEventListener('click', async (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-action="toggle-status"]');
+    if (!btn) return;
+    e.preventDefault();
+
+    const code = btn.dataset.code;
+    const targetStatus = btn.dataset.targetStatus;
+    if (!code) return;
+
+    btn.disabled = true;
+    const oldText = btn.textContent;
+    btn.textContent = 'Updating...';
+
+    try {
+      const res = await fetch('/api/admin/pricing/toggle-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ serviceCode: code, status: targetStatus }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Failed to toggle status');
+
+      // Update local cache
+      if (pricingData[code]) {
+        pricingData[code].status = data.status;
+      }
+
+      // Update row in table
+      const row = document.querySelector<HTMLTableRowElement>(`.service-row[data-code="${code}"]`);
+      if (row) {
+        row.dataset.status = data.status;
+        row.classList.toggle('is-soon', data.status !== 'open');
+        const badge = row.querySelector('[data-status-label]');
+        if (badge) {
+          badge.className = `status-badge ${data.status === 'open' ? 'badge-live' : 'badge-soon'}`;
+          badge.innerHTML = `<span class="status-circle"></span> ${data.status === 'open' ? 'LIVE' : 'COMING SOON'}`;
+        }
+        btn.dataset.targetStatus = data.status === 'open' ? 'soon' : 'open';
+        btn.textContent = data.status === 'open' ? 'Set Coming Soon' : '⚡ Unplug (Go Live)';
+      }
+
+      // Re-calculate stats
+      updateHeaderCounts();
+      showToast(data.message || `${code} status updated!`);
+
+      // Broadcast to other tabs & main website
+      pricingChannel?.postMessage({
+        type: 'pricing_updated',
+        code,
+        pricing: data.pricing || pricingData[code],
+        timestamp: Date.now(),
+      });
+    } catch (err: any) {
+      alert(`Error toggling status: ${err.message}`);
+      btn.textContent = oldText;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  function updateHeaderCounts() {
+    let live = 0;
+    let soon = 0;
+    for (const row of tableRows) {
+      if (row.dataset.status === 'open') live++;
+      else soon++;
+    }
+    if (liveCountEl) liveCountEl.textContent = String(live);
+    if (soonCountEl) soonCountEl.textContent = String(soon);
+  }
+
+  // Slide-over Drawer Open & Populate
+  document.addEventListener('click', (e) => {
+    const editBtn = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-action="edit-pricing"]');
+    if (!editBtn) return;
+    const code = editBtn.dataset.code;
+    if (!code) return;
+    openEditor(code);
+  });
+
+  function closeEditor() {
+    drawer.classList.remove('is-open');
+    drawerBackdrop.hidden = true;
+    drawer.setAttribute('aria-hidden', 'true');
+  }
+
+  drawerCloseBtn?.addEventListener('click', closeEditor);
+  drawerCancelBtn?.addEventListener('click', closeEditor);
+  drawerBackdrop?.addEventListener('click', closeEditor);
+
+  // Packages list manager
+  let currentPackages: any[] = [];
+
+  function renderPackagesList() {
+    const list = document.getElementById('packages-list')!;
+    if (!currentPackages.length) {
+      list.innerHTML = `<p class="mono text-muted text-xs">No individual packages configured. Defaults to standard tiers.</p>`;
+      return;
+    }
+    list.innerHTML = currentPackages
+      .map((pkg, i) => `
+        <div class="pkg-item-card" data-idx="${i}">
+          <div class="pkg-item-header">
+            <strong class="mono text-xs">Tier #${i + 1}: ${pkg.name || pkg.key}</strong>
+            <button type="button" class="pkg-del-btn" data-del-pkg="${i}">Remove</button>
+          </div>
+          <div class="form-row-2">
+            <div class="form-group">
+              <label>Package Name</label>
+              <input type="text" class="pkg-input-name" data-idx="${i}" value="${pkg.name || ''}" placeholder="e.g. Starter" />
+            </div>
+            <div class="form-group">
+              <label>Price (₹ INR, null = on quote)</label>
+              <input type="number" class="pkg-input-price" data-idx="${i}" value="${pkg.price !== null && pkg.price !== undefined ? pkg.price : ''}" placeholder="Leave empty for quote" />
+            </div>
+          </div>
+          <div class="form-row-2">
+            <div class="form-group">
+              <label>Delivery Timeline</label>
+              <input type="text" class="pkg-input-delivery" data-idx="${i}" value="${pkg.delivery || ''}" placeholder="e.g. 3 days" />
+            </div>
+            <div class="form-group">
+              <label>Unique Key</label>
+              <input type="text" class="pkg-input-key" data-idx="${i}" value="${pkg.key || ''}" placeholder="e.g. starter" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>What's Included</label>
+            <input type="text" class="pkg-input-includes" data-idx="${i}" value="${pkg.includes || ''}" placeholder="Features included..." />
+          </div>
+        </div>
+      `)
+      .join('');
+
+    list.querySelectorAll<HTMLButtonElement>('[data-del-pkg]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.delPkg || '0', 10);
+        currentPackages.splice(idx, 1);
+        renderPackagesList();
+        updatePreview();
+      });
+    });
+
+    list.querySelectorAll<HTMLInputElement>('.pkg-input-name, .pkg-input-price, .pkg-input-delivery, .pkg-input-key, .pkg-input-includes').forEach((inp) => {
+      inp.addEventListener('input', () => {
+        const idx = parseInt(inp.dataset.idx || '0', 10);
+        if (!currentPackages[idx]) return;
+        if (inp.classList.contains('pkg-input-name')) currentPackages[idx].name = inp.value;
+        if (inp.classList.contains('pkg-input-price')) {
+          const val = inp.value.trim();
+          currentPackages[idx].price = val === '' ? null : Number(val);
+        }
+        if (inp.classList.contains('pkg-input-delivery')) currentPackages[idx].delivery = inp.value;
+        if (inp.classList.contains('pkg-input-key')) currentPackages[idx].key = inp.value;
+        if (inp.classList.contains('pkg-input-includes')) currentPackages[idx].includes = inp.value;
+        updatePreview();
+      });
+    });
+  }
+
+  document.getElementById('add-pkg-btn')?.addEventListener('click', () => {
+    currentPackages.push({
+      key: `tier-${currentPackages.length + 1}`,
+      name: `Custom Tier ${currentPackages.length + 1}`,
+      price: 9999,
+      includes: 'Package scope and deliverables',
+      delivery: '5 days',
+      notes: '',
+    });
+    renderPackagesList();
+    updatePreview();
+  });
+
+  function openEditor(code: string) {
+    const s = servicesMap.get(code);
+    const p = pricingData[code] || {
+      id: code,
+      status: 'open',
+      type: 'starting',
+      small: { price: 2999, text: '', unit: 'one-time', detail: '' },
+      mid: { price: 29999, text: '', unit: 'one-time', detail: '' },
+      billing: 'Project',
+      market: '',
+      notes: '',
+      packages: [],
+    };
+
+    // Header Info
+    drawerCodeEl.textContent = code;
+    drawerDisciplineEl.textContent = s?.discipline || 'General';
+    drawerNameEl.textContent = s?.name || code;
+    drawerDescEl.textContent = s?.description || '';
+
+    // Form fields
+    (document.getElementById('form-code') as HTMLInputElement).value = code;
+
+    // Status Radio
+    const openRadio = document.getElementById('status-open-radio') as HTMLInputElement;
+    const soonRadio = document.getElementById('status-soon-radio') as HTMLInputElement;
+    if (p.status === 'open') openRadio.checked = true;
+    else soonRadio.checked = true;
+
+    // Type Radio
+    const pkgRadio = document.getElementById('type-package') as HTMLInputElement;
+    const fixedRadio = document.getElementById('type-fixed') as HTMLInputElement;
+    const startRadio = document.getElementById('type-starting') as HTMLInputElement;
+    if (p.type === 'package') pkgRadio.checked = true;
+    else if (p.type === 'fixed') fixedRadio.checked = true;
+    else startRadio.checked = true;
+
+    // Small tier
+    (document.getElementById('smallPrice') as HTMLInputElement).value = p.small?.price !== null && p.small?.price !== undefined ? String(p.small.price) : '';
+    (document.getElementById('smallUnit') as HTMLInputElement).value = p.small?.unit || '';
+    (document.getElementById('smallDetail') as HTMLInputElement).value = p.small?.detail || '';
+    (document.getElementById('smallText') as HTMLInputElement).value = p.small?.text || '';
+
+    // Mid tier
+    (document.getElementById('midPrice') as HTMLInputElement).value = p.mid?.price !== null && p.mid?.price !== undefined ? String(p.mid.price) : '';
+    (document.getElementById('midUnit') as HTMLInputElement).value = p.mid?.unit || '';
+    (document.getElementById('midDetail') as HTMLInputElement).value = p.mid?.detail || '';
+    (document.getElementById('midText') as HTMLInputElement).value = p.mid?.text || '';
+
+    // Packages
+    currentPackages = Array.isArray(p.packages) ? JSON.parse(JSON.stringify(p.packages)) : [];
+    renderPackagesList();
+
+    // Billing & Notes
+    (document.getElementById('billing') as HTMLInputElement).value = p.billing || '';
+    (document.getElementById('market') as HTMLInputElement).value = p.market || '';
+    (document.getElementById('notes') as HTMLTextAreaElement).value = p.notes || '';
+
+    updatePreview();
+
+    drawer.classList.add('is-open');
+    drawerBackdrop.hidden = false;
+    drawer.setAttribute('aria-hidden', 'false');
+  }
+
+  // Real-time Preview Update inside Drawer
+  function updatePreview() {
+    const code = (document.getElementById('form-code') as HTMLInputElement).value;
+    const s = servicesMap.get(code);
+    const isOpen = (document.getElementById('status-open-radio') as HTMLInputElement).checked;
+    const type = (document.querySelector('input[name="type"]:checked') as HTMLInputElement)?.value || 'starting';
+
+    const smallPriceVal = (document.getElementById('smallPrice') as HTMLInputElement).value.trim();
+    const smallUnitVal = (document.getElementById('smallUnit') as HTMLInputElement).value.trim();
+    const smallTextVal = (document.getElementById('smallText') as HTMLInputElement).value.trim();
+    const marketVal = (document.getElementById('market') as HTMLInputElement).value.trim();
+
+    previewId.textContent = code;
+    previewName.textContent = s?.name || code;
+    previewDesc.textContent = s?.description || '';
+
+    previewCard.classList.toggle('is-soon-preview', !isOpen);
+    previewBadge.hidden = isOpen;
+
+    previewTypeLabel.textContent = type === 'package' ? '5 packages' : type === 'fixed' ? 'Fixed price' : 'Starting price';
+    previewPrefix.textContent = type === 'fixed' ? '' : 'From';
+
+    if (type === 'package' && currentPackages.length > 0) {
+      const minPkgPrice = currentPackages.find((k) => k.price !== null)?.price;
+      previewAmt.textContent = minPkgPrice !== undefined ? `₹${minPkgPrice.toLocaleString('en-IN')}` : 'On quote';
+      previewUnit.textContent = 'one-time';
+      previewBtn.textContent = isOpen ? 'Choose package +' : 'Register interest →';
+    } else if (smallPriceVal !== '') {
+      previewAmt.textContent = `₹${Number(smallPriceVal).toLocaleString('en-IN')}`;
+      previewUnit.textContent = smallUnitVal || 'one-time';
+      previewBtn.textContent = isOpen ? 'Add to estimate +' : 'Register interest →';
+    } else {
+      previewAmt.textContent = smallTextVal || 'On quote';
+      previewUnit.textContent = smallUnitVal || '';
+      previewBtn.textContent = isOpen ? 'Add to estimate +' : 'Register interest →';
+    }
+
+    previewMarket.textContent = marketVal ? `Market: ${marketVal}` : '';
+    previewMarket.hidden = !marketVal;
+  }
+
+  // Connect input listeners to live preview
+  pricingForm?.querySelectorAll('input, textarea, select').forEach((el) => {
+    el.addEventListener('input', updatePreview);
+    el.addEventListener('change', updatePreview);
+  });
+
+  // Submit Drawer Form to Neon Database
+  pricingForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const code = (document.getElementById('form-code') as HTMLInputElement).value;
+    if (!code) return;
+
+    saveBtn.disabled = true;
+    saveSpinner.hidden = false;
+    saveBtnText.textContent = 'Saving to Neon DB...';
+
+    const status = (document.querySelector('input[name="status"]:checked') as HTMLInputElement).value;
+    const type = (document.querySelector('input[name="type"]:checked') as HTMLInputElement).value;
+    const smallPrice = (document.getElementById('smallPrice') as HTMLInputElement).value;
+    const smallUnit = (document.getElementById('smallUnit') as HTMLInputElement).value;
+    const smallDetail = (document.getElementById('smallDetail') as HTMLInputElement).value;
+    const smallText = (document.getElementById('smallText') as HTMLInputElement).value;
+
+    const midPrice = (document.getElementById('midPrice') as HTMLInputElement).value;
+    const midUnit = (document.getElementById('midUnit') as HTMLInputElement).value;
+    const midDetail = (document.getElementById('midDetail') as HTMLInputElement).value;
+    const midText = (document.getElementById('midText') as HTMLInputElement).value;
+
+    const billing = (document.getElementById('billing') as HTMLInputElement).value;
+    const market = (document.getElementById('market') as HTMLInputElement).value;
+    const notes = (document.getElementById('notes') as HTMLTextAreaElement).value;
+
+    const payload = {
+      serviceCode: code,
+      status,
+      type,
+      smallPrice: smallPrice === '' ? null : Number(smallPrice),
+      smallUnit,
+      smallDetail,
+      smallText,
+      midPrice: midPrice === '' ? null : Number(midPrice),
+      midUnit,
+      midDetail,
+      midText,
+      billing,
+      market,
+      notes,
+      packages: currentPackages,
+    };
+
+    try {
+      const res = await fetch('/api/admin/pricing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Failed to update pricing');
+
+      // Update local memory
+      pricingData[code] = data.pricing;
+
+      // Update table row
+      const row = document.querySelector<HTMLTableRowElement>(`.service-row[data-code="${code}"]`);
+      if (row) {
+        row.dataset.status = status;
+        row.dataset.type = type;
+        row.classList.toggle('is-soon', status !== 'open');
+
+        // Status badge & button
+        const badge = row.querySelector('[data-status-label]');
+        if (badge) {
+          badge.className = `status-badge ${status === 'open' ? 'badge-live' : 'badge-soon'}`;
+          badge.innerHTML = `<span class="status-circle"></span> ${status === 'open' ? 'LIVE' : 'COMING SOON'}`;
+        }
+        const toggleBtn = row.querySelector<HTMLButtonElement>('[data-action="toggle-status"]');
+        if (toggleBtn) {
+          toggleBtn.dataset.targetStatus = status === 'open' ? 'soon' : 'open';
+          toggleBtn.textContent = status === 'open' ? 'Set Coming Soon' : '⚡ Unplug (Go Live)';
+        }
+
+        // Model tag
+        const typePill = row.querySelector('.type-pill');
+        if (typePill) {
+          typePill.className = `type-pill type-${type}`;
+          typePill.textContent = type === 'package' ? '5 Packages' : type === 'fixed' ? 'Fixed' : 'Starting';
+        }
+
+        // Small Price
+        const smallPriceEl = row.querySelector('.col-small .price-val');
+        if (smallPriceEl) {
+          smallPriceEl.textContent = payload.smallPrice !== null ? `₹${payload.smallPrice.toLocaleString('en-IN')}` : (smallText || 'On quote');
+        }
+        const smallUnitEl = row.querySelector('.col-small .unit-val');
+        if (smallUnitEl) smallUnitEl.textContent = smallUnit;
+
+        // Mid Price
+        const midPriceEl = row.querySelector('.col-mid .price-val');
+        if (midPriceEl) {
+          midPriceEl.textContent = payload.midPrice !== null ? `₹${payload.midPrice.toLocaleString('en-IN')}` : (midText || 'On quote');
+        }
+        const midUnitEl = row.querySelector('.col-mid .unit-val');
+        if (midUnitEl) midUnitEl.textContent = midUnit;
+
+        // Market
+        const marketEl = row.querySelector('.market-val');
+        if (marketEl) marketEl.textContent = market || '—';
+      }
+
+      updateHeaderCounts();
+      closeEditor();
+      showToast(`Saved ${code} pricing to Neon database! Live site updated.`);
+
+      // Broadcast update across tabs
+      pricingChannel?.postMessage({
+        type: 'pricing_updated',
+        code,
+        pricing: data.pricing,
+        timestamp: Date.now(),
+      });
+    } catch (err: any) {
+      alert(`Error saving pricing: ${err.message}`);
+    } finally {
+      saveBtn.disabled = false;
+      saveSpinner.hidden = true;
+      saveBtnText.textContent = 'Save Changes to Neon DB';
+    }
+  });
+
+  // Listen for real-time updates from other admin sessions via SSE
+  try {
+    const sse = new EventSource('/api/pricing/stream');
+    sse.addEventListener('update', (e) => {
+      try {
+        const payload = JSON.parse(e.data);
+        if (payload?.code && payload?.pricing) {
+          pricingData[payload.code] = payload.pricing;
+          // Softly reflect in table if present
+          const row = document.querySelector<HTMLTableRowElement>(`.service-row[data-code="${payload.code}"]`);
+          if (row && payload.pricing.status) {
+            row.dataset.status = payload.pricing.status;
+            row.classList.toggle('is-soon', payload.pricing.status !== 'open');
+            const badge = row.querySelector('[data-status-label]');
+            if (badge) {
+              badge.className = `status-badge ${payload.pricing.status === 'open' ? 'badge-live' : 'badge-soon'}`;
+              badge.innerHTML = `<span class="status-circle"></span> ${payload.pricing.status === 'open' ? 'LIVE' : 'COMING SOON'}`;
+            }
+          }
+        }
+      } catch {}
+    });
+  } catch {}
+</script>

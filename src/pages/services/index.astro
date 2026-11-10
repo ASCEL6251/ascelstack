@@ -1,7 +1,26 @@
 ---
+export const prerender = false;
+
 import Base from '../../layouts/Base.astro';
 import ServiceCard from '../../components/ServiceCard.astro';
 import { categories, counts, sharedServiceNames } from '../../data/catalog';
+import { db, servicePricing } from '../../db';
+import { dbRowToPricing, staticPricing, type Pricing } from '../../lib/pricing';
+
+let livePricingMap: Record<string, Pricing> = { ...staticPricing };
+try {
+  const rows = await db.select().from(servicePricing);
+  for (const row of rows) {
+    if (row.serviceCode) {
+      livePricingMap[row.serviceCode] = dbRowToPricing(row);
+    }
+  }
+} catch (err) {
+  console.warn('Neon query error in /services, fallback to static:', err);
+}
+
+const liveCoreCount = Object.values(livePricingMap).filter((p) => p.status === 'open').length;
+const liveSoonCount = Object.values(livePricingMap).filter((p) => p.status === 'soon').length;
 ---
 
 <Base title="Services" description={`The full Ascelstack catalogue: ${counts.services} services across ${counts.categories} disciplines.`}>
@@ -10,8 +29,8 @@ import { categories, counts, sharedServiceNames } from '../../data/catalog';
       <p class="eyebrow" data-reveal>Service catalogue</p>
       <h1 class="display h1" data-reveal>Everything <em>on the stack.</em></h1>
       <div class="cat-stats" data-reveal>
-        <div><span class="display">{counts.core}</span><span class="mono">Live services</span></div>
-        <div><span class="display">{counts.future}</span><span class="mono">Coming soon</span></div>
+        <div><span class="display" id="hero-live-count">{liveCoreCount || counts.core}</span><span class="mono">Live services</span></div>
+        <div><span class="display" id="hero-soon-count">{liveSoonCount || counts.future}</span><span class="mono">Coming soon</span></div>
         <div><span class="display">{counts.categories}</span><span class="mono">Disciplines</span></div>
       </div>
     </div>
@@ -269,6 +288,8 @@ import { categories, counts, sharedServiceNames } from '../../data/catalog';
 </style>
 
 <script>
+  import '../../scripts/realtime-pricing';
+
   const input = document.querySelector<HTMLInputElement>('[data-search-input]')!;
   const tabs = [...document.querySelectorAll<HTMLButtonElement>('[data-filter]')];
   const groups = [...document.querySelectorAll<HTMLElement>('[data-group]')];
@@ -300,6 +321,23 @@ import { categories, counts, sharedServiceNames } from '../../data/catalog';
     empty.hidden = total > 0;
     window.dispatchEvent(new Event('resize')); // let ScrollTrigger recalc
   }
+
+  // Listen for real-time pricing updates to adjust stats and search
+  window.addEventListener('ascel:pricing-update', (e: any) => {
+    apply();
+    // Update live hero counters
+    const allCards = document.querySelectorAll<HTMLElement>('article[data-card]');
+    let openCount = 0;
+    let soonCount = 0;
+    allCards.forEach((c) => {
+      if (c.classList.contains('card--future')) soonCount++;
+      else openCount++;
+    });
+    const liveEl = document.getElementById('hero-live-count');
+    const soonEl = document.getElementById('hero-soon-count');
+    if (liveEl) liveEl.textContent = String(openCount);
+    if (soonEl) soonEl.textContent = String(soonCount);
+  });
 
   tabs.forEach((t) =>
     t.addEventListener('click', () => {

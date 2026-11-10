@@ -311,6 +311,7 @@ const serverUser = authData
   import { formatINR, RECURRENCE_LABEL, RECURRENCE_SUFFIX } from '../lib/pricing';
   import { getUser, onAuth, setCachedUser } from '../lib/mock-auth';
   import { submitEstimate } from '../lib/api';
+  import '../scripts/realtime-pricing';
 
   const linesEl = document.querySelector<HTMLElement>('[data-lines]')!;
   const totalsEl = document.querySelector<HTMLElement>('[data-totals]')!;
@@ -497,4 +498,5 @@ const serverUser = authData
 
   onCart(render);
   onAuth(() => renderActions(getCart().items.length > 0));
+  window.addEventListener('ascel:pricing-update', () => render());
 </script>

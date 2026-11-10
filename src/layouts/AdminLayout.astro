@@ -9,7 +9,7 @@ import '../styles/admin.css';
 
 interface Props {
   title?: string;
-  activeNav?: 'overview' | 'users' | 'quotations' | 'logs' | 'settings';
+  activeNav?: 'overview' | 'users' | 'quotations' | 'pricing' | 'logs' | 'settings';
   breadcrumbs?: { label: string; href?: string }[];
   session?: AdminSession | null;
 }
@@ -97,7 +97,17 @@ if (!session) {
             <span>Quotations</span>
           </a>
 
-          <!-- 4. Activity Logs -->
+          <!-- 4. Service Pricing & Coming Soon Controls -->
+          <a href="/admin/pricing" class:list={['nav-item', { 'is-active': activeNav === 'pricing' }]} title="Modify Service Pricing & Unplug Coming Soon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="1" x2="12" y2="23"></line>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+            <span>Service Pricing</span>
+            <span class="mono count-pill">233</span>
+          </a>
+
+          <!-- 5. Activity Logs -->
           <a href="/admin/logs" class:list={['nav-item', { 'is-active': activeNav === 'logs' }]}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />

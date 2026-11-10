@@ -54,3 +54,32 @@ create table estimate_items (
   unit_price   integer,                    -- snapshot at submit time
   recurrence   text not null               -- once | month | quarter | year
 );
+
+
+-- Dynamic Service Pricing & Coming Soon Controls
+CREATE TABLE IF NOT EXISTS service_pricing (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  service_code VARCHAR(50) NOT NULL UNIQUE,
+  service_id UUID REFERENCES services(id) ON DELETE CASCADE,
+  status VARCHAR(20) NOT NULL DEFAULT 'open',
+  type VARCHAR(50) NOT NULL DEFAULT 'starting',
+  small_price NUMERIC(12, 2),
+  small_text VARCHAR(255) DEFAULT '',
+  small_unit VARCHAR(255) DEFAULT '',
+  small_detail TEXT DEFAULT '',
+  mid_price NUMERIC(12, 2),
+  mid_text VARCHAR(255) DEFAULT '',
+  mid_unit VARCHAR(255) DEFAULT '',
+  mid_detail TEXT DEFAULT '',
+  billing VARCHAR(255) DEFAULT '',
+  market VARCHAR(500) DEFAULT '',
+  notes TEXT DEFAULT '',
+  packages JSONB DEFAULT '[]'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS service_pricing_code_uidx ON service_pricing(service_code);
+CREATE INDEX IF NOT EXISTS service_pricing_status_idx ON service_pricing(status);
+CREATE INDEX IF NOT EXISTS service_pricing_type_idx ON service_pricing(type);
+CREATE INDEX IF NOT EXISTS service_pricing_service_id_idx ON service_pricing(service_id);

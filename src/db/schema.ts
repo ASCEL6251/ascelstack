@@ -71,6 +71,38 @@ export const services = pgTable(
   ]
 );
 
+// 3b. Service Pricing Table (Real-time dynamic pricing & coming-soon controls)
+export const servicePricing = pgTable(
+  'service_pricing',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    serviceCode: varchar('service_code', { length: 50 }).notNull().unique(),
+    serviceId: uuid('service_id').references(() => services.id, { onDelete: 'cascade' }),
+    status: varchar('status', { length: 20 }).default('open').notNull(), // 'open' | 'soon'
+    type: varchar('type', { length: 50 }).default('starting').notNull(), // 'package' | 'fixed' | 'starting'
+    smallPrice: numeric('small_price', { precision: 12, scale: 2 }),
+    smallText: varchar('small_text', { length: 255 }).default(''),
+    smallUnit: varchar('small_unit', { length: 255 }).default(''),
+    smallDetail: text('small_detail').default(''),
+    midPrice: numeric('mid_price', { precision: 12, scale: 2 }),
+    midText: varchar('mid_text', { length: 255 }).default(''),
+    midUnit: varchar('mid_unit', { length: 255 }).default(''),
+    midDetail: text('mid_detail').default(''),
+    billing: varchar('billing', { length: 255 }).default(''),
+    market: varchar('market', { length: 500 }).default(''),
+    notes: text('notes').default(''),
+    packages: jsonb('packages').default([]),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex('service_pricing_code_uidx').on(table.serviceCode),
+    index('service_pricing_status_idx').on(table.status),
+    index('service_pricing_type_idx').on(table.type),
+    index('service_pricing_service_id_idx').on(table.serviceId),
+  ]
+);
+
 // 4. Quotations Table (Core Enterprise Quotations & Inquiries)
 export const quotations = pgTable(
   'quotations',
@@ -222,8 +254,19 @@ export const businessesRelations = relations(businesses, ({ one, many }) => ({
   activityLogs: many(activityLogs),
 }));
 
-export const servicesRelations = relations(services, ({ many }) => ({
+export const servicesRelations = relations(services, ({ one, many }) => ({
   serviceRequests: many(serviceRequests),
+  pricing: one(servicePricing, {
+    fields: [services.id],
+    references: [servicePricing.serviceId],
+  }),
+}));
+
+export const servicePricingRelations = relations(servicePricing, ({ one }) => ({
+  service: one(services, {
+    fields: [servicePricing.serviceId],
+    references: [services.id],
+  }),
 }));
 
 export const quotationsRelations = relations(quotations, ({ one, many }) => ({
@@ -286,6 +329,8 @@ export type Business = typeof businesses.$inferSelect;
 export type NewBusiness = typeof businesses.$inferInsert;
 export type Service = typeof services.$inferSelect;
 export type NewService = typeof services.$inferInsert;
+export type ServicePricing = typeof servicePricing.$inferSelect;
+export type NewServicePricing = typeof servicePricing.$inferInsert;
 export type Quotation = typeof quotations.$inferSelect;
 export type NewQuotation = typeof quotations.$inferInsert;
 export type QuotationHistory = typeof quotationHistory.$inferSelect;
