@@ -138,13 +138,13 @@ const PAYMENT_STATUS_OPTIONS = [
       <div>
         <span class="eyebrow">Core Administration</span>
         <h1 class="display h3">Quotation & Scope Management</h1>
-        <p class="panel-subtitle">
-          Showing {quotationList.length} of {totalCount} project inquiries and estimation scopes from customer portal
+        <p class="panel-subtitle" id="quotes-count-subtitle">
+          Showing <span id="quotes-shown-count">{quotationList.length}</span> of <span id="quotes-total-count">{totalCount}</span> project inquiries and estimation scopes from customer portal
         </p>
       </div>
 
       <div class="panel-header-actions">
-        <span class="badge-pill mono">Total: {totalCount} Quotations</span>
+        <span class="badge-pill mono" id="quotes-badge-count">Total: {totalCount} Quotations</span>
       </div>
     </div>
 
@@ -227,7 +227,7 @@ const PAYMENT_STATUS_OPTIONS = [
               <th>Action</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="quotations-tbody">
             {quotationList.map((q) => (
               <tr class="table-row-hover">
                 <td>
@@ -363,4 +363,114 @@ const PAYMENT_STATUS_OPTIONS = [
       }
     }
   </style>
+
+  <script>
+    let isFetching = false;
+    async function refreshQuotations(silent = true) {
+      if (isFetching) return;
+      isFetching = true;
+      try {
+        const searchParams = new URLSearchParams(window.location.search);
+        const res = await fetch(`/api/admin/quotations?${searchParams.toString()}`, {
+          headers: { 'Cache-Control': 'no-cache' },
+          cache: 'no-store',
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const tbody = document.getElementById('quotations-tbody');
+        const shownSpan = document.getElementById('quotes-shown-count');
+        const totalSpan = document.getElementById('quotes-total-count');
+        const badgeSpan = document.getElementById('quotes-badge-count');
+
+        if (shownSpan && data.quotations) shownSpan.textContent = String(data.quotations.length);
+        if (totalSpan && data.pagination) totalSpan.textContent = String(data.pagination.totalCount);
+        if (badgeSpan && data.pagination) badgeSpan.textContent = `Total: ${data.pagination.totalCount} Quotations`;
+
+        if (tbody && data.quotations) {
+          tbody.innerHTML = data.quotations.map((q: any) => {
+            const statusClass = (q.quotationStatus || '').toLowerCase().replace(/\s+/g, '-');
+            const paymentClass = (q.paymentStatus || '').toLowerCase().replace(/\s+/g, '-');
+            const initialFormatted = parseFloat(String(q.initialEstimatedCost || 0)).toLocaleString();
+            const finalFormatted = parseFloat(String(q.finalQuotationAmount || 0)).toLocaleString();
+            const createdDate = new Date(q.createdAt).toLocaleDateString('en-IN', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            });
+            const businessName = q.business ? `<span class="text-xs text-muted">· ${escapeHtml(q.business.businessName)}</span>` : '';
+
+            return `
+              <tr class="table-row-hover">
+                <td>
+                  <strong class="table-proj-title">${escapeHtml(q.projectTitle)}</strong>
+                  <div class="table-sub-row">
+                    <span class="mono table-code">${escapeHtml(q.quotationNumber)}</span>
+                    ${businessName}
+                  </div>
+                </td>
+                <td>
+                  <div class="cust-cell">
+                    <a href="/admin/users/${q.customer.id}" class="cust-name-link" title="Open customer account">
+                      ${escapeHtml(q.customer.fullName || 'Ascelstack Customer')}
+                    </a>
+                    <span class="mono cust-email">${escapeHtml(q.customer.email)}</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="status-tag status-${statusClass}">
+                    ${escapeHtml(q.quotationStatus)}
+                  </span>
+                </td>
+                <td>
+                  <span class="payment-pill payment-${paymentClass}">
+                    ${escapeHtml(q.paymentStatus)}
+                  </span>
+                </td>
+                <td class="mono text-muted">
+                  ${escapeHtml(q.currency)} ${initialFormatted}
+                </td>
+                <td class="mono font-semibold text-ink">
+                  ${escapeHtml(q.currency)} ${finalFormatted}
+                </td>
+                <td>
+                  <div class="progress-cell">
+                    <div class="mini-progress-bar">
+                      <div class="mini-progress-fill" style="width: ${q.projectProgress}%;"></div>
+                    </div>
+                    <span class="mono text-xs">${q.projectProgress}%</span>
+                  </div>
+                </td>
+                <td class="mono text-muted text-xs">
+                  ${createdDate}
+                </td>
+                <td>
+                  <a href="/admin/quotations/${q.id}" class="btn-table-action" title="View & Edit Quotation">
+                    Manage →
+                  </a>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+
+        if (!silent) {
+          (window as any).showAdminToast?.('Quotations synchronized with database', 'info');
+        }
+      } catch (e) {
+        // silent
+      } finally {
+        isFetching = false;
+      }
+    }
+
+    function escapeHtml(str: string) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    window.addEventListener('asc:db-sync', () => refreshQuotations(true));
+    window.addEventListener('pageshow', () => refreshQuotations(true));
+  </script>
 </AdminLayout>

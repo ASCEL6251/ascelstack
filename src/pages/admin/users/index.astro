@@ -80,14 +80,14 @@ const totalPages = Math.ceil(totalCount / limit) || 1;
       <div>
         <span class="eyebrow">Identity & Accounts</span>
         <h1 class="display h3">Registered Users</h1>
-        <p class="panel-subtitle">
-          Showing {userList.length} of {totalCount} registered user accounts synchronized with Clerk & Neon
+        <p class="panel-subtitle" id="users-count-subtitle">
+          Showing <span id="users-shown-count">{userList.length}</span> of <span id="users-total-count">{totalCount}</span> registered user accounts synchronized with Clerk & Neon
         </p>
       </div>
 
       <!-- Action badges -->
       <div class="panel-header-actions">
-        <span class="badge-pill mono">Total: {totalCount} Users</span>
+        <span class="badge-pill mono" id="users-badge-count">Total: {totalCount} Users</span>
       </div>
     </div>
 
@@ -145,7 +145,7 @@ const totalPages = Math.ceil(totalCount / limit) || 1;
               <th>Action</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="users-tbody">
             {userList.map((u) => (
               <tr class="table-row-hover">
                 <td>
@@ -500,4 +500,133 @@ const totalPages = Math.ceil(totalCount / limit) || 1;
       }
     }
   </style>
+
+  <script>
+    let isFetchingUsers = false;
+    async function refreshUsers(silent = true) {
+      if (isFetchingUsers) return;
+      isFetchingUsers = true;
+      try {
+        const searchParams = new URLSearchParams(window.location.search);
+        const res = await fetch(`/api/admin/users?${searchParams.toString()}`, {
+          headers: { 'Cache-Control': 'no-cache' },
+          cache: 'no-store',
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const tbody = document.getElementById('users-tbody');
+        const shownSpan = document.getElementById('users-shown-count');
+        const totalSpan = document.getElementById('users-total-count');
+        const badgeSpan = document.getElementById('users-badge-count');
+
+        if (shownSpan && data.users) shownSpan.textContent = String(data.users.length);
+        if (totalSpan && data.pagination) totalSpan.textContent = String(data.pagination.totalCount);
+        if (badgeSpan && data.pagination) badgeSpan.textContent = `Total: ${data.pagination.totalCount} Users`;
+
+        if (tbody && data.users) {
+          tbody.innerHTML = data.users.map((u: any) => {
+            const avatarHtml = u.avatarUrl
+              ? `<img src="${escapeHtml(u.avatarUrl)}" alt="${escapeHtml(u.fullName || 'User')}" class="user-avatar-img" />`
+              : `<div class="user-avatar-placeholder mono">${escapeHtml((u.fullName || u.email || 'A')[0].toUpperCase())}</div>`;
+
+            const queryHtml = u.latestQueryTitle
+              ? `
+                <div class="latest-query-box">
+                  <div class="query-header">
+                    <strong class="query-title" title="${escapeHtml(u.latestQueryTitle)}">
+                      ${escapeHtml(u.latestQueryTitle.length > 28 ? u.latestQueryTitle.slice(0, 26) + '…' : u.latestQueryTitle)}
+                    </strong>
+                    <span class="status-tag status-${escapeHtml((u.latestQueryStatus || '').toLowerCase().replace(/\s+/g, '-'))}">
+                      ${escapeHtml(u.latestQueryStatus)}
+                    </span>
+                  </div>
+                  <div class="query-meta mono text-xs text-muted">
+                    <span class="query-num">${escapeHtml(u.latestQueryNumber || '')}</span>
+                    ${u.latestQueryDate ? `
+                      <span class="query-date">
+                        · ${new Date(u.latestQueryDate).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
+                      </span>
+                    ` : ''}
+                  </div>
+                </div>
+              `
+              : `<span class="no-query-pill mono text-xs">No inquiries yet</span>`;
+
+            const quotePillClass = u.quotationCount > 0 ? 'pill-count-has' : '';
+            const quoteLabel = u.quotationCount === 1 ? 'quote' : 'quotes';
+            const regDate = new Date(u.createdAt).toLocaleDateString('en-IN', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            });
+
+            return `
+              <tr class="table-row-hover">
+                <td>
+                  <a href="/admin/users/${u.id}" class="user-cell-link" title="Open user profile for ${escapeHtml(u.fullName || u.email)}">
+                    <div class="user-cell">
+                      ${avatarHtml}
+                      <div class="user-info-text">
+                        <strong class="user-name">${escapeHtml(u.fullName || 'Ascelstack Customer')}</strong>
+                        <span class="mono user-email">${escapeHtml(u.email)}</span>
+                      </div>
+                    </div>
+                  </a>
+                </td>
+                <td>
+                  <div class="mono-ids-col">
+                    <a href="/admin/users/${u.id}" class="account-id-link" title="Click to open user profile (ID: ${escapeHtml(u.id)})">
+                      <span class="id-pill id-pill-neon mono">ID: ${escapeHtml(u.id.slice(0, 8))}... ↗</span>
+                    </a>
+                    <a href="/admin/users/${u.id}" class="account-id-link" title="Click to open user profile (Clerk ID: ${escapeHtml(u.clerkUserId)})">
+                      <span class="id-pill id-pill-clerk mono">Clerk: ${escapeHtml(u.clerkUserId.slice(0, 13))}... ↗</span>
+                    </a>
+                  </div>
+                </td>
+                <td>
+                  ${queryHtml}
+                </td>
+                <td>
+                  <span class="pill-count ${quotePillClass}">
+                    ${u.quotationCount} ${quoteLabel}
+                  </span>
+                </td>
+                <td class="mono text-muted text-xs">
+                  ${regDate}
+                </td>
+                <td>
+                  <span class="badge-status-active">
+                    <span class="status-dot"></span> Active
+                  </span>
+                </td>
+                <td>
+                  <a href="/admin/users/${u.id}" class="btn-table-action" title="View Full User Account">
+                    Profile →
+                  </a>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+
+        if (!silent) {
+          (window as any).showAdminToast?.('User accounts synchronized with database', 'info');
+        }
+      } catch (e) {
+        // silent
+      } finally {
+        isFetchingUsers = false;
+      }
+    }
+
+    function escapeHtml(str: string) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    window.addEventListener('asc:db-sync', () => refreshUsers(true));
+    window.addEventListener('pageshow', () => refreshUsers(true));
+  </script>
 </AdminLayout>

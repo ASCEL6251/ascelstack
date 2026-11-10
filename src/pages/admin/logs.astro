@@ -111,7 +111,7 @@ const totalPages = Math.ceil(totalLogs / limit) || 1;
               <th>Change Delta</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="logs-tbody">
             {pagedLogs.map((log) => (
               <tr class="table-row-hover">
                 <td class="mono text-muted text-xs">
@@ -249,4 +249,90 @@ const totalPages = Math.ceil(totalLogs / limit) || 1;
       }
     }
   </style>
+
+  <script>
+    let isFetchingLogs = false;
+    async function refreshLogs(silent = true) {
+      if (isFetchingLogs) return;
+      isFetchingLogs = true;
+      try {
+        const searchParams = new URLSearchParams(window.location.search);
+        const res = await fetch(`/api/admin/logs?${searchParams.toString()}`, {
+          headers: { 'Cache-Control': 'no-cache' },
+          cache: 'no-store',
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const tbody = document.getElementById('logs-tbody');
+
+        if (tbody && data.logs) {
+          tbody.innerHTML = data.logs.map((log: any) => {
+            const formattedDate = new Date(log.createdAt).toLocaleDateString('en-IN', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            });
+            const quoteRef = log.quotationNumber
+              ? `<a href="/admin/quotations/${log.quotationId}" class="mono quote-ref-link" title="Open Quotation">${escapeHtml(log.quotationNumber)}</a>`
+              : `<span class="mono text-muted text-xs">—</span>`;
+
+            const deltaHtml = (log.previousValue !== null && log.newValue !== null && log.previousValue !== undefined && log.newValue !== undefined)
+              ? `
+                <div class="delta-box mono text-xs">
+                  <span class="delta-prev" title="Previous Value">${escapeHtml(log.previousValue || '—')}</span>
+                  <span class="delta-arrow">→</span>
+                  <span class="delta-new" title="New Value">${escapeHtml(log.newValue || '—')}</span>
+                </div>
+              `
+              : `<span class="mono text-muted text-xs">—</span>`;
+
+            return `
+              <tr class="table-row-hover">
+                <td class="mono text-muted text-xs">
+                  ${formattedDate}
+                </td>
+                <td>
+                  <span class="mono text-xs admin-email-pill">${escapeHtml(log.adminEmail || '')}</span>
+                </td>
+                <td>
+                  <span class="log-type-tag tag-${escapeHtml(log.logType || '')}">
+                    ${escapeHtml(log.action || '')}
+                  </span>
+                </td>
+                <td>
+                  ${quoteRef}
+                </td>
+                <td class="text-sm">
+                  ${escapeHtml(log.description || '')}
+                </td>
+                <td>
+                  ${deltaHtml}
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+
+        if (!silent) {
+          (window as any).showAdminToast?.('Activity logs updated in real time', 'info');
+        }
+      } catch (e) {
+        // silent
+      } finally {
+        isFetchingLogs = false;
+      }
+    }
+
+    function escapeHtml(str: string) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    window.addEventListener('asc:db-sync', () => refreshLogs(true));
+    window.addEventListener('pageshow', () => refreshLogs(true));
+  </script>
 </AdminLayout>

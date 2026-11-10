@@ -113,6 +113,16 @@ if (!session) {
             </svg>
             <span>Settings</span>
           </a>
+
+          <!-- 6. Client Portal Switcher -->
+          <div class="sidebar-divider" role="separator"></div>
+          <a href="/dashboard" class="nav-item nav-item-portal" title="Switch to Client Customer Dashboard">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /><polyline points="10 17 15 12 10 7" /><line x1="15" y1="12" x2="3" y2="12" />
+            </svg>
+            <span>Client Portal</span>
+            <span class="mono portal-badge">APP</span>
+          </a>
         </nav>
 
         <!-- Sidebar footer: site link and logout -->
@@ -135,6 +145,9 @@ if (!session) {
           </button>
         </div>
       </aside>
+
+      <!-- Sidebar Backdrop for Mobile/Tablet drawer (placed inside layout, below sidebar z-index) -->
+      <div class="dash-sidebar-backdrop" id="sidebar-backdrop" data-close-sidebar aria-hidden="true"></div>
 
       <!-- ============================================================== -->
       <!-- MAIN CONTAINER: TOPBAR & CONTENT -->
@@ -196,9 +209,6 @@ if (!session) {
       </div>
     </div>
 
-    <!-- Sidebar Backdrop for Mobile/Tablet drawer (placed outside grid) -->
-    <div class="dash-sidebar-backdrop" id="sidebar-backdrop" data-close-sidebar aria-hidden="true"></div>
-
     <!-- ADMIN LOGOUT CONFIRMATION MODAL -->
     <div class="modal-backdrop" id="modal-admin-logout" hidden>
       <div class="modal-dialog modal-dialog-sm" role="dialog" aria-modal="true" aria-labelledby="modal-logout-title">
@@ -236,10 +246,43 @@ if (!session) {
       function toggleSidebar(open: boolean) {
         sidebar?.classList.toggle('is-open', open);
         backdrop?.classList.toggle('is-open', open);
+        document.body.classList.toggle('admin-sidebar-locked', open);
       }
 
-      openBtn?.addEventListener('click', () => toggleSidebar(true));
-      closeBtns.forEach((btn) => btn.addEventListener('click', () => toggleSidebar(false)));
+      openBtn?.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleSidebar(true);
+      });
+
+      closeBtns.forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          toggleSidebar(false);
+        });
+      });
+
+      // Stop propagation on clicks inside the sidebar so it never triggers backdrop dismissal
+      sidebar?.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+
+      // On mobile screens, when a nav link is tapped, close the sidebar drawer so page navigation is seamless
+      const navLinks = sidebar?.querySelectorAll<HTMLAnchorElement>('.sidebar-nav a, .sidebar-footer a');
+      navLinks?.forEach((link) => {
+        link.addEventListener('click', () => {
+          if (window.innerWidth <= 1024) {
+            toggleSidebar(false);
+          }
+        });
+      });
+
+      // Close on Escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && sidebar?.classList.contains('is-open')) {
+          toggleSidebar(false);
+        }
+      });
 
       // Logout Modal Handling
       const logoutModal = document.getElementById('modal-admin-logout');
@@ -292,27 +335,90 @@ if (!session) {
         }, 4000);
       };
 
-      // Real-Time Database Synchronization Heartbeat
+      // Real-Time Database Synchronization Heartbeat & Cross-tab Sync
       let lastKnownHash = '';
-      async function checkSync() {
+      let isCheckingSync = false;
+
+      async function checkSync(manualTrigger = false) {
+        if (isCheckingSync) return;
+        isCheckingSync = true;
+        const pillDot = document.getElementById('realtime-dot');
+        const pillLabel = document.getElementById('realtime-label');
+
         try {
-          const res = await fetch('/api/admin/sync');
+          if (manualTrigger && pillDot) {
+            pillDot.style.background = '#38bdf8';
+            if (pillLabel) pillLabel.textContent = 'SYNCING...';
+          }
+
+          const res = await fetch('/api/admin/sync', {
+            headers: { 'Cache-Control': 'no-cache' },
+            cache: 'no-store',
+          });
+
           if (res.ok) {
             const data = await res.json();
-            if (lastKnownHash && data.versionHash && lastKnownHash !== data.versionHash) {
-              // Database was updated! Dispatch custom event for active views to update without full refresh
-              window.dispatchEvent(new CustomEvent('asc:db-sync', { detail: data }));
-            }
+            const hasChanged = lastKnownHash && data.versionHash && lastKnownHash !== data.versionHash;
             lastKnownHash = data.versionHash;
+
+            if (hasChanged || manualTrigger) {
+              window.dispatchEvent(new CustomEvent('asc:db-sync', { detail: { ...data, manual: manualTrigger } }));
+              if (manualTrigger) {
+                (window as any).showAdminToast?.('Connected to Neon PostgreSQL · Live data synchronized', 'success');
+              }
+            }
+
+            if (pillDot) pillDot.style.background = '#10b981';
+            if (pillLabel) pillLabel.textContent = 'LIVE SYNC';
+          } else {
+            if (pillDot) pillDot.style.background = '#f59e0b';
+            if (pillLabel) pillLabel.textContent = 'RETRYING';
           }
         } catch (e) {
-          // silently handle transient network blips
+          if (pillDot) pillDot.style.background = '#ef4444';
+          if (pillLabel) pillLabel.textContent = 'OFFLINE';
+        } finally {
+          isCheckingSync = false;
         }
       }
 
-      // Poll sync every 6 seconds as a background heartbeat
-      setInterval(checkSync, 6000);
-      checkSync();
+      // Manual sync button click on topbar pill
+      const realtimePill = document.getElementById('realtime-pill');
+      realtimePill?.addEventListener('click', () => {
+        checkSync(true);
+      });
+
+      // Poll sync every 5 seconds as a background heartbeat
+      setInterval(() => checkSync(false), 5000);
+      checkSync(false);
+
+      // Listen to cross-tab broadcasts
+      try {
+        const bcAdmin = new BroadcastChannel('asc_admin_sync');
+        bcAdmin.onmessage = () => {
+          checkSync(false);
+        };
+        const bcCust = new BroadcastChannel('asc_customer_sync');
+        bcCust.onmessage = () => {
+          checkSync(false);
+        };
+      } catch (e) {}
+
+      // Cross-tab storage event
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'asc_admin_sync_tick' || e.key === 'asc_customer_sync_tick') {
+          checkSync(false);
+        }
+      });
+
+      // Instant sync on focus / tab activation
+      window.addEventListener('focus', () => checkSync(false));
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          checkSync(false);
+        }
+      });
+      window.addEventListener('pageshow', () => checkSync(false));
     </script>
   </body>
 </html>
