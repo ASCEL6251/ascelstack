@@ -645,7 +645,7 @@ const initialData = {
                   <div class="planner-params-form">
                     <div class="field">
                       <span class="mono">Project Name / Reference</span>
-                      <input type="text" id="planner-project-name" value="Ascelstack Custom Growth Stack" placeholder="e.g. NextGen Web App & AI Operations" />
+                      <input type="text" id="planner-project-name" value="Asystech Custom Growth Stack" placeholder="e.g. NextGen Web App & AI Operations" />
                     </div>
 
                     <!-- Scope Tier -->
@@ -1711,71 +1711,378 @@ const initialData = {
 
     <!-- MODAL 3: SOW ESTIMATE PRINT & EXPORT MODAL -->
     <div class="modal-backdrop" id="modal-sow-export" hidden>
-      <div class="modal-dialog modal-dialog-wide">
-        <div class="modal-header">
-          <div>
-            <span class="eyebrow">Statement of Work (SOW)</span>
-            <h3 class="display modal-title">Project Estimation Summary</h3>
-            <span class="mono text-muted">Ascelstack Unified Stack Architecture</span>
+      <div class="modal-dialog modal-dialog-wide sow-modal-dialog">
+        <!-- Screen Modal Action Bar -->
+        <div class="modal-header sow-modal-header no-print">
+          <div class="sow-modal-title-lockup">
+            <span class="eyebrow">Executive Statement of Work</span>
+            <h3 class="display modal-title">Project Estimation Document</h3>
+            <span class="mono text-muted text-xs">Asystech Engineering Guild · Professional Billing Theme</span>
           </div>
-          <button class="modal-close-btn" data-close-modal aria-label="Close modal">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          </button>
+
+          <div class="sow-modal-top-actions">
+            <button class="btn btn-primary btn-sm" type="button" id="btn-print-sow" title="Print document or save as PDF">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect width="12" height="8" x="6" y="14"></rect>
+              </svg>
+              <span>Print / Save as PDF</span>
+            </button>
+            <button class="modal-close-btn" data-close-modal aria-label="Close modal">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
         </div>
 
+        <!-- Document Quick Parameter Controller Bar (Screen View Only) -->
+        <div class="sow-screen-toolbar no-print">
+          <div class="sow-toolbar-item">
+            <label class="sow-tb-label mono" for="sow-input-proj-name">PROJECT NAME / TITLE</label>
+            <div class="sow-tb-input-wrap">
+              <input type="text" id="sow-input-proj-name" class="sow-tb-input" placeholder="e.g. NextGen Web App & AI Operations" />
+            </div>
+          </div>
+          <div class="sow-toolbar-stats">
+            <div class="sow-tb-stat">
+              <span class="mono text-muted">SERVICES</span>
+              <strong id="sow-tb-svc-count">0</strong>
+            </div>
+            <div class="sow-tb-stat">
+              <span class="mono text-muted">ESTIMATED TOTAL</span>
+              <strong class="text-accent mono" id="sow-tb-total-cost">₹0</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- THE PRINTABLE BILLING-THEMED SOW ESTIMATION DOCUMENT -->
+        <!-- ============================================================== -->
         <div class="sow-document" id="sow-printable-doc">
-          <div class="sow-doc-header">
-            <div>
-              <strong class="sow-brand-title">ASCELSTACK CLIENT PORTAL</strong>
-              <p class="mono text-muted">Document Ref: <span id="sow-doc-ref">EST-2026-0000</span></p>
+          <!-- 1. Header / Letterhead -->
+          <header class="sow-header-band">
+            <div class="sow-brand-block">
+              <div class="sow-brand-logo-wrap">
+                <svg class="sow-brand-logo" width="46" height="46" viewBox="0 0 100 100" aria-label="Asystech Logo">
+                  <path d="M50 6 L66 38 L34 38 Z" fill="#94BCE3"></path>
+                  <path d="M32 42 L68 42 L70 46 L80 66 L60 66 L50 46 L40 66 L20 66 L30 46 Z" fill="#5980A6"></path>
+                  <path d="M18 70 L38 70 L26 94 L6 94 Z M82 70 L62 70 L74 94 L94 94 Z" fill="#1D2D3D"></path>
+                </svg>
+                <div class="sow-brand-titles">
+                  <h1 class="sow-company-name">Asystech</h1>
+                  <p class="sow-company-tagline">Software Engineering & Digital Growth Architecture</p>
+                </div>
+              </div>
+              <div class="sow-provider-info">
+                <span>Sector V, Bidhannagar, Salt Lake, Kolkata, West Bengal 700091, India</span>
+                <span>contact@asystech.com · +91 89428 41651 · www.asystech.com</span>
+              </div>
             </div>
-            <div class="text-right">
-              <span class="mono text-muted">Date: <span id="sow-doc-date">10 Nov 2026</span></span>
-              <p class="sow-client-target">Client: <strong data-bind-biz-name>{defaultBusinessName}</strong></p>
+
+            <div class="sow-doc-meta-block">
+              <div class="sow-doc-badge-pill mono">STATEMENT OF WORK · ESTIMATION</div>
+              <h2 class="sow-doc-main-title">PROJECT ESTIMATE</h2>
+              <div class="sow-meta-grid">
+                <div class="sow-meta-item">
+                  <span class="sow-meta-lbl mono">DOC REFERENCE</span>
+                  <strong class="sow-meta-val mono" id="sow-doc-ref">EST-2026-0000</strong>
+                </div>
+                <div class="sow-meta-item">
+                  <span class="sow-meta-lbl mono">DATE OF ISSUE</span>
+                  <strong class="sow-meta-val" id="sow-doc-date">11 Nov 2026</strong>
+                </div>
+                <div class="sow-meta-item">
+                  <span class="sow-meta-lbl mono">VALID UNTIL</span>
+                  <strong class="sow-meta-val" id="sow-doc-validity">11 Dec 2026</strong>
+                </div>
+                <div class="sow-meta-item">
+                  <span class="sow-meta-lbl mono">CURRENCY</span>
+                  <strong class="sow-meta-val mono" id="sow-doc-currency">INR (₹)</strong>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <!-- 2. Parties Grid: ISSUED BY vs PREPARED FOR -->
+          <div class="sow-parties-card">
+            <div class="sow-party-col">
+              <div class="sow-party-tag mono">ISSUED BY (SERVICE PROVIDER)</div>
+              <strong class="sow-party-name">Asystech Technologies Private Limited</strong>
+              <div class="sow-party-details">
+                <p>Enterprise Engineering & Cloud Architecture Guild</p>
+                <p>Sector V, Bidhannagar, Salt Lake, Kolkata, WB 700091</p>
+                <p>contact@asystech.com · +91 89428 41651</p>
+              </div>
+            </div>
+
+            <div class="sow-party-col sow-party-client">
+              <div class="sow-party-tag mono">PREPARED FOR (CLIENT)</div>
+              <strong class="sow-party-name" id="sow-client-biz" data-bind-biz-name>{defaultBusinessName}</strong>
+              <div class="sow-party-details">
+                <p><span class="text-muted">Attention:</span> <strong id="sow-client-attn">{user.fullName || 'Authorized Representative'}</strong></p>
+                <p><span class="text-muted">Email:</span> <span id="sow-client-email">{defaultBusinessEmail}</span></p>
+                <p><span class="text-muted">Project Ref:</span> <strong class="mono text-accent" id="sow-party-proj-name">Asystech Custom Growth Stack</strong></p>
+              </div>
             </div>
           </div>
 
-          <div class="sow-summary-box">
-            <div class="sow-stat-col">
-              <span class="mono text-muted">Project Name</span>
-              <strong id="sow-proj-name">Ascelstack Custom Growth Stack</strong>
+          <!-- 3. Executive Project Scope Overview Banner -->
+          <div class="sow-project-banner">
+            <div class="sow-proj-banner-header">
+              <span class="sow-proj-label mono">PROJECT NAME & SCOPE BASELINE</span>
+              <h3 class="sow-proj-title-display" id="sow-proj-name">Asystech Custom Growth Stack</h3>
+              <p class="sow-proj-desc-sub" id="sow-proj-scope-summary">
+                Integrated multi-layer engineering stack covering architectural design, cloud automation, bespoke software modules, and production SLA operations.
+              </p>
             </div>
-            <div class="sow-stat-col">
-              <span class="mono text-muted">Estimated Investment</span>
-              <strong class="text-accent" id="sow-proj-cost">₹0</strong>
-            </div>
-            <div class="sow-stat-col">
-              <span class="mono text-muted">Projected Timeline</span>
-              <strong id="sow-proj-timeline">0 Weeks</strong>
-            </div>
-            <div class="sow-stat-col">
-              <span class="mono text-muted">Engineering Hours</span>
-              <strong id="sow-proj-hours">0 Hours</strong>
+
+            <div class="sow-metrics-strip">
+              <div class="sow-metric-box">
+                <span class="sow-metric-label mono">ESTIMATED INVESTMENT</span>
+                <div class="sow-metric-val-hero mono text-accent" id="sow-proj-cost">₹0</div>
+                <span class="sow-metric-sub">Direct Scope Allocation</span>
+              </div>
+              <div class="sow-metric-box">
+                <span class="sow-metric-label mono">TIMELINE</span>
+                <div class="sow-metric-val" id="sow-proj-timeline">0 Weeks</div>
+                <span class="sow-metric-sub">Sprint Cadence</span>
+              </div>
+              <div class="sow-metric-box">
+                <span class="sow-metric-label mono">ENGINEERING</span>
+                <div class="sow-metric-val mono" id="sow-proj-hours">0 Hours</div>
+                <span class="sow-metric-sub">Capacity Allocation</span>
+              </div>
+              <div class="sow-metric-box">
+                <span class="sow-metric-label mono">ENGAGEMENT TIER</span>
+                <div class="sow-metric-val" id="sow-proj-tier">Starter (1.0x)</div>
+                <span class="sow-metric-sub" id="sow-proj-urgency">Standard Pace</span>
+              </div>
             </div>
           </div>
 
-          <div class="sow-services-table-wrap">
-            <table class="data-table">
+          <!-- 4. Itemized Scope of Services & Deliverables Table -->
+          <div class="sow-section-title-bar">
+            <div class="sow-sec-title-left">
+              <span class="sow-sec-tag mono">SECTION 01</span>
+              <h4 class="sow-sec-heading">Itemized Scope of Services & Technical Deliverables</h4>
+            </div>
+            <span class="sow-sec-count mono" id="sow-services-count-pill">0 Services Stacked</span>
+          </div>
+
+          <div class="sow-table-wrap">
+            <table class="sow-invoice-table">
               <thead>
                 <tr>
-                  <th>Code</th>
-                  <th>Service</th>
-                  <th>Layer</th>
-                  <th>Discipline</th>
-                  <th>Allocated Cost</th>
+                  <th class="th-idx mono">#</th>
+                  <th class="th-code mono">Code</th>
+                  <th class="th-svc">Service & Architectural Deliverables</th>
+                  <th class="th-layer">Layer</th>
+                  <th class="th-disc">Discipline</th>
+                  <th class="th-price mono text-right">Allocated Investment</th>
                 </tr>
               </thead>
-              <tbody id="sow-services-rows"></tbody>
+              <tbody id="sow-services-rows">
+                <!-- Dynamically populated rows -->
+              </tbody>
             </table>
           </div>
+
+          <!-- 5. Commercial Breakdown & Billing Milestones (Two Columns) -->
+          <div class="sow-summary-split sow-avoid-break">
+            <!-- Left: Milestone Billing Schedule -->
+            <div class="sow-commercial-terms">
+              <div class="sow-sec-tag mono">SECTION 02 · BILLING TERMS</div>
+              <h4 class="sow-sec-heading">Milestone Disbursement Schedule</h4>
+              <div class="sow-milestone-list">
+                <div class="sow-ms-row">
+                  <span class="sow-ms-pct mono">40%</span>
+                  <div class="sow-ms-body">
+                    <strong>Sprint 0 & Architectural Blueprint</strong>
+                    <p>Triggered upon formal authorization and dedicated project repository provisioning.</p>
+                  </div>
+                </div>
+                <div class="sow-ms-row">
+                  <span class="sow-ms-pct mono">40%</span>
+                  <div class="sow-ms-body">
+                    <strong>Core Development & System Integration</strong>
+                    <p>Milestone signoff upon staging review demos and automated test suite verification.</p>
+                  </div>
+                </div>
+                <div class="sow-ms-row">
+                  <span class="sow-ms-pct mono">20%</span>
+                  <div class="sow-ms-body">
+                    <strong>Production Deployment & Go-Live Acceptance</strong>
+                    <p>Final production release, domain mapping, IP asset transfer and warranty kickoff.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Billing Calculation Card -->
+            <div class="sow-calc-card">
+              <div class="sow-calc-head mono">ESTIMATED COMMERCIAL SUMMARY</div>
+              <div class="sow-calc-rows">
+                <div class="sow-calc-row">
+                  <span>Gross Services Allocation</span>
+                  <strong class="mono" id="sow-calc-raw">₹0</strong>
+                </div>
+                <div class="sow-calc-row">
+                  <span>Scope Tier (<span id="sow-calc-scale-label">1.0x</span>)</span>
+                  <strong class="mono" id="sow-calc-scale-val">Included</strong>
+                </div>
+                <div class="sow-calc-row" id="sow-row-urgency" hidden>
+                  <span>Delivery Cadence Adjustment</span>
+                  <strong class="mono" id="sow-calc-urgency-val">+0%</strong>
+                </div>
+                <div class="sow-calc-row sow-calc-discount" id="sow-row-synergy" hidden>
+                  <span>Stack Synergy Savings</span>
+                  <strong class="mono text-success" id="sow-calc-synergy-val">-₹0</strong>
+                </div>
+                <div class="sow-calc-row" id="sow-row-support" hidden>
+                  <span>Operations SLA Tier</span>
+                  <strong class="mono" id="sow-calc-support-val">+₹0</strong>
+                </div>
+                <div class="sow-calc-total-row">
+                  <div class="sow-total-copy">
+                    <strong>Total Estimated Project Investment</strong>
+                    <small>Net budget allocation for defined scope</small>
+                  </div>
+                  <div class="sow-grand-amount mono" id="sow-calc-grand-total">₹0</div>
+                </div>
+              </div>
+              <p class="sow-calc-fine">
+                * Quotation reflects professional engineering and operational services. Third-party cloud infrastructure (Cloudflare, AWS, GCP), API usage tokens, and statutory government licensing fees are billed at actuals.
+              </p>
+            </div>
+          </div>
+
+          <!-- 6. Phased Sprint Roadmap -->
+          <div class="sow-roadmap-section sow-avoid-break">
+            <div class="sow-sec-tag mono">SECTION 03 · EXECUTION CADENCE</div>
+            <h4 class="sow-sec-heading">Projected Sprint Delivery Phasing</h4>
+            <div class="sow-roadmap-grid">
+              <div class="sow-rm-card">
+                <div class="sow-rm-top">
+                  <span class="sow-rm-num mono">01</span>
+                  <span class="mono text-muted text-xs" id="sow-rm-w1">Weeks 1–2</span>
+                </div>
+                <strong class="sow-rm-title">Architecture & System Design</strong>
+                <p class="sow-rm-desc">Data models, API contracts, infrastructure blueprints, and technical wireframes.</p>
+              </div>
+              <div class="sow-rm-card">
+                <div class="sow-rm-top">
+                  <span class="sow-rm-num mono">02</span>
+                  <span class="mono text-muted text-xs" id="sow-rm-w2">Weeks 2–4</span>
+                </div>
+                <strong class="sow-rm-title">Core Development & UI</strong>
+                <p class="sow-rm-desc">Feature development, responsive views, service integrations, and workflows.</p>
+              </div>
+              <div class="sow-rm-card">
+                <div class="sow-rm-top">
+                  <span class="sow-rm-num mono">03</span>
+                  <span class="mono text-muted text-xs" id="sow-rm-w3">Weeks 4–5</span>
+                </div>
+                <strong class="sow-rm-title">Automations, AI & QA Testing</strong>
+                <p class="sow-rm-desc">Automated test suites, end-to-end user flows, AI fine-tuning, and stress diagnostics.</p>
+              </div>
+              <div class="sow-rm-card">
+                <div class="sow-rm-top">
+                  <span class="sow-rm-num mono">04</span>
+                  <span class="mono text-muted text-xs" id="sow-rm-w4">Weeks 5–6</span>
+                </div>
+                <strong class="sow-rm-title">Production Handover & Go-Live</strong>
+                <p class="sow-rm-desc">DNS cutover, production hardening, repository transfer, and 14-day warranty kickoff.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 7. Commercial Conditions -->
+          <div class="sow-terms-section sow-avoid-break">
+            <div class="sow-sec-tag mono">SECTION 04 · CONDITIONS</div>
+            <h4 class="sow-sec-heading">Commercial Conditions & Intellectual Property</h4>
+            <div class="sow-terms-grid">
+              <div class="sow-term-item">
+                <strong>1. Scope Baseline & Revisions</strong>
+                <p>Deliverables are bound by this estimate. Additions or architectural alterations requested post-kickoff are documented via mutual Change Requests.</p>
+              </div>
+              <div class="sow-term-item">
+                <strong>2. Quotation Validity</strong>
+                <p>Engineering allocations, timeline projections, and commercial terms are reserved and valid for thirty (30) calendar days from issuance.</p>
+              </div>
+              <div class="sow-term-item">
+                <strong>3. 100% Intellectual Property Assignment</strong>
+                <p>All custom source code, documentation, repository commits, and assets transfer entirely to the client upon final milestone fulfillment.</p>
+              </div>
+              <div class="sow-term-item">
+                <strong>4. Post-Launch Warranty</strong>
+                <p>Includes complimentary 14-day standard hypercare warranty covering defect corrections, security patch application, and production monitoring.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 8. Signatures & Authorization Execution Block -->
+          <div class="sow-sign-section sow-avoid-break">
+            <div class="sow-sign-grid">
+              <div class="sow-sign-box">
+                <div class="sow-sign-tag mono">SERVICE PROVIDER</div>
+                <strong class="sow-sign-party">Asystech Technologies Private Limited</strong>
+                <div class="sow-sign-slot">
+                  <div class="sow-sign-drawn">Asystech Engineering Guild</div>
+                </div>
+                <div class="sow-sign-meta">
+                  <span>Authorized Principal Architect & Director</span>
+                  <span>Enterprise Software Guild · Asystech</span>
+                  <span class="mono" id="sow-sign-date">Date: 11 Nov 2026</span>
+                </div>
+              </div>
+
+              <div class="sow-sign-box sow-sign-box-client">
+                <div class="sow-sign-tag mono">CLIENT APPROVAL & CONFIRMATION</div>
+                <strong class="sow-sign-party" id="sow-sign-client-biz" data-bind-biz-name>{defaultBusinessName}</strong>
+                <div class="sow-sign-slot sow-sign-slot-client">
+                  <span class="sow-sign-placeholder">Authorized Signature & Stamp</span>
+                </div>
+                <div class="sow-sign-meta">
+                  <span id="sow-sign-client-name">Name: {user.fullName || 'Authorized Signatory'}</span>
+                  <span>Title: Authorized Representative</span>
+                  <span>Date: ________________________</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 9. Professional Document Running Footer -->
+          <footer class="sow-doc-footer sow-avoid-break">
+            <div class="sow-footer-left">
+              <span class="mono">ASYSTECH CLIENT PORTAL · SOW ESTIMATE DOCUMENT</span>
+              <span class="mono text-muted">Confidential · Prepared for Client Business</span>
+            </div>
+            <div class="sow-footer-right">
+              <span class="mono" id="sow-footer-ref">REF: EST-2026-0000</span>
+              <span class="mono text-muted">Official Proposal · Page 1 of 1</span>
+            </div>
+          </footer>
         </div>
 
-        <div class="modal-actions">
-          <button class="btn btn-ghost" type="button" data-close-modal>Close</button>
-          <button class="btn btn-primary" type="button" id="btn-print-sow">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect width="12" height="8" x="6" y="14"></rect></svg>
-            <span>Print / Save as PDF</span>
-          </button>
+        <!-- Screen Modal Bottom Actions -->
+        <div class="modal-actions sow-modal-bottom-actions no-print">
+          <div class="sow-modal-hint mono text-muted text-xs">
+            Format: Standard A4 Billing Statement. Supported on iOS, Android, macOS and Windows.
+          </div>
+          <div class="sow-modal-btn-group">
+            <button class="btn btn-ghost" type="button" data-close-modal>Close</button>
+            <button class="btn btn-primary" type="button" id="btn-print-sow-bottom">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect width="12" height="8" x="6" y="14"></rect>
+              </svg>
+              <span>Print / Save as PDF</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -3094,7 +3401,7 @@ const initialData = {
           return;
         }
 
-        const projectName = (document.getElementById('planner-project-name') as HTMLInputElement)?.value.trim() || 'Ascelstack Custom Growth Stack';
+        const projectName = (document.getElementById('planner-project-name') as HTMLInputElement)?.value.trim() || 'Asystech Custom Growth Stack';
         if (modalSubmitProjName) modalSubmitProjName.value = projectName;
 
         if (modalSubmitCount) modalSubmitCount.textContent = `${selectedServices.length}`;
@@ -3144,7 +3451,7 @@ const initialData = {
         const selectedServices = state.allServices.filter((s) => selectedServiceIds.has(s.id));
         if (selectedServices.length === 0) return;
 
-        const projectName = modalSubmitProjName?.value.trim() || 'Ascelstack Custom Growth Stack';
+        const projectName = modalSubmitProjName?.value.trim() || 'Asystech Custom Growth Stack';
         const tierInput = document.querySelector<HTMLInputElement>('input[name="project-tier"]:checked');
         const tier = tierInput?.value || 'starter';
         const urgency = (document.getElementById('planner-urgency') as HTMLSelectElement)?.value || 'standard';
@@ -3200,8 +3507,28 @@ const initialData = {
         }
       });
 
-      // SOW Export Modal
+      // SOW Export Modal & Billing Theme Document Engine
       const modalSow = document.getElementById('modal-sow-export') as HTMLElement;
+      const sowInputProjName = document.getElementById('sow-input-proj-name') as HTMLInputElement;
+
+      const updateSowProjectName = (name: string) => {
+        const cleanName = name.trim() || 'Asystech Custom Growth Stack';
+        const sowProjNameEl = document.getElementById('sow-proj-name');
+        const sowPartyProjEl = document.getElementById('sow-party-proj-name');
+        const sowFooterRefEl = document.getElementById('sow-footer-ref');
+        const docRef = document.getElementById('sow-doc-ref')?.textContent || 'EST-2026';
+
+        if (sowProjNameEl) sowProjNameEl.textContent = cleanName;
+        if (sowPartyProjEl) sowPartyProjEl.textContent = cleanName;
+        if (sowFooterRefEl) sowFooterRefEl.textContent = `REF: ${docRef} · ${cleanName}`;
+      };
+
+      sowInputProjName?.addEventListener('input', () => {
+        const pInput = document.getElementById('planner-project-name') as HTMLInputElement;
+        if (pInput) pInput.value = sowInputProjName.value;
+        updateSowProjectName(sowInputProjName.value);
+      });
+
       document.getElementById('btn-export-sow')?.addEventListener('click', () => {
         const selectedServices = state.allServices.filter((s) => selectedServiceIds.has(s.id));
         if (selectedServices.length === 0) {
@@ -3209,46 +3536,219 @@ const initialData = {
           return;
         }
 
-        const projectName = (document.getElementById('planner-project-name') as HTMLInputElement)?.value.trim() || 'Ascelstack Project';
-        const totalPrice = document.getElementById('est-total-price')?.textContent || '₹0';
-        const duration = document.getElementById('est-duration')?.textContent || '0 Weeks';
-        const hours = document.getElementById('est-hours')?.textContent || '0 Hours';
+        const plannerProjInput = document.getElementById('planner-project-name') as HTMLInputElement;
+        const projectName = plannerProjInput?.value.trim() || 'Asystech Custom Growth Stack';
+        if (sowInputProjName) sowInputProjName.value = projectName;
 
-        document.getElementById('sow-proj-name')!.textContent = projectName;
-        document.getElementById('sow-proj-cost')!.textContent = totalPrice;
-        document.getElementById('sow-proj-timeline')!.textContent = duration;
-        document.getElementById('sow-proj-hours')!.textContent = hours;
-        document.getElementById('sow-doc-ref')!.textContent = `EST-${Date.now().toString().slice(-6)}`;
-        document.getElementById('sow-doc-date')!.textContent = new Date().toLocaleDateString('en-IN', {
-          day: 'numeric',
-          month: 'short',
-          year: 'numeric',
+        const tierInput = document.querySelector<HTMLInputElement>('input[name="project-tier"]:checked');
+        const tier = tierInput?.value || 'starter';
+        let tierMultiplier = 1.0;
+        let tierLabel = 'Starter / MVP (1.0x)';
+        if (tier === 'growth') {
+          tierMultiplier = 1.5;
+          tierLabel = 'Growth / Scale (1.5x)';
+        } else if (tier === 'enterprise') {
+          tierMultiplier = 2.2;
+          tierLabel = 'Enterprise (2.2x)';
+        }
+
+        const urgencySelect = document.getElementById('planner-urgency') as HTMLSelectElement;
+        const urgency = urgencySelect?.value || 'standard';
+        let urgencyCostMult = 1.0;
+        let urgencyTimeMult = 1.0;
+        let urgencyLabel = 'Standard Pace (Balanced cadence)';
+        if (urgency === 'sprint') {
+          urgencyCostMult = 1.2;
+          urgencyTimeMult = 0.7;
+          urgencyLabel = 'Fast-Track Sprint (+20% fee, -30% time)';
+        } else if (urgency === 'phased') {
+          urgencyCostMult = 0.95;
+          urgencyTimeMult = 1.3;
+          urgencyLabel = 'Phased Milestones (-5% bundle discount)';
+        }
+
+        const supportSelect = document.getElementById('planner-support') as HTMLSelectElement;
+        const support = supportSelect?.value || 'none';
+        let supportAddonInr = 0;
+        let supportLabel = 'Standard Handover (Included 14-day warranty)';
+        if (support === 'hypercare') {
+          supportAddonInr = 35000;
+          supportLabel = '3 Months Hypercare (+₹35,000 / $410)';
+        } else if (support === 'retainer') {
+          supportAddonInr = 75000;
+          supportLabel = 'Ongoing Managed SLA Retainer (+₹75,000/mo / $880/mo)';
+        }
+
+        let rawCost = 0;
+        let totalHours = 0;
+        let maxWeeks = 0;
+
+        selectedServices.forEach((svc) => {
+          const { cost, hours, weeks } = getServiceBaseMetrics(svc);
+          const scaledCost = cost * tierMultiplier * urgencyCostMult;
+          rawCost += scaledCost;
+          totalHours += hours * (tierMultiplier > 1 ? tierMultiplier * 0.85 : 1);
+          if (weeks > maxWeeks) maxWeeks = weeks;
         });
 
+        // Synergy Savings
+        let synergyDiscount = 0;
+        const distinctLayers = new Set(selectedServices.map((s) => s.layer)).size;
+        if (selectedServices.length >= 5) {
+          synergyDiscount = rawCost * 0.15;
+        } else if (selectedServices.length >= 3 || distinctLayers >= 2) {
+          synergyDiscount = rawCost * 0.10;
+        }
+
+        const finalTotalInr = Math.max(0, rawCost - synergyDiscount + supportAddonInr);
+        const totalPrice = formatMoney(finalTotalInr);
+        const totalWeeks = Math.max(2, Math.round((maxWeeks + Math.sqrt(selectedServices.length) * 1.4) * urgencyTimeMult));
+        const duration = `${totalWeeks}–${totalWeeks + 2} Weeks`;
+        const hours = `${Math.round(totalHours)} Hours`;
+
+        const docRef = `EST-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`;
+        const issueDate = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        const validDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+
+        // Update Document Identity
+        updateSowProjectName(projectName);
+        const sowProjCostEl = document.getElementById('sow-proj-cost');
+        const sowProjTimelineEl = document.getElementById('sow-proj-timeline');
+        const sowProjHoursEl = document.getElementById('sow-proj-hours');
+        const sowProjTierEl = document.getElementById('sow-proj-tier');
+        const sowProjUrgencyEl = document.getElementById('sow-proj-urgency');
+        const sowDocRefEl = document.getElementById('sow-doc-ref');
+        const sowDocDateEl = document.getElementById('sow-doc-date');
+        const sowDocValidityEl = document.getElementById('sow-doc-validity');
+        const sowSignDateEl = document.getElementById('sow-sign-date');
+        const sowDocCurrencyEl = document.getElementById('sow-doc-currency');
+        const sowServicesCountPillEl = document.getElementById('sow-services-count-pill');
+
+        if (sowProjCostEl) sowProjCostEl.textContent = totalPrice;
+        if (sowProjTimelineEl) sowProjTimelineEl.textContent = duration;
+        if (sowProjHoursEl) sowProjHoursEl.textContent = hours;
+        if (sowProjTierEl) sowProjTierEl.textContent = tierLabel;
+        if (sowProjUrgencyEl) sowProjUrgencyEl.textContent = urgency === 'sprint' ? 'Fast-Track Sprint (+20%)' : urgency === 'phased' ? 'Phased Milestones (-5%)' : 'Standard Pace';
+        if (sowDocRefEl) sowDocRefEl.textContent = docRef;
+        if (sowDocDateEl) sowDocDateEl.textContent = issueDate;
+        if (sowDocValidityEl) sowDocValidityEl.textContent = validDate;
+        if (sowSignDateEl) sowSignDateEl.textContent = `Date: ${issueDate}`;
+        if (sowDocCurrencyEl) sowDocCurrencyEl.textContent = plannerCurrency === 'USD' ? 'USD ($)' : 'INR (₹)';
+        if (sowServicesCountPillEl) sowServicesCountPillEl.textContent = `${selectedServices.length} ${selectedServices.length === 1 ? 'Service Stacked' : 'Services Stacked'}`;
+
+        // Screen toolbar stats
+        const tbCount = document.getElementById('sow-tb-svc-count');
+        const tbPrice = document.getElementById('sow-tb-total-cost');
+        if (tbCount) tbCount.textContent = `${selectedServices.length}`;
+        if (tbPrice) tbPrice.textContent = totalPrice;
+
+        // Dynamic Sprint milestones timeline
+        const rmW1 = document.getElementById('sow-rm-w1');
+        const rmW2 = document.getElementById('sow-rm-w2');
+        const rmW3 = document.getElementById('sow-rm-w3');
+        const rmW4 = document.getElementById('sow-rm-w4');
+        const s1 = Math.max(1, Math.round(totalWeeks * 0.25));
+        const s2 = Math.max(s1 + 1, Math.round(totalWeeks * 0.6));
+        const s3 = Math.max(s2 + 1, Math.round(totalWeeks * 0.85));
+        if (rmW1) rmW1.textContent = `Weeks 1–${s1}`;
+        if (rmW2) rmW2.textContent = `Weeks ${s1 + 1}–${s2}`;
+        if (rmW3) rmW3.textContent = `Weeks ${s2 + 1}–${s3}`;
+        if (rmW4) rmW4.textContent = `Weeks ${s3 + 1}–${totalWeeks}`;
+
+        // Populate Table with clean billing layout
         const rowsContainer = document.getElementById('sow-services-rows');
         if (rowsContainer) {
           rowsContainer.innerHTML = selectedServices
-            .map((svc) => {
-              const { cost } = getServiceBaseMetrics(svc);
+            .map((svc, index) => {
+              const { cost, hours: svcHours, weeks: svcWeeks } = getServiceBaseMetrics(svc);
+              const scaledCost = cost * tierMultiplier * urgencyCostMult;
+              const desc = svc.description || 'Full architectural design, deployment and production handover.';
               return `
                 <tr>
-                  <td class="mono">${svc.code || 'ASC-0000'}</td>
-                  <td><strong>${svc.name}</strong></td>
-                  <td><span class="layer-tag layer-${svc.layer}">${svc.layer}</span></td>
-                  <td class="text-muted">${svc.discipline}</td>
-                  <td class="mono">${formatMoney(cost)}</td>
+                  <td class="mono sow-cell-idx">${index + 1}</td>
+                  <td class="mono sow-cell-code">
+                    <strong>${svc.code || 'ASC-0000'}</strong>
+                  </td>
+                  <td class="sow-cell-svc">
+                    <div class="sow-svc-title">${svc.name}</div>
+                    <div class="sow-svc-desc text-muted">${desc}</div>
+                  </td>
+                  <td>
+                    <span class="layer-tag layer-${svc.layer}">${svc.layer.toUpperCase()}</span>
+                  </td>
+                  <td class="text-muted sow-cell-disc">${svc.discipline}</td>
+                  <td class="mono sow-cell-price text-right">${formatMoney(scaledCost)}</td>
                 </tr>
               `;
             })
             .join('');
         }
 
+        // Financial Breakdown Card (Billing Theme, No GST)
+        const calcRaw = document.getElementById('sow-calc-raw');
+        const calcScaleLabel = document.getElementById('sow-calc-scale-label');
+        const calcScaleVal = document.getElementById('sow-calc-scale-val');
+        const rowUrgency = document.getElementById('sow-row-urgency');
+        const calcUrgencyVal = document.getElementById('sow-calc-urgency-val');
+        const rowSynergy = document.getElementById('sow-row-synergy');
+        const calcSynergyVal = document.getElementById('sow-calc-synergy-val');
+        const rowSupport = document.getElementById('sow-row-support');
+        const calcSupportVal = document.getElementById('sow-calc-support-val');
+        const calcGrandTotal = document.getElementById('sow-calc-grand-total');
+
+        if (calcRaw) calcRaw.textContent = formatMoney(rawCost);
+        if (calcScaleLabel) calcScaleLabel.textContent = `${tierMultiplier}x`;
+        if (calcScaleVal) calcScaleVal.textContent = tierMultiplier === 1 ? 'Baseline 1.0x' : `${tierMultiplier}x Scaled`;
+
+        if (rowUrgency && calcUrgencyVal) {
+          if (urgency === 'sprint') {
+            rowUrgency.hidden = false;
+            calcUrgencyVal.textContent = '+20% Rush Fee';
+          } else if (urgency === 'phased') {
+            rowUrgency.hidden = false;
+            calcUrgencyVal.textContent = '-5% Discount';
+          } else {
+            rowUrgency.hidden = true;
+          }
+        }
+
+        if (rowSynergy && calcSynergyVal) {
+          if (synergyDiscount > 0) {
+            rowSynergy.hidden = false;
+            calcSynergyVal.textContent = `-${formatMoney(synergyDiscount)}`;
+          } else {
+            rowSynergy.hidden = true;
+          }
+        }
+
+        if (rowSupport && calcSupportVal) {
+          if (supportAddonInr > 0) {
+            rowSupport.hidden = false;
+            calcSupportVal.textContent = `+${formatMoney(supportAddonInr)}`;
+          } else {
+            rowSupport.hidden = true;
+          }
+        }
+
+        if (calcGrandTotal) calcGrandTotal.textContent = totalPrice;
+
         if (modalSow) modalSow.hidden = false;
       });
 
-      document.getElementById('btn-print-sow')?.addEventListener('click', () => {
+      // Print execution with dynamic document title for automatic PDF filename
+      const triggerPrintSOW = () => {
+        const plannerProjInput = document.getElementById('planner-project-name') as HTMLInputElement;
+        const projectName = plannerProjInput?.value.trim() || 'Asystech Custom Growth Stack';
+        const prevTitle = document.title;
+        document.title = `${projectName} - Asystech Project Estimation`;
         window.print();
-      });
+        setTimeout(() => {
+          document.title = prevTitle;
+        }, 1500);
+      };
+
+      document.getElementById('btn-print-sow')?.addEventListener('click', triggerPrintSOW);
+      document.getElementById('btn-print-sow-bottom')?.addEventListener('click', triggerPrintSOW);
 
       // Default preset
       applyPreset('mvp');
@@ -5425,46 +5925,692 @@ const initialData = {
         border-color: #b91c1c;
       }
 
-      /* SOW Document Print */
-      .sow-document {
-        background: white;
-        color: #1d1f20;
-        padding: 1.75rem;
-        border-radius: var(--radius);
+      /* ============================================================== */
+      /* SOW ESTIMATE & BILLING STATEMENT THEME */
+      /* ============================================================== */
+      .sow-modal-dialog {
+        max-width: 980px;
+        width: 95vw;
+        max-height: 92vh;
+        overflow-y: auto;
+        padding: 1.5rem;
+        background: var(--paper-raised);
         border: 1px solid var(--line);
-        display: grid;
-        gap: 1.25rem;
+        border-radius: var(--radius);
+        box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.35);
       }
-      .sow-doc-header {
+      .sow-modal-header {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        border-bottom: 2px solid #1d2d3d;
+        gap: 1.25rem;
         padding-bottom: 1rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid var(--line);
       }
-      .sow-brand-title {
-        font-size: 1.2rem;
-        font-family: var(--font-display);
-        letter-spacing: -0.01em;
+      .sow-modal-title-lockup {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
       }
-      .sow-summary-box {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 1rem;
-        background: #f8f9fa;
-        padding: 1rem;
+      .sow-modal-top-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-shrink: 0;
+      }
+      .sow-screen-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1.25rem;
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-s);
+        padding: 0.85rem 1.15rem;
+        margin-bottom: 1.5rem;
+      }
+      .sow-toolbar-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        flex: 1;
+        max-width: 500px;
+      }
+      .sow-tb-label {
+        font-size: 0.68rem;
+        letter-spacing: 0.08em;
+        color: var(--accent);
+        font-weight: 700;
+      }
+      .sow-tb-input {
+        width: 100%;
+        padding: 0.45rem 0.75rem;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-s);
+        background: var(--paper-raised);
+        color: var(--ink);
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+      .sow-tb-input:focus {
+        border-color: var(--accent);
+        outline: none;
+      }
+      .sow-toolbar-stats {
+        display: flex;
+        align-items: center;
+        gap: 1.75rem;
+      }
+      .sow-tb-stat {
+        display: flex;
+        flex-direction: column;
+        text-align: right;
+        gap: 0.15rem;
+        font-size: 0.75rem;
+      }
+      .sow-tb-stat strong {
+        font-size: 1rem;
+      }
+
+      /* The Printable Document Paper */
+      .sow-document {
+        background: #ffffff;
+        color: #0f172a;
+        padding: 2.5rem 2.75rem;
         border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        box-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
+        font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        line-height: 1.5;
+        font-size: 9.5pt;
+        display: flex;
+        flex-direction: column;
+        gap: 1.6rem;
       }
-      .sow-stat-col { display: grid; gap: 0.25rem; }
-      .sow-stat-col strong {
-        font-family: var(--font-body);
-        font-size: 1.15rem;
+
+      /* 1. Header / Letterhead */
+      .sow-header-band {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 2rem;
+        border-bottom: 2.5px solid #0f172a;
+        padding-bottom: 1.25rem;
+      }
+      .sow-brand-block {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+      }
+      .sow-brand-logo-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+      }
+      .sow-brand-logo {
+        flex-shrink: 0;
+      }
+      .sow-brand-titles {
+        display: flex;
+        flex-direction: column;
+      }
+      .sow-company-name {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 1.75rem;
         font-weight: 800;
-        font-variant-numeric: tabular-nums lining-nums;
-        font-feature-settings: 'tnum' 1, 'lnum' 1;
+        color: #0f172a;
+        margin: 0;
+        line-height: 1;
         letter-spacing: -0.02em;
       }
-      .sow-services-table-wrap { overflow-x: auto; }
+      .sow-company-tagline {
+        font-size: 0.78rem;
+        color: #475569;
+        margin: 0.3rem 0 0;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+      }
+      .sow-provider-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        font-size: 0.74rem;
+        color: #64748b;
+        line-height: 1.4;
+      }
+
+      .sow-doc-meta-block {
+        text-align: right;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.35rem;
+      }
+      .sow-doc-badge-pill {
+        display: inline-block;
+        font-size: 0.65rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        padding: 0.2rem 0.65rem;
+        background: #f1f5f9;
+        color: #1e3a8a;
+        border: 1px solid #bfdbfe;
+        border-radius: 999px;
+      }
+      .sow-doc-main-title {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0.1rem 0;
+        letter-spacing: -0.01em;
+      }
+      .sow-meta-grid {
+        display: grid;
+        grid-template-columns: auto auto;
+        gap: 0.4rem 1.4rem;
+        text-align: left;
+        margin-top: 0.35rem;
+      }
+      .sow-meta-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.1rem;
+      }
+      .sow-meta-lbl {
+        font-size: 0.62rem;
+        color: #94a3b8;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+      }
+      .sow-meta-val {
+        font-size: 0.82rem;
+        color: #0f172a;
+        font-weight: 700;
+      }
+
+      /* 2. Parties Grid */
+      .sow-parties-card {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 1.15rem 1.35rem;
+      }
+      .sow-party-col {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+      }
+      .sow-party-tag {
+        font-size: 0.65rem;
+        font-weight: 800;
+        color: #5980a6;
+        letter-spacing: 0.08em;
+      }
+      .sow-party-name {
+        font-size: 1.05rem;
+        color: #0f172a;
+        font-weight: 800;
+        line-height: 1.25;
+      }
+      .sow-party-details {
+        font-size: 0.8rem;
+        color: #475569;
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        line-height: 1.45;
+      }
+      .sow-party-details p {
+        margin: 0;
+      }
+
+      /* 3. Executive Scope Banner */
+      .sow-project-banner {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: #ffffff;
+        border-radius: 6px;
+        padding: 1.35rem 1.6rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .sow-proj-label {
+        font-size: 0.65rem;
+        color: #94bce3;
+        letter-spacing: 0.08em;
+        font-weight: 800;
+      }
+      .sow-proj-title-display {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 1.45rem;
+        color: #ffffff;
+        margin: 0.25rem 0;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        line-height: 1.2;
+      }
+      .sow-proj-desc-sub {
+        font-size: 0.78rem;
+        color: #cbd5e1;
+        margin: 0;
+        line-height: 1.45;
+        max-width: 80ch;
+      }
+      .sow-metrics-strip {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.25rem;
+        padding-top: 1.15rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.16);
+      }
+      .sow-metric-box {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+      }
+      .sow-metric-label {
+        font-size: 0.62rem;
+        color: #94bce3;
+        letter-spacing: 0.08em;
+        font-weight: 800;
+      }
+      .sow-metric-val-hero {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: #94bce3;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+      }
+      .sow-metric-val {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #ffffff;
+        line-height: 1.2;
+      }
+      .sow-metric-sub {
+        font-size: 0.68rem;
+        color: #94a3b8;
+      }
+
+      /* 4. Itemized Scope Table */
+      .sow-section-title-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #0f172a;
+        padding-bottom: 0.45rem;
+        margin-top: 0.25rem;
+      }
+      .sow-sec-title-left {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+      }
+      .sow-sec-tag {
+        font-size: 0.65rem;
+        font-weight: 800;
+        color: #5980a6;
+        letter-spacing: 0.08em;
+      }
+      .sow-sec-heading {
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+      }
+      .sow-sec-count {
+        font-size: 0.72rem;
+        color: #64748b;
+        font-weight: 700;
+      }
+
+      .sow-table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid #cbd5e1;
+        border-radius: 4px;
+      }
+      .sow-invoice-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 8.5pt;
+        text-align: left;
+      }
+      .sow-invoice-table th {
+        background: #f1f5f9;
+        color: #334155;
+        font-size: 0.68rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 0.65rem 0.75rem;
+        border-bottom: 2px solid #cbd5e1;
+      }
+      .sow-invoice-table td {
+        padding: 0.65rem 0.75rem;
+        border-bottom: 1px solid #e2e8f0;
+        vertical-align: top;
+      }
+      .sow-invoice-table tbody tr:nth-child(even) {
+        background: #f8fafc;
+      }
+      .sow-cell-idx {
+        color: #94a3b8;
+        font-size: 0.75rem;
+      }
+      .sow-cell-code {
+        color: #5980a6;
+        font-size: 0.75rem;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .sow-svc-title {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: #0f172a;
+        line-height: 1.25;
+      }
+      .sow-svc-desc {
+        font-size: 0.72rem;
+        color: #64748b;
+        margin-top: 0.2rem;
+        line-height: 1.35;
+      }
+      .sow-cell-disc {
+        font-size: 0.74rem;
+        color: #475569;
+      }
+      .sow-cell-price {
+        font-size: 0.9rem;
+        font-weight: 800;
+        color: #0f172a;
+        white-space: nowrap;
+      }
+
+      /* 5. Commercial Summary & Billing Milestones */
+      .sow-summary-split {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 1.5rem;
+        align-items: start;
+      }
+      .sow-commercial-terms {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+      .sow-milestone-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        margin-top: 0.4rem;
+      }
+      .sow-ms-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 4px;
+        padding: 0.65rem 0.85rem;
+      }
+      .sow-ms-pct {
+        font-size: 0.9rem;
+        font-weight: 800;
+        color: #1e3a8a;
+        background: #dbeafe;
+        padding: 0.25rem 0.55rem;
+        border-radius: 4px;
+        flex-shrink: 0;
+      }
+      .sow-ms-body strong {
+        font-size: 0.82rem;
+        color: #0f172a;
+        display: block;
+      }
+      .sow-ms-body p {
+        font-size: 0.72rem;
+        color: #64748b;
+        margin: 0.15rem 0 0;
+        line-height: 1.35;
+      }
+
+      .sow-calc-card {
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 1.1rem 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+      }
+      .sow-calc-head {
+        font-size: 0.68rem;
+        font-weight: 800;
+        color: #334155;
+        letter-spacing: 0.08em;
+        border-bottom: 1.5px solid #cbd5e1;
+        padding-bottom: 0.45rem;
+      }
+      .sow-calc-rows {
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+      }
+      .sow-calc-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.78rem;
+        color: #475569;
+      }
+      .sow-calc-row strong {
+        color: #0f172a;
+        font-size: 0.85rem;
+      }
+      .sow-calc-discount strong {
+        color: #15803d;
+      }
+      .sow-calc-total-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 2px solid #0f172a;
+        padding-top: 0.65rem;
+        margin-top: 0.35rem;
+      }
+      .sow-total-copy strong {
+        font-size: 0.9rem;
+        color: #0f172a;
+        display: block;
+      }
+      .sow-total-copy small {
+        font-size: 0.68rem;
+        color: #64748b;
+      }
+      .sow-grand-amount {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: -0.02em;
+      }
+      .sow-calc-fine {
+        font-size: 0.65rem;
+        color: #94a3b8;
+        line-height: 1.35;
+        margin: 0;
+      }
+
+      /* 6. Phased Sprint Roadmap */
+      .sow-roadmap-section {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .sow-roadmap-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.75rem;
+      }
+      .sow-rm-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 4px;
+        padding: 0.75rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+      .sow-rm-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.15rem;
+      }
+      .sow-rm-num {
+        font-size: 0.78rem;
+        font-weight: 800;
+        color: #5980a6;
+      }
+      .sow-rm-title {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #0f172a;
+        line-height: 1.25;
+      }
+      .sow-rm-desc {
+        font-size: 0.68rem;
+        color: #64748b;
+        margin: 0;
+        line-height: 1.35;
+      }
+
+      /* 7. Commercial Conditions */
+      .sow-terms-section {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .sow-terms-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem 1.5rem;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 4px;
+        padding: 0.85rem 1.15rem;
+      }
+      .sow-term-item strong {
+        font-size: 0.78rem;
+        color: #0f172a;
+        display: block;
+        margin-bottom: 0.15rem;
+      }
+      .sow-term-item p {
+        font-size: 0.7rem;
+        color: #64748b;
+        margin: 0;
+        line-height: 1.4;
+      }
+
+      /* 8. Signatures & Authorization */
+      .sow-sign-section {
+        border-top: 2px solid #0f172a;
+        padding-top: 1rem;
+      }
+      .sow-sign-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+      }
+      .sow-sign-box {
+        border: 1px solid #cbd5e1;
+        border-radius: 4px;
+        padding: 0.85rem 1.15rem;
+        background: #f8fafc;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+      .sow-sign-tag {
+        font-size: 0.65rem;
+        font-weight: 800;
+        color: #5980a6;
+        letter-spacing: 0.08em;
+      }
+      .sow-sign-party {
+        font-size: 0.88rem;
+        color: #0f172a;
+        font-weight: 800;
+      }
+      .sow-sign-slot {
+        min-height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-bottom: 1px dashed #94a3b8;
+        margin: 0.25rem 0;
+      }
+      .sow-sign-drawn {
+        font-family: 'Brush Script MT', cursive, serif;
+        font-size: 1.35rem;
+        color: #1e3a8a;
+        transform: rotate(-2deg);
+      }
+      .sow-sign-placeholder {
+        font-size: 0.72rem;
+        color: #94a3b8;
+        font-style: italic;
+      }
+      .sow-sign-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        font-size: 0.7rem;
+        color: #64748b;
+      }
+
+      /* 9. Running Footer */
+      .sow-doc-footer {
+        border-top: 1px solid #e2e8f0;
+        padding-top: 0.75rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.65rem;
+        color: #94a3b8;
+      }
+      .sow-footer-left,
+      .sow-footer-right {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+      }
+      .sow-footer-right {
+        text-align: right;
+      }
+
+      .sow-modal-bottom-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--line);
+      }
+      .sow-modal-btn-group {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
 
       /* ------------------------------------------------------------- Toast Hub */
       .toast-hub {
@@ -5570,6 +6716,82 @@ const initialData = {
         }
         .welcome-actions {
           flex-direction: column;
+        }
+
+        /* SOW Modal & Billing Document Mobile Adaptations */
+        .sow-modal-dialog {
+          padding: 0.85rem !important;
+          width: 100vw !important;
+          max-width: 100vw !important;
+          max-height: 100vh !important;
+          border-radius: 0 !important;
+          margin: 0 !important;
+        }
+        .sow-screen-toolbar {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.75rem;
+          padding: 0.75rem 0.85rem;
+        }
+        .sow-toolbar-item {
+          max-width: 100%;
+          width: 100%;
+        }
+        .sow-toolbar-stats {
+          width: 100%;
+          justify-content: space-between;
+        }
+        .sow-document {
+          padding: 1.25rem 0.85rem !important;
+          gap: 1.15rem !important;
+        }
+        .sow-header-band {
+          flex-direction: column;
+          gap: 1.15rem;
+        }
+        .sow-doc-meta-block {
+          text-align: left;
+          align-items: flex-start;
+          width: 100%;
+        }
+        .sow-parties-card {
+          grid-template-columns: 1fr;
+          gap: 1rem;
+          padding: 1rem;
+        }
+        .sow-project-banner {
+          padding: 1.15rem 1rem;
+        }
+        .sow-metrics-strip {
+          grid-template-columns: 1fr 1fr;
+          gap: 0.85rem;
+        }
+        .sow-summary-split {
+          grid-template-columns: 1fr;
+          gap: 1.15rem;
+        }
+        .sow-roadmap-grid {
+          grid-template-columns: 1fr 1fr;
+          gap: 0.65rem;
+        }
+        .sow-terms-grid {
+          grid-template-columns: 1fr;
+          gap: 0.65rem;
+          padding: 0.85rem;
+        }
+        .sow-sign-grid {
+          grid-template-columns: 1fr;
+          gap: 1rem;
+        }
+        .sow-modal-bottom-actions {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 0.75rem;
+        }
+        .sow-modal-btn-group {
+          width: 100%;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
         }
 
         /* Planner Mobile Optimization */
@@ -5739,24 +6961,127 @@ const initialData = {
         .modal-title {
           font-size: 1.35rem;
         }
+        .sow-metrics-strip {
+          grid-template-columns: 1fr;
+        }
+        .sow-roadmap-grid {
+          grid-template-columns: 1fr;
+        }
+        .sow-modal-btn-group {
+          grid-template-columns: 1fr;
+        }
       }
 
+      /* ============================================================== */
+      /* EXECUTIVE PRINT & PDF GENERATION STYLES */
+      /* ============================================================== */
       @media print {
-        body * { visibility: hidden; }
-        #modal-sow-export, #modal-sow-export * { visibility: visible; }
+        @page {
+          size: A4 portrait;
+          margin: 10mm 12mm 10mm 12mm;
+        }
+
+        html, body {
+          background: #ffffff !important;
+          color: #0f172a !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          font-size: 8.5pt !important;
+          line-height: 1.4 !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+
+        /* Hide all outer UI elements */
+        body > *:not(#modal-sow-export),
+        .dash-sidebar,
+        .dash-topbar,
+        .dash-header,
+        .dash-content,
+        .modal-backdrop:not(#modal-sow-export),
+        .no-print,
+        .sow-modal-header,
+        .sow-screen-toolbar,
+        .sow-modal-bottom-actions,
+        .modal-actions,
+        .modal-close-btn,
+        .toast-hub,
+        #planner-mobile-dock {
+          display: none !important;
+        }
+
         #modal-sow-export {
-          position: absolute;
-          inset: 0;
-          background: white;
-          padding: 0;
+          position: static !important;
+          display: block !important;
+          background: #ffffff !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          overflow: visible !important;
+          box-shadow: none !important;
+          border: none !important;
+          width: 100% !important;
+          height: auto !important;
+          inset: auto !important;
         }
-        .modal-dialog {
-          box-shadow: none;
-          border: 0;
-          padding: 0;
-          max-width: 100%;
+
+        .modal-dialog,
+        .modal-dialog-wide,
+        .sow-modal-dialog {
+          max-width: 100% !important;
+          width: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          border: none !important;
+          box-shadow: none !important;
+          background: transparent !important;
+          max-height: none !important;
+          overflow: visible !important;
         }
-        .modal-actions, .modal-close-btn { display: none !important; }
+
+        .sow-document {
+          border: none !important;
+          box-shadow: none !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          gap: 1.25rem !important;
+        }
+
+        .sow-table-wrap {
+          overflow: visible !important;
+          border: 1px solid #cbd5e1 !important;
+        }
+
+        .sow-invoice-table th {
+          background: #f1f5f9 !important;
+          color: #334155 !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+
+        .sow-invoice-table tbody tr:nth-child(even) {
+          background: #f8fafc !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+
+        .sow-project-banner {
+          background: #0f172a !important;
+          color: #ffffff !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+
+        .sow-avoid-break {
+          break-inside: avoid !important;
+          page-break-inside: avoid !important;
+        }
+
+        .sow-invoice-table tr {
+          break-inside: avoid !important;
+          page-break-inside: avoid !important;
+        }
       }
     </style>
   </body>

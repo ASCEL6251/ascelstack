@@ -1,0 +1,1008 @@
+---
+// src/components/CookieBanner.astro
+// Ascelstack Technologies — Privacy & Cookie Consent Banner
+// Compliant with Indian Digital Data Protection (DPDP) Guidelines & Global Best Practices
+---
+
+<!-- Scrim backdrop that dims the main screen when the banner or preference panel is active -->
+<div
+  id="asc-cookie-backdrop"
+  class="asc-cookie-backdrop"
+  data-cookie-backdrop
+  aria-hidden="true"
+></div>
+
+<!-- Edge-to-edge banner covering the full width from one side to another side -->
+<aside
+  id="asc-cookie-banner"
+  class="asc-cookie-banner"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="asc-cookie-title"
+  aria-describedby="asc-cookie-desc"
+  data-cookie-banner
+  hidden
+>
+  <div class="asc-cookie-wrapper">
+    <!-- Top accent highlight line -->
+    <div class="asc-cookie-beam" aria-hidden="true"></div>
+
+    <!-- VIEW 1: Initial Consent Notice (Fast, bold, transparent) -->
+    <div id="asc-cookie-view-notice" class="asc-cookie-view" data-view-notice>
+      <div class="asc-cookie-content">
+        <div class="asc-cookie-badge-row">
+          <span class="asc-cookie-badge">Privacy & Cookie Notice</span>
+          <span class="asc-cookie-indicator" aria-hidden="true"></span>
+        </div>
+
+        <h2 id="asc-cookie-title" class="asc-cookie-heading">
+          We Respect Your Privacy &amp; Data Choices
+        </h2>
+
+        <p id="asc-cookie-desc" class="asc-cookie-text">
+          Ascelstack uses essential cookies and local browser storage to keep your account session secure,
+          remember your active service cart, and process estimate requests. With your approval, we also use
+          analytical and personalization tools to measure performance and improve your workflow experience.
+          We never sell your data. Review our
+          <a href="/terms" class="asc-cookie-link">Terms &amp; Conditions</a>
+          and
+          <a href="/privacy#cookies" class="asc-cookie-link">Privacy Policy</a>
+          or customize your preferences at any time.
+        </p>
+      </div>
+
+      <div class="asc-cookie-actions">
+        <button
+          type="button"
+          class="asc-btn asc-btn-primary"
+          data-cookie-accept-all
+        >
+          Accept All
+        </button>
+
+        <button
+          type="button"
+          class="asc-btn asc-btn-secondary"
+          data-cookie-reject-nonessential
+        >
+          Essential Only
+        </button>
+
+        <button
+          type="button"
+          class="asc-btn asc-btn-ghost"
+          data-cookie-open-customize
+        >
+          <svg
+            class="asc-icon"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="3"></circle>
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+            ></path>
+          </svg>
+          <span>Personalize Choices</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- VIEW 2: Granular Preference Center (Accessible anytime via footer) -->
+    <div id="asc-cookie-view-customize" class="asc-cookie-view" data-view-customize hidden>
+      <div class="asc-customize-header">
+        <div>
+          <span class="asc-cookie-badge">Privacy Settings</span>
+          <h2 class="asc-cookie-heading asc-customize-title">
+            Personalize Your Cookie &amp; Storage Preferences
+          </h2>
+          <p class="asc-cookie-text asc-customize-sub">
+            Configure your privacy settings below. Strictly necessary cookies are permanently enabled as
+            they are required to keep your account session secure, protect transactions, and store your
+            service cart.
+          </p>
+        </div>
+        <button
+          type="button"
+          class="asc-close-btn"
+          data-cookie-close-customize
+          aria-label="Close preferences panel"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Categories Grid -->
+      <div class="asc-pref-grid">
+        <!-- 1. Strictly Necessary -->
+        <div class="asc-pref-card asc-pref-locked">
+          <div class="asc-pref-header">
+            <div class="asc-pref-info">
+              <div class="asc-pref-title-row">
+                <h3 class="asc-pref-title">Strictly Necessary Cookies</h3>
+                <span class="asc-status-badge asc-status-active">Always Active</span>
+              </div>
+              <p class="asc-pref-desc">
+                Vital for authenticating client portal sessions, preventing CSRF forgery, preserving your
+                cart estimates, and securing database communications. These cannot be disabled.
+              </p>
+            </div>
+            <div class="asc-toggle-wrapper">
+              <input
+                type="checkbox"
+                id="asc-pref-necessary"
+                checked
+                disabled
+                class="asc-toggle-input"
+                aria-label="Strictly Necessary Cookies (Always Active)"
+              />
+              <label for="asc-pref-necessary" class="asc-toggle-label is-locked" aria-hidden="true">
+                <span class="asc-toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Performance & Analytics -->
+        <div class="asc-pref-card">
+          <div class="asc-pref-header">
+            <div class="asc-pref-info">
+              <div class="asc-pref-title-row">
+                <h3 class="asc-pref-title">Performance &amp; Analytics</h3>
+                <span class="asc-status-badge asc-status-optional">Optional</span>
+              </div>
+              <p class="asc-pref-desc">
+                Allows us to analyze site speed, measure request latencies, and identify high-value workflows.
+                All metrics are collected in an aggregated, privacy-safe format with zero cross-site ad tracking.
+              </p>
+            </div>
+            <div class="asc-toggle-wrapper">
+              <input
+                type="checkbox"
+                id="asc-pref-analytics"
+                class="asc-toggle-input"
+                data-pref-analytics
+                aria-label="Toggle Performance & Analytics cookies"
+              />
+              <label for="asc-pref-analytics" class="asc-toggle-label">
+                <span class="asc-toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Personalization & Workflows -->
+        <div class="asc-pref-card">
+          <div class="asc-pref-header">
+            <div class="asc-pref-info">
+              <div class="asc-pref-title-row">
+                <h3 class="asc-pref-title">Personalization &amp; Workflows</h3>
+                <span class="asc-status-badge asc-status-optional">Optional</span>
+              </div>
+              <p class="asc-pref-desc">
+                Remembers your selected industry filters, quotation scope selections, and UI display settings
+                so your tailored dashboard and builder configuration persist seamlessly across visits.
+              </p>
+            </div>
+            <div class="asc-toggle-wrapper">
+              <input
+                type="checkbox"
+                id="asc-pref-personalization"
+                class="asc-toggle-input"
+                data-pref-personalization
+                aria-label="Toggle Personalization & Workflows cookies"
+              />
+              <label for="asc-pref-personalization" class="asc-toggle-label">
+                <span class="asc-toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Customize Action Bar -->
+      <div class="asc-customize-actions">
+        <div class="asc-customize-legal">
+          <span>Manage at any time via the footer</span>
+          <span class="asc-dot">·</span>
+          <a href="/privacy#cookies" class="asc-cookie-link">Cookie Policy</a>
+          <span class="asc-dot">·</span>
+          <a href="/terms" class="asc-cookie-link">Terms</a>
+        </div>
+
+        <div class="asc-customize-btns">
+          <button
+            type="button"
+            class="asc-btn asc-btn-secondary"
+            data-cookie-back-to-notice
+          >
+            Back
+          </button>
+          <button
+            type="button"
+            class="asc-btn asc-btn-ghost"
+            data-cookie-save-preferences
+          >
+            Save My Preferences
+          </button>
+          <button
+            type="button"
+            class="asc-btn asc-btn-primary"
+            data-cookie-accept-all
+          >
+            Accept All
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<style>
+  /* ==========================================================================
+     Ascelstack Cookie Banner & Preference Center
+     Follows brand tokens: Ink #1D2D3D, Tint #94BCE3, Accent #5980A6, Paper #F2F2F3
+     ========================================================================== */
+
+  /* Backdrop: covers main screen to draw crisp, professional focus */
+  .asc-cookie-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    background: rgba(14, 22, 32, 0.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .asc-cookie-backdrop.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Full-bleed bottom banner covering the entire screen edge-to-edge */
+  .asc-cookie-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 9999;
+    background: #142130;
+    color: #f2f2f3;
+    border-top: 1px solid rgba(148, 188, 227, 0.22);
+    box-shadow: 0 -12px 48px -10px rgba(10, 18, 28, 0.85);
+    transform: translateY(105%);
+    opacity: 0;
+    transition:
+      transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 0.35s ease;
+    will-change: transform, opacity;
+  }
+
+  .asc-cookie-banner.is-visible {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  /* Subtle accent glow beam across the top edge */
+  .asc-cookie-beam {
+    position: absolute;
+    top: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(89, 128, 166, 0.4) 15%,
+      rgba(148, 188, 227, 0.85) 50%,
+      rgba(89, 128, 166, 0.4) 85%,
+      transparent 100%
+    );
+  }
+
+  .asc-cookie-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 1320px;
+    margin-inline: auto;
+    padding: clamp(1.25rem, 2.5vw, 2rem) clamp(1rem, 3vw, 2.5rem);
+    max-height: 85vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  /* ------------------------------------------------------------- View 1: Notice */
+  .asc-cookie-view[hidden] {
+    display: none !important;
+  }
+
+  #asc-cookie-view-notice {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: clamp(1.5rem, 3vw, 3rem);
+  }
+
+  .asc-cookie-content {
+    display: grid;
+    gap: 0.65rem;
+    max-width: 820px;
+  }
+
+  .asc-cookie-badge-row {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  .asc-cookie-badge {
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #94bce3;
+    background: rgba(148, 188, 227, 0.12);
+    border: 1px solid rgba(148, 188, 227, 0.28);
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    display: inline-block;
+  }
+
+  .asc-cookie-indicator {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #94bce3;
+    box-shadow: 0 0 8px #94bce3;
+  }
+
+  .asc-cookie-heading {
+    font-family: var(--font-body, 'Inter Tight', sans-serif);
+    font-size: clamp(1.15rem, 1rem + 0.6vw, 1.45rem);
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    color: #ffffff;
+    margin: 0;
+  }
+
+  .asc-cookie-text {
+    font-family: var(--font-body, 'Inter Tight', sans-serif);
+    font-size: clamp(0.88rem, 0.82rem + 0.2vw, 0.96rem);
+    line-height: 1.55;
+    color: #c7c7c9;
+    margin: 0;
+  }
+
+  .asc-cookie-link {
+    color: #94bce3;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color 0.2s, text-decoration-color 0.2s;
+  }
+
+  .asc-cookie-link:hover {
+    color: #ffffff;
+    text-decoration-color: #ffffff;
+  }
+
+  /* Actions */
+  .asc-cookie-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .asc-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-family: var(--font-body, 'Inter Tight', sans-serif);
+    font-size: 0.92rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    padding: 0.75rem 1.4rem;
+    border-radius: 999px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition:
+      background 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+      color 0.25s,
+      border-color 0.25s,
+      transform 0.2s;
+    white-space: nowrap;
+  }
+
+  .asc-btn:hover {
+    transform: translateY(-1px);
+  }
+
+  .asc-btn:active {
+    transform: translateY(0);
+  }
+
+  /* Primary Button: High contrast white/paper */
+  .asc-btn-primary {
+    background: #f2f2f3;
+    color: #142130;
+    border-color: #f2f2f3;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  }
+
+  .asc-btn-primary:hover {
+    background: #94bce3;
+    border-color: #94bce3;
+    color: #142130;
+  }
+
+  /* Secondary Button: Outlined ink tone */
+  .asc-btn-secondary {
+    background: rgba(35, 55, 75, 0.6);
+    color: #f2f2f3;
+    border-color: rgba(148, 188, 227, 0.25);
+  }
+
+  .asc-btn-secondary:hover {
+    background: rgba(35, 55, 75, 0.95);
+    border-color: #94bce3;
+    color: #ffffff;
+  }
+
+  /* Ghost Button: Transparent with clean accent */
+  .asc-btn-ghost {
+    background: transparent;
+    color: #94bce3;
+    border-color: rgba(148, 188, 227, 0.28);
+  }
+
+  .asc-btn-ghost:hover {
+    background: rgba(148, 188, 227, 0.12);
+    border-color: #94bce3;
+    color: #ffffff;
+  }
+
+  .asc-icon {
+    flex-shrink: 0;
+  }
+
+  /* ------------------------------------------------------------- View 2: Customize */
+  #asc-cookie-view-customize {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .asc-customize-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+
+  .asc-customize-title {
+    margin-top: 0.35rem;
+    font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.75rem);
+  }
+
+  .asc-customize-sub {
+    margin-top: 0.45rem;
+    max-width: 800px;
+  }
+
+  .asc-close-btn {
+    background: rgba(35, 55, 75, 0.4);
+    border: 1px solid rgba(148, 188, 227, 0.2);
+    color: #9fb0c1;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+  }
+
+  .asc-close-btn:hover {
+    background: rgba(148, 188, 227, 0.18);
+    color: #ffffff;
+    border-color: #94bce3;
+  }
+
+  /* Cards Grid */
+  .asc-pref-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+
+  .asc-pref-card {
+    background: rgba(26, 40, 56, 0.85);
+    border: 1px solid rgba(148, 188, 227, 0.18);
+    border-radius: 14px;
+    padding: 1.25rem 1.35rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: border-color 0.25s, background 0.25s;
+  }
+
+  .asc-pref-card:hover {
+    border-color: rgba(148, 188, 227, 0.35);
+    background: rgba(29, 45, 61, 0.95);
+  }
+
+  .asc-pref-card.asc-pref-locked {
+    background: rgba(20, 31, 44, 0.95);
+    border-color: rgba(148, 188, 227, 0.12);
+  }
+
+  .asc-pref-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .asc-pref-info {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .asc-pref-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+  }
+
+  .asc-pref-title {
+    font-family: var(--font-body, 'Inter Tight', sans-serif);
+    font-size: 1.02rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+  }
+
+  .asc-status-badge {
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.18rem 0.5rem;
+    border-radius: 999px;
+  }
+
+  .asc-status-active {
+    background: rgba(148, 188, 227, 0.15);
+    color: #94bce3;
+    border: 1px solid rgba(148, 188, 227, 0.3);
+  }
+
+  .asc-status-optional {
+    background: rgba(89, 128, 166, 0.18);
+    color: #c7c7c9;
+    border: 1px solid rgba(89, 128, 166, 0.3);
+  }
+
+  .asc-pref-desc {
+    font-size: 0.86rem;
+    line-height: 1.5;
+    color: #9fb0c1;
+    margin: 0;
+  }
+
+  /* Toggle Switch */
+  .asc-toggle-wrapper {
+    position: relative;
+    flex-shrink: 0;
+    width: 48px;
+    height: 28px;
+  }
+
+  .asc-toggle-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .asc-toggle-label {
+    display: block;
+    width: 48px;
+    height: 28px;
+    background: #23374b;
+    border: 1px solid rgba(148, 188, 227, 0.3);
+    border-radius: 999px;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.25s, border-color 0.25s;
+  }
+
+  .asc-toggle-slider {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    background: #c7c7c9;
+    border-radius: 50%;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.25s;
+  }
+
+  .asc-toggle-input:checked + .asc-toggle-label {
+    background: #5980a6;
+    border-color: #94bce3;
+  }
+
+  .asc-toggle-input:checked + .asc-toggle-label .asc-toggle-slider {
+    transform: translateX(20px);
+    background: #ffffff;
+  }
+
+  .asc-toggle-label.is-locked {
+    cursor: not-allowed;
+    background: #23374b;
+    border-color: rgba(148, 188, 227, 0.3);
+  }
+
+  .asc-toggle-input:disabled + .asc-toggle-label .asc-toggle-slider {
+    background: #94bce3;
+  }
+
+  .asc-toggle-input:focus-visible + .asc-toggle-label {
+    outline: 2px solid #94bce3;
+    outline-offset: 3px;
+  }
+
+  /* Customize Actions */
+  .asc-customize-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(148, 188, 227, 0.16);
+  }
+
+  .asc-customize-legal {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-size: 0.82rem;
+    color: #9fb0c1;
+    flex-wrap: wrap;
+  }
+
+  .asc-dot {
+    opacity: 0.5;
+  }
+
+  .asc-customize-btns {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  /* Responsive Rules */
+  @media (max-width: 960px) {
+    #asc-cookie-view-notice {
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+    }
+
+    .asc-cookie-actions {
+      justify-content: flex-start;
+      width: 100%;
+    }
+
+    .asc-cookie-actions .asc-btn {
+      flex: 1 1 auto;
+      min-width: 140px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .asc-cookie-wrapper {
+      padding: 1.15rem 1rem;
+      max-height: 90vh;
+    }
+
+    .asc-cookie-actions {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.6rem;
+    }
+
+    .asc-cookie-actions .asc-btn {
+      width: 100%;
+    }
+
+    .asc-customize-actions {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 1rem;
+    }
+
+    .asc-customize-btns {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .asc-customize-btns .asc-btn {
+      width: 100%;
+    }
+  }
+</style>
+
+<script>
+  // ============================================================================
+  // Ascelstack Cookie & Storage Consent Management
+  // Supports Localhost & Production environments with robust persistence
+  // ============================================================================
+
+  interface CookieConsent {
+    necessary: true;
+    analytics: boolean;
+    personalization: boolean;
+    timestamp: string;
+    version: number;
+  }
+
+  const STORAGE_KEY = 'ascelstack_cookie_consent_v1';
+  const COOKIE_NAME = 'ascelstack_consent';
+  const CURRENT_VERSION = 1;
+
+  // Retrieve existing consent from localStorage or document.cookie
+  function readConsent(): CookieConsent | null {
+    try {
+      // 1. Try LocalStorage
+      const rawLocal = localStorage.getItem(STORAGE_KEY);
+      if (rawLocal) {
+        const parsed = JSON.parse(rawLocal);
+        if (parsed && parsed.version === CURRENT_VERSION && parsed.necessary === true) {
+          return parsed as CookieConsent;
+        }
+      }
+    } catch {
+      // LocalStorage might be disabled or restricted
+    }
+
+    try {
+      // 2. Try Cookie fallback (useful for SSR/Edge if needed)
+      const match = document.cookie.match(new RegExp('(^|; )' + COOKIE_NAME + '=([^;]+)'));
+      if (match && match[2]) {
+        const decoded = decodeURIComponent(match[2]);
+        const parsed = JSON.parse(decoded);
+        if (parsed && parsed.version === CURRENT_VERSION && parsed.necessary === true) {
+          return parsed as CookieConsent;
+        }
+      }
+    } catch {
+      // Cookie parsing error
+    }
+
+    return null;
+  }
+
+  // Persist consent to both localStorage and document.cookie
+  function persistConsent(analytics: boolean, personalization: boolean): CookieConsent {
+    const consent: CookieConsent = {
+      necessary: true,
+      analytics: Boolean(analytics),
+      personalization: Boolean(personalization),
+      timestamp: new Date().toISOString(),
+      version: CURRENT_VERSION,
+    };
+
+    const serialized = JSON.stringify(consent);
+
+    // 1. Write LocalStorage (Works on localhost & all ports)
+    try {
+      localStorage.setItem(STORAGE_KEY, serialized);
+    } catch {
+      // Ignore storage quota errors
+    }
+
+    // 2. Write document.cookie with 1 year lifetime
+    try {
+      const maxAge = 365 * 24 * 60 * 60; // 1 year
+      const isHttps = window.location.protocol === 'https:';
+      const secureFlag = isHttps ? '; Secure' : '';
+      // On localhost, omitting Secure allows it to store properly
+      document.cookie = `${COOKIE_NAME}=${encodeURIComponent(serialized)}; Max-Age=${maxAge}; Path=/; SameSite=Lax${secureFlag}`;
+    } catch {
+      // Ignore cookie errors
+    }
+
+    // 3. Dispatch system-wide event for analytics or feature toggles
+    window.dispatchEvent(
+      new CustomEvent('ascelstack:consent-updated', {
+        detail: consent,
+      })
+    );
+
+    return consent;
+  }
+
+  function initCookieBanner() {
+    const banner = document.querySelector<HTMLElement>('[data-cookie-banner]');
+    const backdrop = document.querySelector<HTMLElement>('[data-cookie-backdrop]');
+    const viewNotice = document.querySelector<HTMLElement>('[data-view-notice]');
+    const viewCustomize = document.querySelector<HTMLElement>('[data-view-customize]');
+
+    const btnAcceptAllList = document.querySelectorAll<HTMLButtonElement>('[data-cookie-accept-all]');
+    const btnRejectNonEssential = document.querySelector<HTMLButtonElement>('[data-cookie-reject-nonessential]');
+    const btnOpenCustomize = document.querySelector<HTMLButtonElement>('[data-cookie-open-customize]');
+    const btnCloseCustomize = document.querySelector<HTMLButtonElement>('[data-cookie-close-customize]');
+    const btnBackToNotice = document.querySelector<HTMLButtonElement>('[data-cookie-back-to-notice]');
+    const btnSavePreferences = document.querySelector<HTMLButtonElement>('[data-cookie-save-preferences]');
+
+    const inputAnalytics = document.querySelector<HTMLInputElement>('[data-pref-analytics]');
+    const inputPersonalization = document.querySelector<HTMLInputElement>('[data-pref-personalization]');
+
+    if (!banner || !backdrop || !viewNotice || !viewCustomize) return;
+
+    let currentConsent = readConsent();
+
+    function showBanner(openCustomizeDirectly = false) {
+      banner.hidden = false;
+      banner.style.display = 'block';
+
+      if (openCustomizeDirectly) {
+        viewNotice.hidden = true;
+        viewCustomize.hidden = false;
+
+        // Pre-fill checkboxes with current or default choices
+        const consent = readConsent();
+        if (inputAnalytics) inputAnalytics.checked = consent ? consent.analytics : false;
+        if (inputPersonalization) inputPersonalization.checked = consent ? consent.personalization : false;
+      } else {
+        viewNotice.hidden = false;
+        viewCustomize.hidden = true;
+      }
+
+      // Smooth frame-based animation
+      requestAnimationFrame(() => {
+        backdrop.classList.add('is-visible');
+        banner.classList.add('is-visible');
+      });
+    }
+
+    function hideBanner() {
+      banner.classList.remove('is-visible');
+      backdrop.classList.remove('is-visible');
+
+      setTimeout(() => {
+        banner.hidden = true;
+        banner.style.display = 'none';
+        viewNotice.hidden = false;
+        viewCustomize.hidden = true;
+      }, 400);
+    }
+
+    function switchToCustomize() {
+      const consent = readConsent();
+      if (inputAnalytics) inputAnalytics.checked = consent ? consent.analytics : false;
+      if (inputPersonalization) inputPersonalization.checked = consent ? consent.personalization : false;
+
+      viewNotice.hidden = true;
+      viewCustomize.hidden = false;
+    }
+
+    function switchToNotice() {
+      viewCustomize.hidden = true;
+      viewNotice.hidden = false;
+    }
+
+    // Accept All action
+    btnAcceptAllList.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        currentConsent = persistConsent(true, true);
+        hideBanner();
+      });
+    });
+
+    // Reject Non-Essential (Essential Only)
+    if (btnRejectNonEssential) {
+      btnRejectNonEssential.addEventListener('click', () => {
+        currentConsent = persistConsent(false, false);
+        hideBanner();
+      });
+    }
+
+    // Open Customize view
+    if (btnOpenCustomize) {
+      btnOpenCustomize.addEventListener('click', () => {
+        switchToCustomize();
+      });
+    }
+
+    // Close Customize view (if already consented, hide banner; otherwise return to notice)
+    if (btnCloseCustomize) {
+      btnCloseCustomize.addEventListener('click', () => {
+        if (readConsent()) {
+          hideBanner();
+        } else {
+          switchToNotice();
+        }
+      });
+    }
+
+    // Back button in Customize view
+    if (btnBackToNotice) {
+      btnBackToNotice.addEventListener('click', () => {
+        switchToNotice();
+      });
+    }
+
+    // Save custom preferences
+    if (btnSavePreferences) {
+      btnSavePreferences.addEventListener('click', () => {
+        const analytics = inputAnalytics ? inputAnalytics.checked : false;
+        const personalization = inputPersonalization ? inputPersonalization.checked : false;
+        currentConsent = persistConsent(analytics, personalization);
+        hideBanner();
+      });
+    }
+
+    // Global listener for footer button or anywhere else on the site
+    document.addEventListener('click', (event) => {
+      const target = (event.target as HTMLElement)?.closest('[data-open-cookie-preferences]');
+      if (target) {
+        event.preventDefault();
+        showBanner(true); // Open directly into customization view
+      }
+    });
+
+    // Global custom event API
+    window.addEventListener('ascelstack:open-cookie-preferences', () => {
+      showBanner(true);
+    });
+
+    // Close on Escape key if customization modal is open
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !banner.hidden) {
+        if (readConsent()) {
+          hideBanner();
+        }
+      }
+    });
+
+    // Initial check: if no consent found, show the banner after a short delay for smooth page entrance
+    if (!currentConsent) {
+      setTimeout(() => {
+        showBanner(false);
+      }, 400);
+    }
+  }
+
+  // Initialize when DOM is interactive
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCookieBanner);
+  } else {
+    initCookieBanner();
+  }
+</script>

@@ -38,6 +38,7 @@ const year = new Date().getFullYear();
             <li><a href="/privacy">Privacy policy</a></li>
             <li><a href="/terms">Terms & conditions</a></li>
             <li><a href="/contact">Support & security</a></li>
+            <li><button type="button" class="footer-legal-btn" data-open-cookie-preferences>Cookie preferences</button></li>
           </ul>
         </div>
       </div>
@@ -53,6 +54,8 @@ const year = new Date().getFullYear();
         <a href="/privacy">Privacy</a>
         <span>·</span>
         <a href="/terms">Terms</a>
+        <span>·</span>
+        <button type="button" class="footer-legal-btn footer-legal-btn-bottom" data-open-cookie-preferences>Cookie Preferences</button>
         <span>·</span>
         <a href="/contact">Contact</a>
       </div>
@@ -97,11 +100,22 @@ const year = new Date().getFullYear();
     margin-bottom: 1.25rem;
   }
   .footer-cols li { margin-bottom: 0.55rem; }
-  .footer-cols a {
+  .footer-cols a,
+  .footer-cols .footer-legal-btn {
     color: var(--text-on-ink-muted);
     transition: color 0.2s;
   }
-  .footer-cols a:hover { color: var(--paper); }
+  .footer-cols a:hover,
+  .footer-cols .footer-legal-btn:hover { color: var(--paper); }
+  .footer-legal-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    cursor: pointer;
+    text-align: left;
+  }
 
   .footer-giant {
     font-size: clamp(3.2rem, 18vw, 19rem);
@@ -169,11 +183,13 @@ const year = new Date().getFullYear();
     gap: 0.65rem;
     flex-wrap: wrap;
   }
-  .footer-legal-links a {
+  .footer-legal-links a,
+  .footer-legal-btn-bottom {
     color: var(--text-on-ink-muted);
     transition: color 0.2s;
   }
-  .footer-legal-links a:hover {
+  .footer-legal-links a:hover,
+  .footer-legal-btn-bottom:hover {
     color: var(--tint);
   }
 

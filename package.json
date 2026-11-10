@@ -17,8 +17,10 @@
     "test:admin": "node scripts/test-admin-panel.mjs",
     "test:pricing": "node --experimental-strip-types scripts/test-pricing-feature.mjs",
     "test:agreements": "node scripts/test-agreements-e2e.mjs",
+    "test:sow-pdf": "node scripts/test-sow-pdf.mjs",
+    "test:cookie": "node scripts/test-cookie-banner.mjs",
     "test:e2e": "node scripts/test-portals-e2e.mjs",
-    "test": "node scripts/test-portals-e2e.mjs && node scripts/test-admin-panel.mjs && node scripts/test-agreements-e2e.mjs"
+    "test": "node scripts/test-cookie-banner.mjs && node scripts/test-portals-e2e.mjs && node scripts/test-admin-panel.mjs && node scripts/test-agreements-e2e.mjs && node scripts/test-sow-pdf.mjs"
   },
   "dependencies": {
     "@clerk/astro": "^4.1.22",

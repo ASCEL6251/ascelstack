@@ -234,13 +234,22 @@ const sections = [
       <section id="cookies" class="legal-section">
         <h2 class="display legal-h2">9. Cookies & Local Storage</h2>
         <p>
-          Ascelstack utilizes minimal cookies and local browser storage strictly to ensure site functionality:
+          Ascelstack utilizes minimal cookies and local browser storage strictly to ensure site functionality, protect transactions, and honor your privacy choices:
         </p>
         <ul>
-          <li><strong>Essential Functional Cookies:</strong> Session tokens (via Clerk) required to maintain your authenticated login state in the Client Portal.</li>
-          <li><strong>Local Storage State:</strong> Temporary storage of your selected estimate items (the Service Cart) and project enquiry reference IDs so your progress is preserved across page refreshes.</li>
+          <li><strong>Essential Functional Cookies & Storage:</strong> Session tokens required to maintain your authenticated login state in the Client Portal, CSRF security, and local storage state for your selected service cart and project estimates. These cannot be disabled.</li>
+          <li><strong>Performance & Analytics (Optional):</strong> Aggregated site speed, latency, and workflow diagnostic metrics to optimize platform reliability without cross-site profiling or invasive tracking.</li>
+          <li><strong>Personalization & Preferences (Optional):</strong> Memory for your selected industry views, quotation filters, and display settings across visits.</li>
           <li><strong>Zero Cross-Site Tracking:</strong> We do not deploy third-party advertising cookies, invasive tracking pixels, or cross-site fingerprinting scripts.</li>
         </ul>
+        <p>
+          You can review, modify, or withdraw your consent preferences at any time by clicking below or via the link in our website footer:
+        </p>
+        <div style="margin-top: 1rem;">
+          <button type="button" class="btn btn-ghost" data-open-cookie-preferences>
+            Manage Cookie Preferences
+          </button>
+        </div>
       </section>
 
       <!-- Section 10 -->
