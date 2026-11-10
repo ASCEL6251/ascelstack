@@ -12,5 +12,12 @@
   },
   "observability": {
     "enabled": true
+  },
+  // Environment variables synced with Cloudflare Workers
+  // NOTE: Only non-sensitive variables belong in "vars".
+  // Sensitive secrets (DATABASE_URL, CLERK_SECRET_KEY, ADMIN_SESSION_SECRET)
+  // are encrypted at rest and managed via Cloudflare Secrets / Dashboard.
+  "vars": {
+    "ADMIN_EMAILS": "basakarnab430@gmail.com,sujoymoulick05@gmail.com,souvikchowdhury5756@gmail.com"
   }
 }

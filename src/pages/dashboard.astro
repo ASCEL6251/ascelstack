@@ -4,7 +4,7 @@ export const prerender = false;
 import { UserButton, SignOutButton } from '@clerk/astro/components';
 import Logo from '../components/Logo.astro';
 import { getAuthenticatedUser } from '../lib/auth';
-import { db, services, serviceRequests, businesses, activityLogs } from '../db';
+import { db, services, serviceRequests, businesses, activityLogs, quotations } from '../db';
 import { eq, desc, asc } from 'drizzle-orm';
 import { getPricing, cardPrice, formatINR } from '../lib/pricing';
 import rawPricing from '../data/pricing.json';
@@ -24,13 +24,14 @@ if (!authData) {
 
 const { user, business } = authData;
 
-// 3. Fetch customer's service requests with service & business details from Neon
+// 3. Fetch customer's service requests with service, business & live quotation details from Neon
 const customerRequests = await db
   .select({
     id: serviceRequests.id,
     businessId: serviceRequests.businessId,
     userId: serviceRequests.userId,
     serviceId: serviceRequests.serviceId,
+    quotationId: serviceRequests.quotationId,
     requirements: serviceRequests.requirements,
     status: serviceRequests.status,
     requestedAt: serviceRequests.requestedAt,
@@ -49,12 +50,47 @@ const customerRequests = await db
       id: businesses.id,
       businessName: businesses.businessName,
     },
+    quotation: {
+      id: quotations.id,
+      quotationNumber: quotations.quotationNumber,
+      quotationStatus: quotations.quotationStatus,
+      paymentStatus: quotations.paymentStatus,
+      projectProgress: quotations.projectProgress,
+      finalQuotationAmount: quotations.finalQuotationAmount,
+      currency: quotations.currency,
+      customerNotes: quotations.customerNotes,
+      updatedAt: quotations.updatedAt,
+    },
   })
   .from(serviceRequests)
   .innerJoin(services, eq(serviceRequests.serviceId, services.id))
   .innerJoin(businesses, eq(serviceRequests.businessId, businesses.id))
+  .leftJoin(quotations, eq(serviceRequests.quotationId, quotations.id))
   .where(eq(serviceRequests.userId, user.id))
   .orderBy(desc(serviceRequests.requestedAt));
+
+// 3b. Fetch all quotations directly for customer
+const customerQuotations = await db
+  .select({
+    id: quotations.id,
+    quotationNumber: quotations.quotationNumber,
+    projectTitle: quotations.projectTitle,
+    projectDescription: quotations.projectDescription,
+    requirements: quotations.requirements,
+    quotationStatus: quotations.quotationStatus,
+    paymentStatus: quotations.paymentStatus,
+    paymentVerified: quotations.paymentVerified,
+    projectProgress: quotations.projectProgress,
+    currency: quotations.currency,
+    initialEstimatedCost: quotations.initialEstimatedCost,
+    finalQuotationAmount: quotations.finalQuotationAmount,
+    customerNotes: quotations.customerNotes,
+    createdAt: quotations.createdAt,
+    updatedAt: quotations.updatedAt,
+  })
+  .from(quotations)
+  .where(eq(quotations.userId, user.id))
+  .orderBy(desc(quotations.createdAt));
 
 // 4. Fetch all catalog services for exploration and the estimation planner
 const allServices = await db
@@ -99,6 +135,7 @@ const initialData = {
     description: '',
   },
   requests: customerRequests,
+  quotations: customerQuotations,
   activities: recentActivities,
   allServices,
   pricing: rawPricing,
@@ -182,6 +219,17 @@ const initialData = {
             </svg>
             <span>My Services</span>
             <span class="badge-pill" data-bind-total-badge>{totalServicesCount}</span>
+          </button>
+
+          <button class="nav-item" data-tab="quotations">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+            </svg>
+            <span>Quotations</span>
+            <span class="badge-pill" data-bind-quotes-badge>{customerQuotations.length}</span>
           </button>
 
           <button class="nav-item" data-tab="explore">
@@ -461,6 +509,8 @@ const initialData = {
               </div>
             </div>
           </section>
+
+
 
           <!-- ============================================================== -->
           <!-- VIEW 2: PROJECT ESTIMATION PLANNER -->
@@ -780,6 +830,8 @@ const initialData = {
             </div>
           </section>
 
+
+
           <!-- ============================================================== -->
           <!-- VIEW 3: MY SERVICES -->
           <!-- ============================================================== -->
@@ -830,7 +882,13 @@ const initialData = {
                     <article class="my-service-card" data-my-layer={req.service.layer} data-request-id={req.id}>
                       <div class="card-header-line">
                         <span class={`layer-tag layer-${req.service.layer}`}>{req.service.layer}</span>
-                        <span class={`status-tag status-${req.status}`}>{req.status}</span>
+                        {req.quotation ? (
+                          <span class={`status-tag status-${req.quotation.quotationStatus.toLowerCase().replace(/\s+/g, '-')}`}>
+                            {req.quotation.quotationStatus}
+                          </span>
+                        ) : (
+                          <span class={`status-tag status-${req.status}`}>{req.status}</span>
+                        )}
                       </div>
 
                       <div class="my-service-info">
@@ -869,6 +927,22 @@ const initialData = {
                         </p>
                       </div>
 
+                      {req.quotation && (
+                        <div class="my-service-quote-sync">
+                          <div class="msqs-progress">
+                            <span class="mono text-xs text-muted">Project Progress: {req.quotation.projectProgress}%</span>
+                            <div class="mini-progress-bar">
+                              <div class="mini-progress-fill" style={`width: ${req.quotation.projectProgress}%;`}></div>
+                            </div>
+                          </div>
+                          {req.quotation.customerNotes && (
+                            <div class="cust-notes-callout mono text-xs">
+                              <span class="text-accent">Admin Note:</span> {req.quotation.customerNotes}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       <div class="my-service-actions">
                         <button
                           class="btn-sm btn-ghost"
@@ -892,6 +966,108 @@ const initialData = {
                         )}
                       </div>
                     </article>
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+
+          <!-- ============================================================== -->
+          <!-- VIEW: QUOTATIONS & ESTIMATIONS (CUSTOMER PORTAL) -->
+          <!-- ============================================================== -->
+          <section class="dash-view" id="view-quotations" data-view="quotations">
+            <div class="card-panel">
+              <div class="panel-header-flex">
+                <div>
+                  <span class="eyebrow">Project Scopes & Estimates</span>
+                  <h2 class="display h3">Quotations & Active Estimates</h2>
+                  <p class="panel-subtitle">Review prepared budgets, track project progress, and view administrative updates</p>
+                </div>
+                <button class="btn btn-primary" data-action="go-planner">
+                  <span>+ New Project Estimate</span>
+                  <span class="arrow">→</span>
+                </button>
+              </div>
+
+              {customerQuotations.length === 0 ? (
+                <div class="empty-state">
+                  <div class="empty-icon">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                      <line x1="16" y1="13" x2="8" y2="13"></line>
+                      <line x1="16" y1="17" x2="8" y2="17"></line>
+                    </svg>
+                  </div>
+                  <h3 class="display empty-title">No quotations prepared yet</h3>
+                  <p class="empty-desc">
+                    Configure your project stack using the Project Estimation Planner to generate an official quotation.
+                  </p>
+                  <button class="btn btn-primary" data-action="go-planner">
+                    <span>Open Estimation Planner</span>
+                    <span class="arrow">→</span>
+                  </button>
+                </div>
+              ) : (
+                <div class="customer-quotes-grid">
+                  {customerQuotations.map((q) => (
+                    <div class="cust-quote-card">
+                      <div class="cust-qc-top">
+                        <div>
+                          <span class="mono text-xs text-muted">{q.quotationNumber}</span>
+                          <h3 class="cust-qc-title">{q.projectTitle}</h3>
+                        </div>
+                        <div class="cust-qc-tags">
+                          <span class={`status-tag status-${q.quotationStatus.toLowerCase().replace(/\s+/g, '-')}`}>
+                            {q.quotationStatus}
+                          </span>
+                          <span class={`payment-pill payment-${q.paymentStatus.toLowerCase().replace(/\s+/g, '-')}`}>
+                            {q.paymentStatus}
+                          </span>
+                        </div>
+                      </div>
+
+                      {q.projectDescription && (
+                        <p class="cust-qc-desc">{q.projectDescription}</p>
+                      )}
+
+                      <!-- Project Progress Section -->
+                      <div class="cust-qc-progress-block">
+                        <div class="cust-qc-progress-head">
+                          <span class="mono text-xs text-muted">Project Execution Progress</span>
+                          <strong class="mono text-sm">{q.projectProgress}%</strong>
+                        </div>
+                        <div class="live-progress-bar">
+                          <div class="live-progress-fill" style={`width: ${q.projectProgress}%;`}></div>
+                        </div>
+                      </div>
+
+                      <!-- Customer Notes / Updates from Administration -->
+                      {q.customerNotes && (
+                        <div class="cust-qc-notes-box">
+                          <div class="cust-notes-head">
+                            <span class="mono text-xs text-accent">TEAM UPDATE NOTE</span>
+                            <span class="mono text-xs text-muted">
+                              {new Date(q.updatedAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
+                            </span>
+                          </div>
+                          <p class="cust-notes-text">{q.customerNotes}</p>
+                        </div>
+                      )}
+
+                      <!-- Financial details strip -->
+                      <div class="cust-qc-footer">
+                        <div>
+                          <span class="mono text-xs text-muted">Agreed Investment:</span>
+                          <div class="mono cust-qc-amount">
+                            {q.currency} {parseFloat(String(q.finalQuotationAmount || q.initialEstimatedCost)).toLocaleString()}
+                          </div>
+                        </div>
+                        <span class="mono text-xs text-muted">
+                          Last Updated: {new Date(q.updatedAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </span>
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}
@@ -1020,6 +1196,8 @@ const initialData = {
             </div>
           </section>
 
+
+
           <!-- ============================================================== -->
           <!-- VIEW 5: MY BUSINESS -->
           <!-- ============================================================== -->
@@ -1118,6 +1296,8 @@ const initialData = {
             </div>
           </section>
 
+
+
           <!-- ============================================================== -->
           <!-- VIEW 6: SUPPORT -->
           <!-- ============================================================== -->
@@ -1162,6 +1342,8 @@ const initialData = {
             </div>
           </section>
 
+
+
           <!-- ============================================================== -->
           <!-- VIEW 7: SETTINGS -->
           <!-- ============================================================== -->
@@ -1203,6 +1385,8 @@ const initialData = {
               </form>
             </div>
           </section>
+
+
         </main>
       </div>
     </div>
@@ -3978,6 +4162,112 @@ const initialData = {
         color: #dc2626;
       }
       .btn-danger-ghost:hover { background: #fee2e2; border-color: #dc2626; }
+
+      /* ------------------------------------------------------------- Customer Quotations */
+      .customer-quotes-grid {
+        display: grid;
+        gap: 1.25rem;
+      }
+      .cust-quote-card {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+        display: grid;
+        gap: 1rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+      .cust-quote-card:hover {
+        box-shadow: 0 12px 28px -12px rgba(29, 45, 61, 0.15);
+      }
+      .cust-qc-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+      .cust-qc-title {
+        font-family: var(--font-display);
+        font-size: 1.45rem;
+        color: var(--ink);
+        margin: 0.2rem 0 0;
+      }
+      .cust-qc-tags {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+      }
+      .cust-qc-desc {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin: 0;
+      }
+      .cust-qc-progress-block {
+        display: grid;
+        gap: 0.35rem;
+        background: var(--paper-raised);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-s);
+        padding: 0.75rem 1rem;
+      }
+      .cust-qc-progress-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .cust-qc-notes-box {
+        background: rgba(89, 128, 166, 0.08);
+        border-left: 3px solid var(--accent);
+        border-radius: 0 var(--radius-s) var(--radius-s) 0;
+        padding: 0.85rem 1rem;
+        display: grid;
+        gap: 0.35rem;
+      }
+      .cust-notes-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .cust-notes-text {
+        font-size: 0.88rem;
+        color: var(--text);
+        margin: 0;
+        line-height: 1.45;
+      }
+      .cust-qc-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px dashed var(--line);
+        padding-top: 0.85rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+      .cust-qc-amount {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--ink);
+      }
+      .my-service-quote-sync {
+        background: var(--paper-raised);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-s);
+        padding: 0.65rem 0.85rem;
+        display: grid;
+        gap: 0.35rem;
+      }
+      .msqs-progress {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .cust-notes-callout {
+        border-top: 1px dashed var(--line);
+        padding-top: 0.35rem;
+        color: var(--text);
+      }
 
       /* ------------------------------------------------------------- Explore Services */
       .explore-toolbar { display: grid; gap: 1rem; margin-bottom: 2rem; }

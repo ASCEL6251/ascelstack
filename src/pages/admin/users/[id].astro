@@ -1,0 +1,510 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getAdminSession } from '../../../lib/admin-auth';
+import { db, users, businesses, quotations, activityLogs } from '../../../db';
+import { eq, desc, sql } from 'drizzle-orm';
+
+// Strict Server-Side Session Check
+const session = await getAdminSession(Astro);
+if (!session) {
+  return Astro.redirect('/admin/login');
+}
+
+const targetId = Astro.params.id;
+if (!targetId) {
+  return Astro.redirect('/admin/users');
+}
+
+// 1. Fetch user by id or clerkUserId
+const [user] = await db
+  .select()
+  .from(users)
+  .where(sql`${users.id}::text = ${targetId} OR ${users.clerkUserId} = ${targetId}`)
+  .limit(1);
+
+if (!user) {
+  return Astro.redirect('/admin/users');
+}
+
+// 2. Fetch businesses owned by this user
+const userBusinesses = await db
+  .select()
+  .from(businesses)
+  .where(eq(businesses.ownerUserId, user.id))
+  .orderBy(desc(businesses.updatedAt));
+
+// 3. Fetch user's quotation history (strictly isolated to this user)
+const userQuotations = await db
+  .select({
+    id: quotations.id,
+    quotationNumber: quotations.quotationNumber,
+    projectTitle: quotations.projectTitle,
+    projectDescription: quotations.projectDescription,
+    requirements: quotations.requirements,
+    quotationStatus: quotations.quotationStatus,
+    paymentStatus: quotations.paymentStatus,
+    paymentVerified: quotations.paymentVerified,
+    projectProgress: quotations.projectProgress,
+    currency: quotations.currency,
+    initialEstimatedCost: quotations.initialEstimatedCost,
+    finalQuotationAmount: quotations.finalQuotationAmount,
+    createdAt: quotations.createdAt,
+    updatedAt: quotations.updatedAt,
+  })
+  .from(quotations)
+  .where(eq(quotations.userId, user.id))
+  .orderBy(desc(quotations.createdAt));
+
+// 4. Fetch user's account activity logs
+const userActivity = await db
+  .select()
+  .from(activityLogs)
+  .where(eq(activityLogs.userId, user.id))
+  .orderBy(desc(activityLogs.createdAt))
+  .limit(20);
+
+const totalUserSpent = userQuotations
+  .filter((q) => q.paymentStatus === 'Payment Completed')
+  .reduce((acc, q) => acc + (parseFloat(String(q.finalQuotationAmount)) || 0), 0);
+---
+
+<AdminLayout
+  title={user.fullName || 'User Profile'}
+  activeNav="users"
+  breadcrumbs={[{ label: 'Users', href: '/admin/users' }, { label: user.fullName || user.email }]}
+>
+  <div class="user-detail-layout">
+    <!-- Back button header -->
+    <div class="detail-top-nav">
+      <a href="/admin/users" class="back-link">
+        <span aria-hidden="true">←</span> Back to Users
+      </a>
+    </div>
+
+    <!-- Account Overview Card -->
+    <div class="user-overview-card">
+      <div class="user-profile-head">
+        {user.avatarUrl ? (
+          <img src={user.avatarUrl} alt={user.fullName || 'User'} class="user-profile-avatar" />
+        ) : (
+          <div class="user-profile-placeholder mono">
+            {(user.fullName || user.email)[0].toUpperCase()}
+          </div>
+        )}
+
+        <div class="user-profile-meta">
+          <div class="user-title-row">
+            <h1 class="display h2 user-title-name">{user.fullName || 'Ascelstack Customer'}</h1>
+            <span class="badge-status-active">
+              <span class="status-dot"></span> Active Account
+            </span>
+          </div>
+
+          <p class="user-meta-email mono">{user.email}</p>
+
+          <div class="user-tags-row">
+            <span class="mono user-id-tag" title="Neon Database UUID">UUID: {user.id}</span>
+            <span class="mono user-id-tag" title="Clerk Identity ID">Clerk: {user.clerkUserId}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Metrics Strip -->
+      <div class="user-metrics-strip">
+        <div class="user-metric-col">
+          <span class="mono user-m-label">REGISTRATION DATE</span>
+          <strong class="user-m-val">
+            {new Date(user.createdAt).toLocaleDateString('en-IN', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            })}
+          </strong>
+        </div>
+
+        <div class="user-metric-col">
+          <span class="mono user-m-label">TOTAL QUOTATIONS</span>
+          <strong class="user-m-val text-accent">{userQuotations.length} Scopes</strong>
+        </div>
+
+        <div class="user-metric-col">
+          <span class="mono user-m-label">REGISTERED BUSINESSES</span>
+          <strong class="user-m-val">{userBusinesses.length} Enterprises</strong>
+        </div>
+
+        <div class="user-metric-col">
+          <span class="mono user-m-label">VERIFIED SPENT</span>
+          <strong class="user-m-val text-success">
+            ₹{totalUserSpent.toLocaleString()}
+          </strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Two Column Grid: Quotation History (Left) and Account Info & Activity (Right) -->
+    <div class="user-content-grid">
+      <!-- Left Column: User Quotation History -->
+      <div class="card-panel">
+        <div class="panel-header">
+          <div>
+            <span class="eyebrow">Customer Pipeline</span>
+            <h2 class="display h3">Quotation History ({userQuotations.length})</h2>
+            <p class="panel-subtitle">All project scopes submitted by this customer</p>
+          </div>
+        </div>
+
+        {userQuotations.length === 0 ? (
+          <div class="empty-state">
+            <h3 class="display empty-title">No quotations submitted yet</h3>
+            <p class="empty-desc">This user has not submitted any project inquiries or service requests.</p>
+          </div>
+        ) : (
+          <div class="user-quotes-list">
+            {userQuotations.map((q) => (
+              <div class="user-quote-card">
+                <div class="quote-card-header">
+                  <div>
+                    <span class="mono text-xs text-muted">{q.quotationNumber}</span>
+                    <h3 class="quote-card-title">{q.projectTitle}</h3>
+                  </div>
+                  <div class="quote-tags">
+                    <span class={`status-tag status-${q.quotationStatus.toLowerCase().replace(/\s+/g, '-')}`}>
+                      {q.quotationStatus}
+                    </span>
+                    <span class={`payment-pill payment-${q.paymentStatus.toLowerCase().replace(/\s+/g, '-')}`}>
+                      {q.paymentStatus}
+                    </span>
+                  </div>
+                </div>
+
+                {q.projectDescription && (
+                  <p class="quote-card-desc">{q.projectDescription}</p>
+                )}
+
+                {q.requirements && (
+                  <div class="quote-card-reqs mono">
+                    <span class="reqs-label">Scope Parameters:</span>
+                    <span>{q.requirements}</span>
+                  </div>
+                )}
+
+                <div class="quote-card-footer">
+                  <div class="quote-cost-block">
+                    <span class="mono text-xs text-muted">Estimated Amount:</span>
+                    <strong class="mono quote-amount">
+                      {q.currency} {parseFloat(String(q.finalQuotationAmount || q.initialEstimatedCost)).toLocaleString()}
+                    </strong>
+                  </div>
+
+                  <div class="quote-progress-block">
+                    <span class="mono text-xs text-muted">Project Progress:</span>
+                    <div class="quote-progress-wrap">
+                      <div class="mini-progress-bar">
+                        <div class="mini-progress-fill" style={`width: ${q.projectProgress}%;`}></div>
+                      </div>
+                      <span class="mono text-xs">{q.projectProgress}%</span>
+                    </div>
+                  </div>
+
+                  <div class="quote-actions">
+                    <a href={`/admin/quotations/${q.id}`} class="btn btn-primary btn-sm">
+                      <span>Open Quotation</span>
+                      <span class="arrow">→</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <!-- Right Column: Businesses & Account Activity Trail -->
+      <div class="user-side-column">
+        <!-- Business Info Card -->
+        <div class="card-panel">
+          <div class="panel-header">
+            <div>
+              <span class="eyebrow">Organization</span>
+              <h3 class="display h3">Registered Businesses</h3>
+            </div>
+          </div>
+
+          {userBusinesses.length === 0 ? (
+            <p class="empty-subtext">No business profiles created by this user yet.</p>
+          ) : (
+            <div class="biz-list">
+              {userBusinesses.map((b) => (
+                <div class="biz-item">
+                  <strong class="biz-name">{b.businessName}</strong>
+                  <div class="biz-details mono text-xs">
+                    {b.industry && <span>Industry: {b.industry}</span>}
+                    {b.businessType && <span>Type: {b.businessType}</span>}
+                    {b.city && <span>Location: {b.city}, {b.country}</span>}
+                    {b.gstin && <span>GSTIN: {b.gstin}</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <!-- Account Activity Trail -->
+        <div class="card-panel">
+          <div class="panel-header">
+            <div>
+              <span class="eyebrow">Audit Trail</span>
+              <h3 class="display h3">Account Activity</h3>
+            </div>
+          </div>
+
+          <div class="activity-feed">
+            {userActivity.length === 0 ? (
+              <p class="empty-subtext">No activity records logged for this user.</p>
+            ) : (
+              userActivity.map((act) => (
+                <div class="activity-item">
+                  <div class="activity-bullet"></div>
+                  <div class="activity-body">
+                    <span class="mono text-xs text-accent">{act.activityType}</span>
+                    <p class="activity-desc">{act.description}</p>
+                    <span class="mono activity-time">
+                      {new Date(act.createdAt).toLocaleDateString('en-IN', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .user-detail-layout {
+      display: grid;
+      gap: 1.5rem;
+    }
+    .detail-top-nav {
+      margin-bottom: 0.5rem;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .back-link:hover {
+      color: var(--ink);
+    }
+    .user-overview-card {
+      background: var(--paper-raised);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-l);
+      padding: clamp(1.5rem, 3vw, 2.25rem);
+      box-shadow: 0 10px 30px -15px rgba(20, 33, 48, 0.1);
+      display: grid;
+      gap: 1.75rem;
+    }
+    .user-profile-head {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .user-profile-avatar,
+    .user-profile-placeholder {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      border: 2px solid var(--line);
+      flex-shrink: 0;
+    }
+    .user-profile-placeholder {
+      background: var(--ink);
+      color: var(--paper);
+      display: grid;
+      place-items: center;
+      font-size: 2rem;
+      font-weight: 700;
+    }
+    .user-profile-meta {
+      display: grid;
+      gap: 0.35rem;
+    }
+    .user-title-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .user-title-name {
+      font-size: clamp(1.6rem, 2vw, 2.2rem);
+      margin: 0;
+      line-height: 1.1;
+    }
+    .user-meta-email {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+    .user-tags-row {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.25rem;
+    }
+    .user-id-tag {
+      font-size: 0.7rem;
+      background: var(--paper-sunk);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      color: var(--text-muted);
+    }
+    .user-metrics-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.25rem;
+      border-top: 1px solid var(--line);
+      padding-top: 1.5rem;
+    }
+    .user-metric-col {
+      display: grid;
+      gap: 0.25rem;
+    }
+    .user-m-label {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+    .user-m-val {
+      font-size: 1.2rem;
+      color: var(--ink);
+    }
+    .user-content-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+    .user-side-column {
+      display: grid;
+      gap: 1.5rem;
+    }
+    .user-quotes-list {
+      display: grid;
+      gap: 1.25rem;
+    }
+    .user-quote-card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      display: grid;
+      gap: 0.85rem;
+      transition: all 0.2s;
+    }
+    .user-quote-card:hover {
+      box-shadow: 0 10px 24px -12px rgba(29, 45, 61, 0.15);
+      border-color: var(--accent);
+    }
+    .quote-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .quote-card-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin: 0.2rem 0 0;
+    }
+    .quote-tags {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+    .quote-card-desc {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+      margin: 0;
+    }
+    .quote-card-reqs {
+      background: var(--paper-raised);
+      border-left: 3px solid var(--accent);
+      padding: 0.5rem 0.75rem;
+      border-radius: 0 4px 4px 0;
+      font-size: 0.75rem;
+      color: var(--text);
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .reqs-label {
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .quote-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      border-top: 1px dashed var(--line);
+      padding-top: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .quote-cost-block,
+    .quote-progress-block {
+      display: grid;
+      gap: 0.2rem;
+    }
+    .quote-amount {
+      font-size: 1.05rem;
+      color: var(--ink);
+    }
+    .quote-progress-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .biz-list {
+      display: grid;
+      gap: 0.75rem;
+    }
+    .biz-item {
+      background: var(--paper-raised);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-s);
+      padding: 0.85rem;
+      display: grid;
+      gap: 0.35rem;
+    }
+    .biz-name {
+      font-size: 0.95rem;
+      color: var(--ink);
+    }
+    .biz-details {
+      display: grid;
+      gap: 0.15rem;
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 1024px) {
+      .user-content-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</AdminLayout>

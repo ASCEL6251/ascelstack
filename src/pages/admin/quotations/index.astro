@@ -1,0 +1,344 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getAdminSession } from '../../../lib/admin-auth';
+import { db, quotations, users, businesses } from '../../../db';
+import { sql, desc, asc, ilike, or, eq, and } from 'drizzle-orm';
+
+// Strict Server-Side Session Check
+const session = await getAdminSession(Astro);
+if (!session) {
+  return Astro.redirect('/admin/login');
+}
+
+const url = Astro.url;
+const search = url.searchParams.get('q')?.trim() || '';
+const statusFilter = url.searchParams.get('status')?.trim() || '';
+const paymentFilter = url.searchParams.get('payment')?.trim() || '';
+const sortBy = url.searchParams.get('sortBy') || 'createdAt';
+const sortOrder = url.searchParams.get('sortOrder') || 'desc';
+const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
+const limit = 15;
+const offset = (page - 1) * limit;
+
+const conditions = [];
+
+if (search) {
+  conditions.push(
+    or(
+      ilike(quotations.quotationNumber, `%${search}%`),
+      ilike(quotations.projectTitle, `%${search}%`),
+      ilike(users.fullName, `%${search}%`),
+      ilike(users.email, `%${search}%`),
+      sql`${quotations.id}::text ILIKE ${'%' + search + '%'}`
+    )
+  );
+}
+
+if (statusFilter && statusFilter !== 'all') {
+  conditions.push(eq(quotations.quotationStatus, statusFilter));
+}
+
+if (paymentFilter && paymentFilter !== 'all') {
+  conditions.push(eq(quotations.paymentStatus, paymentFilter));
+}
+
+const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+// Total matching count
+const [{ totalCount }] = await db
+  .select({ totalCount: sql<number>`count(*)::int` })
+  .from(quotations)
+  .innerJoin(users, eq(quotations.userId, users.id))
+  .where(whereClause);
+
+const quotationList = await db
+  .select({
+    id: quotations.id,
+    quotationNumber: quotations.quotationNumber,
+    projectTitle: quotations.projectTitle,
+    quotationStatus: quotations.quotationStatus,
+    paymentStatus: quotations.paymentStatus,
+    paymentVerified: quotations.paymentVerified,
+    projectProgress: quotations.projectProgress,
+    currency: quotations.currency,
+    initialEstimatedCost: quotations.initialEstimatedCost,
+    finalQuotationAmount: quotations.finalQuotationAmount,
+    createdAt: quotations.createdAt,
+    updatedAt: quotations.updatedAt,
+    customer: {
+      id: users.id,
+      fullName: users.fullName,
+      email: users.email,
+    },
+    business: {
+      id: businesses.id,
+      businessName: businesses.businessName,
+    },
+  })
+  .from(quotations)
+  .innerJoin(users, eq(quotations.userId, users.id))
+  .leftJoin(businesses, eq(quotations.businessId, businesses.id))
+  .where(whereClause)
+  .orderBy(
+    sortOrder === 'asc'
+      ? sortBy === 'progress'
+        ? asc(quotations.projectProgress)
+        : sortBy === 'amount'
+        ? asc(quotations.finalQuotationAmount)
+        : sortBy === 'title'
+        ? asc(quotations.projectTitle)
+        : asc(quotations.createdAt)
+      : sortBy === 'progress'
+      ? desc(quotations.projectProgress)
+      : sortBy === 'amount'
+      ? desc(quotations.finalQuotationAmount)
+      : sortBy === 'title'
+      ? desc(quotations.projectTitle)
+      : desc(quotations.createdAt)
+  )
+  .limit(limit)
+  .offset(offset);
+
+const totalPages = Math.ceil(totalCount / limit) || 1;
+
+const QUOTATION_STATUS_OPTIONS = [
+  'All Statuses',
+  'New Inquiry',
+  'Under Review',
+  'Processing',
+  'Estimation in Progress',
+  'Quotation Prepared',
+  'Quotation Sent',
+  'Awaiting Customer Approval',
+  'Approved',
+  'Rejected',
+  'On Hold',
+  'Completed',
+  'Cancelled',
+];
+
+const PAYMENT_STATUS_OPTIONS = [
+  'All Payments',
+  'Not Required',
+  'Payment Pending',
+  'Payment Processing',
+  'Partially Paid',
+  'Payment Completed',
+  'Payment Failed',
+  'Payment Refunded',
+];
+---
+
+<AdminLayout title="Quotation Management" activeNav="quotations" breadcrumbs={[{ label: 'Quotations' }]}>
+  <div class="card-panel">
+    <!-- Header -->
+    <div class="panel-header-flex">
+      <div>
+        <span class="eyebrow">Core Administration</span>
+        <h1 class="display h3">Quotation & Scope Management</h1>
+        <p class="panel-subtitle">
+          Showing {quotationList.length} of {totalCount} project inquiries and estimation scopes from customer portal
+        </p>
+      </div>
+
+      <div class="panel-header-actions">
+        <span class="badge-pill mono">Total: {totalCount} Quotations</span>
+      </div>
+    </div>
+
+    <!-- Toolbar: Search & Dynamic Filters -->
+    <form method="GET" class="admin-toolbar" id="quote-search-form">
+      <div class="toolbar-search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input
+          type="text"
+          name="q"
+          value={search}
+          placeholder="Search by project title, quotation number, customer name, email..."
+          class="toolbar-search-input"
+        />
+        {search && (
+          <a href="/admin/quotations" class="clear-search-btn" title="Clear search">✕</a>
+        )}
+      </div>
+
+      <!-- Quotation Status Filter -->
+      <select name="status" class="toolbar-select" onchange="this.form.submit()">
+        {QUOTATION_STATUS_OPTIONS.map((opt) => {
+          const val = opt === 'All Statuses' ? '' : opt;
+          return (
+            <option value={val} selected={statusFilter === val}>
+              {opt}
+            </option>
+          );
+        })}
+      </select>
+
+      <!-- Payment Status Filter -->
+      <select name="payment" class="toolbar-select" onchange="this.form.submit()">
+        {PAYMENT_STATUS_OPTIONS.map((opt) => {
+          const val = opt === 'All Payments' ? '' : opt;
+          return (
+            <option value={val} selected={paymentFilter === val}>
+              {opt}
+            </option>
+          );
+        })}
+      </select>
+
+      <!-- Sort Options -->
+      <select name="sortBy" class="toolbar-select" onchange="this.form.submit()">
+        <option value="createdAt" selected={sortBy === 'createdAt'}>Submission Date</option>
+        <option value="amount" selected={sortBy === 'amount'}>Quotation Amount</option>
+        <option value="progress" selected={sortBy === 'progress'}>Project Progress</option>
+        <option value="title" selected={sortBy === 'title'}>Project Title</option>
+      </select>
+
+      <select name="sortOrder" class="toolbar-select" onchange="this.form.submit()">
+        <option value="desc" selected={sortOrder === 'desc'}>Descending</option>
+        <option value="asc" selected={sortOrder === 'asc'}>Ascending</option>
+      </select>
+    </form>
+
+    <!-- Quotations Table -->
+    <div class="requests-table-wrap">
+      {quotationList.length === 0 ? (
+        <div class="empty-state">
+          <h3 class="display empty-title">No quotations matched your filters</h3>
+          <p class="empty-desc">Try resetting your search query or status filter.</p>
+          <a href="/admin/quotations" class="btn btn-ghost btn-sm">Reset Filters</a>
+        </div>
+      ) : (
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Quotation Ref & Title</th>
+              <th>Customer</th>
+              <th>Quotation Status</th>
+              <th>Payment Status</th>
+              <th>Estimated Cost</th>
+              <th>Final Amount</th>
+              <th>Progress</th>
+              <th>Submitted</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {quotationList.map((q) => (
+              <tr class="table-row-hover">
+                <td>
+                  <strong class="table-proj-title">{q.projectTitle}</strong>
+                  <div class="table-sub-row">
+                    <span class="mono table-code">{q.quotationNumber}</span>
+                    {q.business && (
+                      <span class="text-xs text-muted">· {q.business.businessName}</span>
+                    )}
+                  </div>
+                </td>
+                <td>
+                  <div class="cust-cell">
+                    <a href={`/admin/users/${q.customer.id}`} class="cust-name-link" title="Open customer account">
+                      {q.customer.fullName || 'Ascelstack Customer'}
+                    </a>
+                    <span class="mono cust-email">{q.customer.email}</span>
+                  </div>
+                </td>
+                <td>
+                  <span class={`status-tag status-${q.quotationStatus.toLowerCase().replace(/\s+/g, '-')}`}>
+                    {q.quotationStatus}
+                  </span>
+                </td>
+                <td>
+                  <span class={`payment-pill payment-${q.paymentStatus.toLowerCase().replace(/\s+/g, '-')}`}>
+                    {q.paymentStatus}
+                  </span>
+                </td>
+                <td class="mono text-muted">
+                  {q.currency} {parseFloat(String(q.initialEstimatedCost)).toLocaleString()}
+                </td>
+                <td class="mono font-semibold text-ink">
+                  {q.currency} {parseFloat(String(q.finalQuotationAmount)).toLocaleString()}
+                </td>
+                <td>
+                  <div class="progress-cell">
+                    <div class="mini-progress-bar">
+                      <div class="mini-progress-fill" style={`width: ${q.projectProgress}%;`}></div>
+                    </div>
+                    <span class="mono text-xs">{q.projectProgress}%</span>
+                  </div>
+                </td>
+                <td class="mono text-muted text-xs">
+                  {new Date(q.createdAt).toLocaleDateString('en-IN', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                </td>
+                <td>
+                  <a href={`/admin/quotations/${q.id}`} class="btn-table-action" title="View & Edit Quotation">
+                    Manage →
+                  </a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+
+    <!-- Pagination -->
+    {totalPages > 1 && (
+      <div class="pagination-bar">
+        <span class="mono text-xs text-muted">
+          Page {page} of {totalPages}
+        </span>
+        <div class="pagination-buttons">
+          {page > 1 && (
+            <a
+              href={`/admin/quotations?page=${page - 1}&q=${encodeURIComponent(search)}&status=${encodeURIComponent(statusFilter)}&payment=${encodeURIComponent(paymentFilter)}&sortBy=${sortBy}&sortOrder=${sortOrder}`}
+              class="btn-page"
+            >
+              ← Previous
+            </a>
+          )}
+          {page < totalPages && (
+            <a
+              href={`/admin/quotations?page=${page + 1}&q=${encodeURIComponent(search)}&status=${encodeURIComponent(statusFilter)}&payment=${encodeURIComponent(paymentFilter)}&sortBy=${sortBy}&sortOrder=${sortOrder}`}
+              class="btn-page"
+            >
+              Next →
+            </a>
+          )}
+        </div>
+      </div>
+    )}
+  </div>
+
+  <style>
+    .table-sub-row {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .cust-name-link {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .cust-name-link:hover {
+      color: var(--accent);
+      text-decoration: underline;
+    }
+    .font-semibold {
+      font-weight: 600;
+    }
+    .text-ink {
+      color: var(--ink);
+    }
+  </style>
+</AdminLayout>

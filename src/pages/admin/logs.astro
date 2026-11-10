@@ -1,0 +1,229 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getAdminSession } from '../../lib/admin-auth';
+import { db, quotationHistory, adminActivityLogs, quotations, users } from '../../db';
+import { desc, eq, sql } from 'drizzle-orm';
+
+// Strict Server-Side Session Check
+const session = await getAdminSession(Astro);
+if (!session) {
+  return Astro.redirect('/admin/login');
+}
+
+const url = Astro.url;
+const logType = url.searchParams.get('type') || 'all'; // 'all' | 'quotation' | 'admin'
+const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
+const limit = 25;
+const offset = (page - 1) * limit;
+
+// 1. Fetch quotation history items
+const qHistory = await db
+  .select({
+    id: quotationHistory.id,
+    logType: sql<string>`'quotation'`,
+    quotationId: quotationHistory.quotationId,
+    quotationNumber: quotations.quotationNumber,
+    projectTitle: quotations.projectTitle,
+    userFullName: users.fullName,
+    adminEmail: quotationHistory.adminEmail,
+    action: quotationHistory.fieldChanged,
+    description: quotationHistory.description,
+    previousValue: quotationHistory.previousValue,
+    newValue: quotationHistory.newValue,
+    createdAt: quotationHistory.createdAt,
+  })
+  .from(quotationHistory)
+  .leftJoin(quotations, eq(quotationHistory.quotationId, quotations.id))
+  .leftJoin(users, eq(quotationHistory.userId, users.id))
+  .orderBy(desc(quotationHistory.createdAt))
+  .limit(logType === 'admin' ? 0 : 50);
+
+// 2. Fetch administrative actions
+const aLogs = await db
+  .select({
+    id: adminActivityLogs.id,
+    logType: sql<string>`'admin_action'`,
+    quotationId: sql<string | null>`NULL`,
+    quotationNumber: sql<string | null>`NULL`,
+    projectTitle: sql<string | null>`NULL`,
+    userFullName: sql<string | null>`NULL`,
+    adminEmail: adminActivityLogs.adminEmail,
+    action: adminActivityLogs.action,
+    description: adminActivityLogs.description,
+    previousValue: sql<string | null>`NULL`,
+    newValue: sql<string | null>`NULL`,
+    createdAt: adminActivityLogs.createdAt,
+  })
+  .from(adminActivityLogs)
+  .orderBy(desc(adminActivityLogs.createdAt))
+  .limit(logType === 'quotation' ? 0 : 50);
+
+// Combine and sort
+const allLogs = (logType === 'quotation' ? qHistory : logType === 'admin' ? aLogs : [...qHistory, ...aLogs])
+  .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+const pagedLogs = allLogs.slice(offset, offset + limit);
+const totalLogs = allLogs.length;
+const totalPages = Math.ceil(totalLogs / limit) || 1;
+---
+
+<AdminLayout title="Activity Logs" activeNav="logs" breadcrumbs={[{ label: 'Activity Logs' }]}>
+  <div class="card-panel">
+    <div class="panel-header-flex">
+      <div>
+        <span class="eyebrow">Audit & Governance</span>
+        <h1 class="display h3">Administrative Activity Logs</h1>
+        <p class="panel-subtitle">
+          Showing {pagedLogs.length} of {totalLogs} verified historical records of quotation updates and system events
+        </p>
+      </div>
+
+      <div class="filter-pills-row">
+        <a href="/admin/logs?type=all" class:list={['tab-pill', { 'is-on': logType === 'all' }]}>
+          All Events ({allLogs.length})
+        </a>
+        <a href="/admin/logs?type=quotation" class:list={['tab-pill', { 'is-on': logType === 'quotation' }]}>
+          Quotation Updates ({qHistory.length})
+        </a>
+        <a href="/admin/logs?type=admin" class:list={['tab-pill', { 'is-on': logType === 'admin' }]}>
+          Admin Actions ({aLogs.length})
+        </a>
+      </div>
+    </div>
+
+    {pagedLogs.length === 0 ? (
+      <div class="empty-state">
+        <h3 class="display empty-title">No activity logs recorded yet</h3>
+        <p class="empty-desc">When administrators update quotation statuses, estimations, or sign in, verified events will appear here.</p>
+      </div>
+    ) : (
+      <div class="requests-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Administrator</th>
+              <th>Event / Field</th>
+              <th>Quotation Ref</th>
+              <th>Description</th>
+              <th>Change Delta</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pagedLogs.map((log) => (
+              <tr class="table-row-hover">
+                <td class="mono text-muted text-xs">
+                  {new Date(log.createdAt).toLocaleDateString('en-IN', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </td>
+                <td>
+                  <span class="mono text-xs admin-email-pill">{log.adminEmail}</span>
+                </td>
+                <td>
+                  <span class={`log-type-tag tag-${log.logType}`}>
+                    {log.action}
+                  </span>
+                </td>
+                <td>
+                  {log.quotationNumber ? (
+                    <a href={`/admin/quotations/${log.quotationId}`} class="mono quote-ref-link" title="Open Quotation">
+                      {log.quotationNumber}
+                    </a>
+                  ) : (
+                    <span class="mono text-muted text-xs">—</span>
+                  )}
+                </td>
+                <td class="text-sm">
+                  {log.description}
+                </td>
+                <td>
+                  {log.previousValue !== null && log.newValue !== null ? (
+                    <div class="delta-box mono text-xs">
+                      <span class="delta-prev" title="Previous Value">{log.previousValue || '—'}</span>
+                      <span class="delta-arrow">→</span>
+                      <span class="delta-new" title="New Value">{log.newValue || '—'}</span>
+                    </div>
+                  ) : (
+                    <span class="mono text-muted text-xs">—</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+
+    {totalPages > 1 && (
+      <div class="pagination-bar">
+        <span class="mono text-xs text-muted">Page {page} of {totalPages}</span>
+        <div class="pagination-buttons">
+          {page > 1 && (
+            <a href={`/admin/logs?page=${page - 1}&type=${logType}`} class="btn-page">← Previous</a>
+          )}
+          {page < totalPages && (
+            <a href={`/admin/logs?page=${page + 1}&type=${logType}`} class="btn-page">Next →</a>
+          )}
+        </div>
+      </div>
+    )}
+  </div>
+
+  <style>
+    .admin-email-pill {
+      background: var(--paper-sunk);
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      color: var(--ink);
+    }
+    .log-type-tag {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      background: var(--paper-sunk);
+      color: var(--text-muted);
+    }
+    .tag-quotation {
+      background: rgba(89, 128, 166, 0.12);
+      color: var(--accent);
+    }
+    .tag-admin_action {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .quote-ref-link {
+      color: var(--accent);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .quote-ref-link:hover {
+      text-decoration: underline;
+    }
+    .delta-box {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .delta-prev {
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+    .delta-arrow {
+      color: var(--accent);
+    }
+    .delta-new {
+      color: #065f46;
+      font-weight: 600;
+    }
+  </style>
+</AdminLayout>

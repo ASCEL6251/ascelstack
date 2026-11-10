@@ -1,0 +1,469 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getAdminSession } from '../../lib/admin-auth';
+import { db, users, quotations, quotationHistory, activityLogs } from '../../db';
+import { sql, desc, eq, inArray, gte } from 'drizzle-orm';
+
+// Strict Server-Side Session Check before running queries
+const session = await getAdminSession(Astro);
+if (!session) {
+  return Astro.redirect('/admin/login');
+}
+
+// 1. Database Queries for Real Statistics
+const [{ totalUsers }] = await db
+  .select({ totalUsers: sql<number>`count(*)::int` })
+  .from(users);
+
+const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+const [{ newUsers }] = await db
+  .select({ newUsers: sql<number>`count(*)::int` })
+  .from(users)
+  .where(gte(users.createdAt, thirtyDaysAgo));
+
+const [{ totalQuotations }] = await db
+  .select({ totalQuotations: sql<number>`count(*)::int` })
+  .from(quotations);
+
+const [{ pendingQuotations }] = await db
+  .select({ pendingQuotations: sql<number>`count(*)::int` })
+  .from(quotations)
+  .where(
+    inArray(quotations.quotationStatus, [
+      'New Inquiry',
+      'Under Review',
+      'Processing',
+      'Estimation in Progress',
+      'Quotation Prepared',
+      'Awaiting Customer Approval',
+    ])
+  );
+
+// Calculate percentage for circular indicators
+const pendingPct = totalQuotations > 0 ? Math.round((pendingQuotations / totalQuotations) * 100) : 0;
+const newUsersPct = totalUsers > 0 ? Math.round((newUsers / totalUsers) * 100) : 0;
+
+// 2. Fetch Recent Real Quotations & Inquiries from Neon DB
+const recentQuotations = await db
+  .select({
+    id: quotations.id,
+    quotationNumber: quotations.quotationNumber,
+    projectTitle: quotations.projectTitle,
+    quotationStatus: quotations.quotationStatus,
+    paymentStatus: quotations.paymentStatus,
+    projectProgress: quotations.projectProgress,
+    finalQuotationAmount: quotations.finalQuotationAmount,
+    currency: quotations.currency,
+    createdAt: quotations.createdAt,
+    customer: {
+      id: users.id,
+      fullName: users.fullName,
+      email: users.email,
+    },
+  })
+  .from(quotations)
+  .innerJoin(users, eq(quotations.userId, users.id))
+  .orderBy(desc(quotations.createdAt))
+  .limit(6);
+
+// 3. Fetch Recent Change History from Neon DB
+const recentHistory = await db
+  .select({
+    id: quotationHistory.id,
+    quotationId: quotationHistory.quotationId,
+    fieldChanged: quotationHistory.fieldChanged,
+    previousValue: quotationHistory.previousValue,
+    newValue: quotationHistory.newValue,
+    description: quotationHistory.description,
+    adminEmail: quotationHistory.adminEmail,
+    createdAt: quotationHistory.createdAt,
+    quotationNumber: quotations.quotationNumber,
+  })
+  .from(quotationHistory)
+  .leftJoin(quotations, eq(quotationHistory.quotationId, quotations.id))
+  .orderBy(desc(quotationHistory.createdAt))
+  .limit(6);
+---
+
+<AdminLayout title="Overview" activeNav="overview" breadcrumbs={[{ label: 'Overview' }]}>
+  <!-- Dashboard Hero Welcome Card -->
+  <div class="dash-welcome-card">
+    <div class="welcome-copy">
+      <p class="eyebrow">Enterprise Control Plane</p>
+      <h1 class="display welcome-title">Ascelstack <em>Overview</em></h1>
+      <p class="welcome-desc">
+        Real-time pipeline monitoring, quotation management, customer activity audit, and project progress oversight directly synchronized with your Neon database.
+      </p>
+    </div>
+    <div class="welcome-actions">
+      <a href="/admin/quotations" class="btn btn-primary">
+        <span>Manage Quotations</span>
+        <span class="arrow">→</span>
+      </a>
+      <a href="/admin/users" class="btn btn-ghost">
+        <span>View Registered Users</span>
+        <span class="arrow">→</span>
+      </a>
+      <a href="/admin/logs" class="btn btn-ghost">
+        <span>Activity Trail</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- 4 Compact Statistic Cards with Circular Indicators -->
+  <div class="metrics-grid">
+    <!-- Card 1: Total Registered Users -->
+    <div class="metric-card metric-card--total">
+      <div class="metric-top-row">
+        <div class="metric-meta">
+          <span class="mono metric-label">REGISTERED USERS</span>
+          <span class="metric-dot"></span>
+        </div>
+        <!-- Circular indicator -->
+        <div class="circ-indicator" title="Total active customer accounts">
+          <svg viewBox="0 0 36 36" class="circ-svg">
+            <path class="circ-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+            <path class="circ-fill circ-blue" stroke-dasharray="100, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+          </svg>
+          <span class="mono circ-val">100%</span>
+        </div>
+      </div>
+      <div class="metric-value" id="stat-total-users">{totalUsers}</div>
+      <span class="metric-hint">Synchronized with Clerk & Neon</span>
+    </div>
+
+    <!-- Card 2: New Users (Last 30 Days) -->
+    <div class="metric-card metric-card--active">
+      <div class="metric-top-row">
+        <div class="metric-meta">
+          <span class="mono metric-label">NEW USERS (30D)</span>
+          <span class="metric-dot dot-accent"></span>
+        </div>
+        <div class="circ-indicator" title={`${newUsersPct}% of total users joined recently`}>
+          <svg viewBox="0 0 36 36" class="circ-svg">
+            <path class="circ-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+            <path class="circ-fill circ-accent" stroke-dasharray={`${newUsersPct}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+          </svg>
+          <span class="mono circ-val">{newUsersPct}%</span>
+        </div>
+      </div>
+      <div class="metric-value text-accent" id="stat-new-users">{newUsers}</div>
+      <span class="metric-hint">New account acquisitions</span>
+    </div>
+
+    <!-- Card 3: Total Quotations -->
+    <div class="metric-card metric-card--completed">
+      <div class="metric-top-row">
+        <div class="metric-meta">
+          <span class="mono metric-label">TOTAL QUOTATIONS</span>
+          <span class="metric-dot dot-success"></span>
+        </div>
+        <div class="circ-indicator" title="Total project scopes">
+          <svg viewBox="0 0 36 36" class="circ-svg">
+            <path class="circ-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+            <path class="circ-fill circ-green" stroke-dasharray="100, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+          </svg>
+          <span class="mono circ-val">100%</span>
+        </div>
+      </div>
+      <div class="metric-value text-success" id="stat-total-quotations">{totalQuotations}</div>
+      <span class="metric-hint">Inquiries & estimation scopes</span>
+    </div>
+
+    <!-- Card 4: Pending Quotations -->
+    <div class="metric-card metric-card--pending">
+      <div class="metric-top-row">
+        <div class="metric-meta">
+          <span class="mono metric-label">PENDING REVIEW</span>
+          <span class="metric-dot dot-warn"></span>
+        </div>
+        <div class="circ-indicator" title={`${pendingPct}% of quotations awaiting review or pricing`}>
+          <svg viewBox="0 0 36 36" class="circ-svg">
+            <path class="circ-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+            <path class="circ-fill circ-warn" stroke-dasharray={`${pendingPct}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+          </svg>
+          <span class="mono circ-val">{pendingPct}%</span>
+        </div>
+      </div>
+      <div class="metric-value text-warn" id="stat-pending-quotations">{pendingQuotations}</div>
+      <span class="metric-hint">Require quotation preparation</span>
+    </div>
+  </div>
+
+  <!-- Two Column Content Grid -->
+  <div class="overview-columns">
+    <!-- Left Column: Recent Customer Inquiries & Quotations -->
+    <div class="card-panel">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title display h3">Recent Quotations & Inquiries</h2>
+          <p class="panel-subtitle">Customer-submitted requirements and pipelines</p>
+        </div>
+        <a href="/admin/quotations" class="text-link mono">View All ({totalQuotations}) →</a>
+      </div>
+
+      <div class="requests-table-wrap">
+        {recentQuotations.length === 0 ? (
+          <div class="empty-state">
+            <h3 class="display empty-title">No quotations recorded yet</h3>
+            <p class="empty-desc">When customers request services or estimate projects, they will appear here automatically.</p>
+          </div>
+        ) : (
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Quotation</th>
+                <th>Customer</th>
+                <th>Status</th>
+                <th>Payment</th>
+                <th>Progress</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recentQuotations.map((q) => (
+                <tr>
+                  <td>
+                    <strong class="table-proj-title">{q.projectTitle}</strong>
+                    <span class="mono table-code">{q.quotationNumber}</span>
+                  </td>
+                  <td>
+                    <div class="cust-cell">
+                      <span class="cust-name">{q.customer.fullName || 'Ascelstack Customer'}</span>
+                      <span class="mono cust-email">{q.customer.email}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class={`status-tag status-${q.quotationStatus.toLowerCase().replace(/\s+/g, '-')}`}>
+                      {q.quotationStatus}
+                    </span>
+                  </td>
+                  <td>
+                    <span class={`payment-pill payment-${q.paymentStatus.toLowerCase().replace(/\s+/g, '-')}`}>
+                      {q.paymentStatus}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="progress-cell">
+                      <div class="mini-progress-bar">
+                        <div class="mini-progress-fill" style={`width: ${q.projectProgress}%;`}></div>
+                      </div>
+                      <span class="mono text-xs">{q.projectProgress}%</span>
+                    </div>
+                  </td>
+                  <td>
+                    <a href={`/admin/quotations/${q.id}`} class="btn-table-action" title="Open Quotation">
+                      Manage →
+                    </a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+
+    <!-- Right Column: Recent Activity Logs -->
+    <div class="card-panel">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title display h3">Recent Activity Trail</h2>
+          <p class="panel-subtitle">Audit log of quotation updates & administrative actions</p>
+        </div>
+        <a href="/admin/logs" class="text-link mono">Full Log →</a>
+      </div>
+
+      <div class="activity-feed">
+        {recentHistory.length === 0 ? (
+          <p class="empty-subtext">No historical updates recorded yet. Modifications made to quotations will appear here.</p>
+        ) : (
+          recentHistory.map((act) => (
+            <div class="activity-item">
+              <div class="activity-bullet"></div>
+              <div class="activity-body">
+                <div class="activity-header">
+                  {act.quotationNumber && (
+                    <span class="mono activity-ref-pill">{act.quotationNumber}</span>
+                  )}
+                  <span class="mono activity-admin-email">{act.adminEmail}</span>
+                </div>
+                <p class="activity-desc">{act.description}</p>
+                <span class="mono activity-time">
+                  {new Date(act.createdAt).toLocaleDateString('en-IN', {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </span>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .metric-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+    .circ-indicator {
+      width: 32px;
+      height: 32px;
+      position: relative;
+      display: grid;
+      place-items: center;
+    }
+    .circ-svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+    .circ-bg {
+      fill: none;
+      stroke: var(--paper-sunk);
+      stroke-width: 3.8;
+    }
+    .circ-fill {
+      fill: none;
+      stroke-width: 3.8;
+      stroke-linecap: round;
+      transition: stroke-dasharray 0.5s ease;
+    }
+    .circ-blue { stroke: var(--ink); }
+    .circ-accent { stroke: var(--accent); }
+    .circ-green { stroke: #10b981; }
+    .circ-warn { stroke: #f59e0b; }
+    .circ-val {
+      position: absolute;
+      font-size: 0.55rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .table-proj-title {
+      display: block;
+      color: var(--ink);
+      font-size: 0.92rem;
+    }
+    .cust-cell {
+      display: grid;
+      gap: 0.1rem;
+    }
+    .cust-name {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .cust-email {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+    .progress-cell {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .mini-progress-bar {
+      width: 48px;
+      height: 6px;
+      background: var(--paper-sunk);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .mini-progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 999px;
+    }
+    .btn-table-action {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--accent);
+      padding: 0.3rem 0.65rem;
+      border-radius: 999px;
+      background: var(--paper-sunk);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-table-action:hover {
+      background: var(--ink);
+      color: var(--paper);
+    }
+    .activity-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.2rem;
+    }
+    .activity-ref-pill {
+      font-size: 0.65rem;
+      background: var(--paper-sunk);
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      color: var(--accent);
+    }
+    .activity-admin-email {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+    .payment-pill {
+      display: inline-block;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      background: var(--paper-sunk);
+      color: var(--text-muted);
+    }
+    .payment-payment-completed {
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+    .payment-payment-pending {
+      background: #fffbeb;
+      color: #92400e;
+      border: 1px solid #fde68a;
+    }
+    .payment-payment-processing {
+      background: #eff6ff;
+      color: #1e40af;
+      border: 1px solid #bfdbfe;
+    }
+  </style>
+
+  <script>
+    // Listen for real-time DB sync events
+    window.addEventListener('asc:db-sync', async () => {
+      try {
+        const res = await fetch('/api/admin/stats');
+        if (res.ok) {
+          const data = await res.json();
+          const totalUsersEl = document.getElementById('stat-total-users');
+          const newUsersEl = document.getElementById('stat-new-users');
+          const totalQuotesEl = document.getElementById('stat-total-quotations');
+          const pendingQuotesEl = document.getElementById('stat-pending-quotations');
+
+          if (totalUsersEl) totalUsersEl.textContent = String(data.stats.totalUsers);
+          if (newUsersEl) newUsersEl.textContent = String(data.stats.newUsers);
+          if (totalQuotesEl) totalQuotesEl.textContent = String(data.stats.totalQuotations);
+          if (pendingQuotesEl) pendingQuotesEl.textContent = String(data.stats.pendingQuotations);
+
+          (window as any).showAdminToast?.('Dashboard synchronized with latest database changes', 'info');
+        }
+      } catch (e) {
+        // silent
+      }
+    });
+  </script>
+</AdminLayout>

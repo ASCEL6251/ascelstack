@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
-import { eq, and, desc, inArray } from 'drizzle-orm';
-import { db, serviceRequests, services, businesses } from '../../../db';
+import { eq, and, desc, inArray, sql } from 'drizzle-orm';
+import { db, serviceRequests, services, businesses, quotations } from '../../../db';
 import { getAuthenticatedUser, logActivity } from '../../../lib/auth';
 import { serviceRequestCreateSchema, serviceRequestUpdateSchema } from '../../../lib/validations';
 
@@ -152,13 +152,35 @@ export const POST: APIRoute = async (context) => {
       );
     }
 
-    // Insert new request with initial status 'pending'
+    // Create quotation entry for inquiry tracking
+    const qCountResult = await db.select({ count: sql<number>`count(*)::int` }).from(quotations);
+    const nextQNum = `QUO-${new Date().getFullYear()}-${String((qCountResult[0]?.count || 0) + 1).padStart(4, '0')}`;
+    
+    const [newQuotation] = await db
+      .insert(quotations)
+      .values({
+        quotationNumber: nextQNum,
+        userId: authData.user.id,
+        businessId,
+        projectTitle: service.name,
+        projectDescription: service.description,
+        requirements: requirements || null,
+        quotationStatus: 'New Inquiry',
+        paymentStatus: 'Not Required',
+        projectProgress: 0,
+        initialEstimatedCost: '25000.00',
+        finalQuotationAmount: '25000.00',
+      })
+      .returning();
+
+    // Insert new request with initial status 'pending' and link to quotation
     const [newRequest] = await db
       .insert(serviceRequests)
       .values({
         businessId,
         userId: authData.user.id,
         serviceId: service.id,
+        quotationId: newQuotation.id,
         requirements: requirements || null,
         status: 'pending',
       })

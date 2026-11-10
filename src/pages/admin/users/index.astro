@@ -1,0 +1,386 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getAdminSession } from '../../../lib/admin-auth';
+import { db, users, quotations, activityLogs } from '../../../db';
+import { sql, desc, asc, ilike, or } from 'drizzle-orm';
+
+// Strict Server-Side Session Check
+const session = await getAdminSession(Astro);
+if (!session) {
+  return Astro.redirect('/admin/login');
+}
+
+const url = Astro.url;
+const search = url.searchParams.get('q')?.trim() || '';
+const sortBy = url.searchParams.get('sortBy') || 'createdAt';
+const sortOrder = url.searchParams.get('sortOrder') || 'desc';
+const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
+const limit = 15;
+const offset = (page - 1) * limit;
+
+const whereConditions = search
+  ? or(
+      ilike(users.fullName, `%${search}%`),
+      ilike(users.email, `%${search}%`),
+      ilike(users.clerkUserId, `%${search}%`),
+      sql`${users.id}::text ILIKE ${'%' + search + '%'}`
+    )
+  : undefined;
+
+// Total matching count
+const [{ totalCount }] = await db
+  .select({ totalCount: sql<number>`count(*)::int` })
+  .from(users)
+  .where(whereConditions);
+
+const userList = await db
+  .select({
+    id: users.id,
+    clerkUserId: users.clerkUserId,
+    email: users.email,
+    fullName: users.fullName,
+    avatarUrl: users.avatarUrl,
+    createdAt: users.createdAt,
+    updatedAt: users.updatedAt,
+    quotationCount: sql<number>`(SELECT count(*)::int FROM quotations WHERE quotations.user_id = users.id)`,
+    lastActivityAt: sql<string | null>`(SELECT max(created_at) FROM activity_logs WHERE activity_logs.user_id = users.id)`,
+  })
+  .from(users)
+  .where(whereConditions)
+  .orderBy(
+    sortOrder === 'asc'
+      ? sortBy === 'fullName'
+        ? asc(users.fullName)
+        : sortBy === 'email'
+        ? asc(users.email)
+        : asc(users.createdAt)
+      : sortBy === 'fullName'
+      ? desc(users.fullName)
+      : sortBy === 'email'
+      ? desc(users.email)
+      : desc(users.createdAt)
+  )
+  .limit(limit)
+  .offset(offset);
+
+const totalPages = Math.ceil(totalCount / limit) || 1;
+---
+
+<AdminLayout title="User Management" activeNav="users" breadcrumbs={[{ label: 'Users' }]}>
+  <div class="card-panel">
+    <!-- Panel Header -->
+    <div class="panel-header-flex">
+      <div>
+        <span class="eyebrow">Identity & Accounts</span>
+        <h1 class="display h3">Registered Users</h1>
+        <p class="panel-subtitle">
+          Showing {userList.length} of {totalCount} registered user accounts synchronized with Clerk & Neon
+        </p>
+      </div>
+
+      <!-- Action badges -->
+      <div class="panel-header-actions">
+        <span class="badge-pill mono">Total: {totalCount} Users</span>
+      </div>
+    </div>
+
+    <!-- Filter & Search Toolbar -->
+    <form method="GET" class="admin-toolbar" id="user-search-form">
+      <div class="toolbar-search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input
+          type="text"
+          name="q"
+          value={search}
+          placeholder="Search by full name, email, Clerk ID, or UUID..."
+          class="toolbar-search-input"
+        />
+        {search && (
+          <a href="/admin/users" class="clear-search-btn" title="Clear search">✕</a>
+        )}
+      </div>
+
+      <div class="toolbar-select-group">
+        <label class="toolbar-label mono">Sort:</label>
+        <select name="sortBy" class="toolbar-select" onchange="this.form.submit()">
+          <option value="createdAt" selected={sortBy === 'createdAt'}>Registration Date</option>
+          <option value="fullName" selected={sortBy === 'fullName'}>Full Name</option>
+          <option value="email" selected={sortBy === 'email'}>Email Address</option>
+        </select>
+
+        <select name="sortOrder" class="toolbar-select" onchange="this.form.submit()">
+          <option value="desc" selected={sortOrder === 'desc'}>Newest First</option>
+          <option value="asc" selected={sortOrder === 'asc'}>Oldest First</option>
+        </select>
+      </div>
+    </form>
+
+    <!-- Users Table -->
+    <div class="requests-table-wrap">
+      {userList.length === 0 ? (
+        <div class="empty-state">
+          <h3 class="display empty-title">No users matched your query</h3>
+          <p class="empty-desc">Try clearing your search query or check spelling.</p>
+          <a href="/admin/users" class="btn btn-ghost btn-sm">Reset Search</a>
+        </div>
+      ) : (
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Account IDs</th>
+              <th>Registered</th>
+              <th>Last Active</th>
+              <th>Status</th>
+              <th>Quotations</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {userList.map((u) => (
+              <tr class="table-row-hover">
+                <td>
+                  <div class="user-cell">
+                    {u.avatarUrl ? (
+                      <img src={u.avatarUrl} alt={u.fullName || 'User'} class="user-avatar-img" />
+                    ) : (
+                      <div class="user-avatar-placeholder mono">
+                        {(u.fullName || u.email)[0].toUpperCase()}
+                      </div>
+                    )}
+                    <div class="user-info-text">
+                      <strong class="user-name">{u.fullName || 'Ascelstack Customer'}</strong>
+                      <span class="mono user-email">{u.email}</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="mono-ids-col">
+                    <span class="mono text-xs text-muted" title={`Neon UUID: ${u.id}`}>
+                      ID: {u.id.slice(0, 8)}...
+                    </span>
+                    <span class="mono text-xs text-accent" title={`Clerk ID: ${u.clerkUserId}`}>
+                      {u.clerkUserId.slice(0, 14)}...
+                    </span>
+                  </div>
+                </td>
+                <td class="mono text-muted">
+                  {new Date(u.createdAt).toLocaleDateString('en-IN', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                </td>
+                <td class="mono text-muted">
+                  {u.lastActivityAt ? (
+                    new Date(u.lastActivityAt).toLocaleDateString('en-IN', {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })
+                  ) : (
+                    '—'
+                  )}
+                </td>
+                <td>
+                  <span class="badge-status-active">
+                    <span class="status-dot"></span> Active
+                  </span>
+                </td>
+                <td>
+                  <span class={`pill-count ${u.quotationCount > 0 ? 'pill-count-has' : ''}`}>
+                    {u.quotationCount} {u.quotationCount === 1 ? 'quote' : 'quotes'}
+                  </span>
+                </td>
+                <td>
+                  <a href={`/admin/users/${u.id}`} class="btn-table-action" title="View User Account">
+                    View Profile →
+                  </a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+
+    <!-- Pagination -->
+    {totalPages > 1 && (
+      <div class="pagination-bar">
+        <span class="mono text-xs text-muted">
+          Page {page} of {totalPages}
+        </span>
+        <div class="pagination-buttons">
+          {page > 1 && (
+            <a
+              href={`/admin/users?page=${page - 1}&q=${encodeURIComponent(search)}&sortBy=${sortBy}&sortOrder=${sortOrder}`}
+              class="btn-page"
+            >
+              ← Previous
+            </a>
+          )}
+          {page < totalPages && (
+            <a
+              href={`/admin/users?page=${page + 1}&q=${encodeURIComponent(search)}&sortBy=${sortBy}&sortOrder=${sortOrder}`}
+              class="btn-page"
+            >
+              Next →
+            </a>
+          )}
+        </div>
+      </div>
+    )}
+  </div>
+
+  <style>
+    .panel-header-flex {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+    }
+    .admin-toolbar {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .toolbar-search-box {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      background: var(--paper-raised);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0.5rem 1rem;
+      flex: 1;
+      min-width: 280px;
+    }
+    .toolbar-search-input {
+      border: 0;
+      background: transparent;
+      outline: 0;
+      width: 100%;
+      font-size: 0.88rem;
+    }
+    .clear-search-btn {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.8rem;
+    }
+    .toolbar-select-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .toolbar-select {
+      background: var(--paper-raised);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-s);
+      padding: 0.5rem 0.75rem;
+      font-size: 0.82rem;
+      cursor: pointer;
+    }
+    .user-cell {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .user-avatar-img,
+    .user-avatar-placeholder {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+      flex-shrink: 0;
+    }
+    .user-avatar-placeholder {
+      background: var(--ink);
+      color: var(--paper);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+    .user-info-text {
+      display: grid;
+      line-height: 1.25;
+    }
+    .user-name {
+      font-size: 0.9rem;
+      color: var(--ink);
+    }
+    .user-email {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .mono-ids-col {
+      display: grid;
+      line-height: 1.3;
+    }
+    .badge-status-active {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10b981;
+    }
+    .pill-count {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      background: var(--paper-sunk);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+    .pill-count-has {
+      background: rgba(89, 128, 166, 0.15);
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .pagination-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--line);
+    }
+    .pagination-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .btn-page {
+      padding: 0.4rem 0.85rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-s);
+      background: var(--paper-raised);
+      font-size: 0.8rem;
+      text-decoration: none;
+      color: var(--ink);
+      font-weight: 500;
+    }
+    .btn-page:hover {
+      background: var(--ink);
+      color: var(--paper);
+    }
+  </style>
+</AdminLayout>

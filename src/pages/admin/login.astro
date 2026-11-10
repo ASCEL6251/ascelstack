@@ -1,0 +1,502 @@
+---
+export const prerender = false;
+
+import Logo from '../../components/Logo.astro';
+import { getAdminSession, getAuthorizedAdminEmails, getEnvVariable } from '../../lib/admin-auth';
+import '../../styles/global.css';
+
+// If already authenticated as administrator, redirect directly to /admin
+const session = await getAdminSession(Astro);
+if (session) {
+  return Astro.redirect('/admin');
+}
+
+const googleClientId = getEnvVariable('GOOGLE_CLIENT_ID', Astro) || '';
+const isDev = import.meta.env.DEV === true;
+const configuredEmails = isDev ? getAuthorizedAdminEmails(Astro) : [];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Administrator Sign In · Ascelstack</title>
+    <meta name="description" content="Secure administrative access for Ascelstack management." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bacasime+Antique&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Google Identity Services client script for standard Google Sign-In -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+  </head>
+  <body class="admin-login-body">
+    <div class="admin-login-layout">
+      <!-- Left Brand Panel -->
+      <aside class="admin-login-brand on-ink">
+        <div class="brand-inner">
+          <a href="/" class="brand-logo" aria-label="Ascelstack Home">
+            <Logo tone="light" size={32} />
+          </a>
+
+          <div class="brand-hero">
+            <span class="eyebrow">Enterprise Control</span>
+            <h1 class="display brand-title">Administration<br /><em>Console</em></h1>
+            <p class="brand-desc">
+              Manage client relationships, review project quotation requests, configure detailed scopes, verify payments, and monitor execution milestones in real time.
+            </p>
+
+            <div class="admin-features-list">
+              <div class="feat-item">
+                <span class="feat-dot"></span>
+                <span><strong>Quotation & Estimation Engine</strong> · Pricing & SOW control</span>
+              </div>
+              <div class="feat-item">
+                <span class="feat-dot"></span>
+                <span><strong>Independent Status Tracking</strong> · Quotes, Payments & Progress</span>
+              </div>
+              <div class="feat-item">
+                <span class="feat-dot"></span>
+                <span><strong>Cloudflare Access Control</strong> · Allowlist via <code>ADMIN_EMAILS</code></span>
+              </div>
+            </div>
+          </div>
+
+          <footer class="brand-footer mono">
+            <span>© 2026 Ascelstack</span>
+            <a href="/" target="_blank">ascelstack.com</a>
+          </footer>
+        </div>
+      </aside>
+
+      <!-- Right Sign In Panel -->
+      <main class="admin-login-main">
+        <div class="login-card-wrap">
+          <div class="login-card-header">
+            <span class="mono admin-badge-pill">RESTRICTED ACCESS</span>
+            <h2 class="display login-title">Administrator Login</h2>
+            <p class="login-subtitle">
+              Sign in with your authorized Google Account. Access is restricted to email addresses registered in the Cloudflare <code>ADMIN_EMAILS</code> environment variable.
+            </p>
+          </div>
+
+          <!-- Alert message container for unauthorized or error feedback -->
+          <div class="alert-box alert-error" id="login-error-alert" hidden>
+            <div class="alert-icon">✕</div>
+            <div class="alert-body">
+              <strong id="alert-error-title">Access Denied</strong>
+              <p id="alert-error-desc">Your Google account is not on the administrator allowlist.</p>
+            </div>
+          </div>
+
+          <!-- Primary Sign in with Google Button -->
+          <div class="login-actions-box">
+            <!-- Google GIS rendered container -->
+            {googleClientId ? (
+              <div
+                id="g_id_onload"
+                data-client_id={googleClientId}
+                data-callback="handleGoogleCredentialResponse"
+                data-auto_prompt="false"
+              ></div>
+            ) : null}
+
+            <button type="button" class="btn-google-sign-in" id="btn-google-sign-in">
+              <svg width="20" height="20" viewBox="0 0 24 24" class="google-svg">
+                <path
+                  fill="#4285F4"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                ></path>
+                <path
+                  fill="#34A853"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                ></path>
+                <path
+                  fill="#FBBC05"
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                ></path>
+                <path
+                  fill="#EA4335"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                ></path>
+              </svg>
+              <span>Sign in with Google</span>
+            </button>
+          </div>
+
+          <!-- Development Environment Helper -->
+          {isDev && (
+            <div class="dev-quick-login-card">
+              <div class="dev-header">
+                <span class="mono dev-badge">DEVELOPMENT MODE</span>
+                <span class="mono text-muted text-xs">Allowlist Testing</span>
+              </div>
+              <p class="dev-desc">
+                Select an authorized administrator email configured in your <code>ADMIN_EMAILS</code> allowlist:
+              </p>
+              <div class="dev-email-buttons">
+                {configuredEmails.map((email) => (
+                  <button type="button" class="btn-dev-login mono" data-email={email}>
+                    <span>{email}</span>
+                    <span class="arrow">→</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div class="login-footer-info">
+            <p class="mono text-muted">
+              Looking for client services? <a href="/login">Go to Client Portal →</a>
+            </p>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <style>
+      .admin-login-body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--paper);
+        color: var(--text);
+        font-family: var(--font-body);
+      }
+      .admin-login-layout {
+        display: grid;
+        grid-template-columns: 1.1fr 1.3fr;
+        min-height: 100vh;
+      }
+      .admin-login-brand {
+        background: var(--ink-deep);
+        padding: clamp(2.5rem, 5vw, 4rem);
+        position: relative;
+        overflow: hidden;
+      }
+      .brand-inner {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        justify-content: space-between;
+        gap: 3rem;
+      }
+      .brand-logo {
+        display: inline-flex;
+        width: fit-content;
+      }
+      .brand-hero {
+        display: grid;
+        gap: 1.5rem;
+        max-width: 480px;
+      }
+      .brand-title {
+        font-size: clamp(2.2rem, 2rem + 2vw, 3.8rem);
+        line-height: 1.05;
+        color: var(--paper);
+      }
+      .brand-desc {
+        color: var(--text-on-ink-muted);
+        font-size: 1.05rem;
+        line-height: 1.6;
+      }
+      .admin-features-list {
+        display: grid;
+        gap: 0.85rem;
+        margin-top: 1rem;
+      }
+      .feat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 0.88rem;
+        color: var(--text-on-ink);
+        background: rgba(255, 255, 255, 0.04);
+        padding: 0.65rem 1rem;
+        border-radius: var(--radius-s);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .feat-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent);
+        flex-shrink: 0;
+      }
+      .feat-item code {
+        font-family: var(--font-mono);
+        color: var(--tint);
+      }
+      .brand-footer {
+        display: flex;
+        justify-content: space-between;
+        color: var(--text-on-ink-muted);
+        font-size: 0.8rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        padding-top: 1.5rem;
+      }
+      .admin-login-main {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: clamp(2rem, 4vw, 4rem);
+        background: var(--paper);
+      }
+      .login-card-wrap {
+        max-width: 460px;
+        width: 100%;
+        margin: auto;
+        display: grid;
+        gap: 1.5rem;
+      }
+      .login-card-header {
+        display: grid;
+        gap: 0.5rem;
+      }
+      .admin-badge-pill {
+        display: inline-flex;
+        width: fit-content;
+        background: var(--ink);
+        color: var(--tint);
+        font-size: 0.7rem;
+        padding: 0.2rem 0.65rem;
+        border-radius: 999px;
+        letter-spacing: 0.08em;
+      }
+      .login-title {
+        font-size: 2.2rem;
+        color: var(--ink);
+        margin: 0;
+      }
+      .login-subtitle {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin: 0;
+      }
+      .login-subtitle code {
+        font-family: var(--font-mono);
+        color: var(--ink);
+        background: var(--paper-sunk);
+        padding: 0.1rem 0.35rem;
+        border-radius: 4px;
+      }
+      .alert-box {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.85rem;
+        padding: 1rem 1.25rem;
+        border-radius: var(--radius);
+        font-size: 0.9rem;
+      }
+      .alert-box[hidden] {
+        display: none !important;
+      }
+      .alert-error {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #991b1b;
+      }
+      .alert-icon {
+        font-weight: 700;
+        background: #dc2626;
+        color: #ffffff;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-size: 0.75rem;
+        flex-shrink: 0;
+      }
+      .alert-body p {
+        margin: 0.25rem 0 0;
+        font-size: 0.82rem;
+        line-height: 1.4;
+      }
+      .btn-google-sign-in {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.85rem;
+        width: 100%;
+        padding: 0.95rem 1.5rem;
+        background: #ffffff;
+        color: #1f2937;
+        border: 1px solid rgba(29, 45, 61, 0.2);
+        border-radius: 999px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(29, 45, 61, 0.08);
+        transition: all 0.2s ease;
+      }
+      .btn-google-sign-in:hover {
+        background: #f9fafb;
+        border-color: var(--accent);
+        box-shadow: 0 6px 20px rgba(29, 45, 61, 0.12);
+        transform: translateY(-1px);
+      }
+      .google-svg {
+        flex-shrink: 0;
+      }
+      .dev-quick-login-card {
+        background: var(--paper-raised);
+        border: 1px dashed var(--line);
+        border-radius: var(--radius);
+        padding: 1.25rem;
+        display: grid;
+        gap: 0.75rem;
+      }
+      .dev-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .dev-badge {
+        font-size: 0.68rem;
+        color: var(--accent);
+        font-weight: 700;
+      }
+      .dev-desc {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        margin: 0;
+      }
+      .dev-desc code {
+        font-family: var(--font-mono);
+      }
+      .dev-email-buttons {
+        display: grid;
+        gap: 0.5rem;
+      }
+      .btn-dev-login {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.65rem 1rem;
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-s);
+        font-size: 0.8rem;
+        color: var(--ink);
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: left;
+      }
+      .btn-dev-login:hover {
+        background: var(--ink);
+        color: var(--paper);
+        border-color: var(--ink);
+      }
+      .login-footer-info {
+        text-align: center;
+        font-size: 0.85rem;
+      }
+      .login-footer-info a {
+        color: var(--accent);
+        font-weight: 600;
+      }
+
+      @media (max-width: 960px) {
+        .admin-login-layout { grid-template-columns: 1fr; }
+        .admin-login-brand { display: none; }
+      }
+    </style>
+
+    <script is:inline define:vars={{ googleClientId }}>
+      const alertBox = document.getElementById('login-error-alert');
+      const alertTitle = document.getElementById('alert-error-title');
+      const alertDesc = document.getElementById('alert-error-desc');
+      const btnGoogle = document.getElementById('btn-google-sign-in');
+
+      function showError(title, message) {
+        if (!alertBox) return;
+        if (alertTitle) alertTitle.textContent = title;
+        if (alertDesc) alertDesc.textContent = message;
+        alertBox.hidden = false;
+      }
+
+      // Handle Google OAuth Credential returned by GIS
+      async function handleGoogleCredential(credential) {
+        try {
+          btnGoogle.disabled = true;
+          btnGoogle.style.opacity = '0.7';
+
+          const res = await fetch('/api/admin/auth/google', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ credential }),
+          });
+
+          const data = await res.json();
+          if (res.ok && data.success) {
+            window.location.href = '/admin';
+          } else {
+            btnGoogle.disabled = false;
+            btnGoogle.style.opacity = '1';
+            showError('Access Denied', data.error || 'Authentication failed. Please check your admin permissions.');
+          }
+        } catch (e) {
+          btnGoogle.disabled = false;
+          btnGoogle.style.opacity = '1';
+          showError('Connection Error', 'Failed to reach server. Please try again.');
+        }
+      }
+
+      window.handleGoogleCredentialResponse = (response) => {
+        if (response && response.credential) {
+          handleGoogleCredential(response.credential);
+        }
+      };
+
+      // Clicking Google button triggers GIS prompt
+      btnGoogle?.addEventListener('click', () => {
+        if (typeof google !== 'undefined' && google?.accounts?.id && googleClientId) {
+          google.accounts.id.initialize({
+            client_id: googleClientId,
+            callback: window.handleGoogleCredentialResponse,
+          });
+          google.accounts.id.prompt();
+        } else {
+          showError(
+            'Google Sign-In Configuration Required',
+            'To enable live Google Sign-In, configure GOOGLE_CLIENT_ID in your Cloudflare dashboard under Variables and Secrets.'
+          );
+        }
+      });
+
+      // Development test buttons
+      document.querySelectorAll('.btn-dev-login').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const email = btn.dataset.email;
+          if (!email) return;
+
+          try {
+            btn.disabled = true;
+            const res = await fetch('/api/admin/auth/google', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ devEmail: email }),
+            });
+
+            const data = await res.json();
+            if (res.ok && data.success) {
+              window.location.href = '/admin';
+            } else {
+              btn.disabled = false;
+              showError('Access Denied', data.error || 'Email authorization failed.');
+            }
+          } catch (e) {
+            btn.disabled = false;
+            showError('Error', 'Failed to authenticate developer email.');
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
