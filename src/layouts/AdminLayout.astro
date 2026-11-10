@@ -5,6 +5,7 @@ import Logo from '../components/Logo.astro';
 import type { AdminSession } from '../lib/admin-auth';
 import { getAdminSession } from '../lib/admin-auth';
 import '../styles/global.css';
+import '../styles/admin.css';
 
 interface Props {
   title?: string;
@@ -135,9 +136,6 @@ if (!session) {
         </div>
       </aside>
 
-      <!-- Sidebar Backdrop for Mobile/Tablet drawer -->
-      <div class="dash-sidebar-backdrop" id="sidebar-backdrop" data-close-sidebar aria-hidden="true"></div>
-
       <!-- ============================================================== -->
       <!-- MAIN CONTAINER: TOPBAR & CONTENT -->
       <!-- ============================================================== -->
@@ -198,6 +196,9 @@ if (!session) {
       </div>
     </div>
 
+    <!-- Sidebar Backdrop for Mobile/Tablet drawer (placed outside grid) -->
+    <div class="dash-sidebar-backdrop" id="sidebar-backdrop" data-close-sidebar aria-hidden="true"></div>
+
     <!-- ADMIN LOGOUT CONFIRMATION MODAL -->
     <div class="modal-backdrop" id="modal-admin-logout" hidden>
       <div class="modal-dialog modal-dialog-sm" role="dialog" aria-modal="true" aria-labelledby="modal-logout-title">
@@ -224,283 +225,6 @@ if (!session) {
 
     <!-- TOAST NOTIFICATION HUB -->
     <div class="toast-hub" id="admin-toast-hub" aria-live="polite"></div>
-
-    <style is:global>
-      /* Shared Admin Layout Styles */
-      .admin-body {
-        margin: 0;
-        background: var(--paper);
-        color: var(--text);
-        font-family: var(--font-body);
-        min-height: 100vh;
-      }
-      .dash-bg-canvas {
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        background-image:
-          linear-gradient(to right, rgba(29, 45, 61, 0.03) 1px, transparent 1px),
-          linear-gradient(to bottom, rgba(29, 45, 61, 0.03) 1px, transparent 1px);
-        background-size: 32px 32px;
-        z-index: 0;
-      }
-      .dash-layout {
-        position: relative;
-        z-index: 1;
-        display: grid;
-        grid-template-columns: 260px 1fr;
-        min-height: 100vh;
-      }
-      .dash-sidebar {
-        background: var(--ink-deep);
-        color: var(--paper);
-        border-right: 1px solid rgba(255, 255, 255, 0.06);
-        display: flex;
-        flex-direction: column;
-        padding: 1.5rem 1rem;
-        position: sticky;
-        top: 0;
-        height: 100vh;
-        overflow-y: auto;
-      }
-      .sidebar-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding-inline: 0.5rem;
-        margin-bottom: 1.25rem;
-      }
-      .sidebar-close-btn {
-        display: none;
-        background: none;
-        border: 0;
-        color: var(--text-on-ink-muted);
-        cursor: pointer;
-        padding: 4px;
-      }
-      .sidebar-admin-badge {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: var(--radius-s);
-        padding: 0.65rem 0.85rem;
-        margin-bottom: 1.5rem;
-        display: grid;
-        gap: 0.2rem;
-      }
-      .admin-badge-tag {
-        font-size: 0.65rem;
-        color: var(--tint);
-        letter-spacing: 0.1em;
-      }
-      .admin-badge-name {
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: var(--paper);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .sidebar-nav {
-        display: flex;
-        flex-direction: column;
-        gap: 0.35rem;
-        flex: 1;
-      }
-      .nav-item {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 0.65rem 0.85rem;
-        border-radius: var(--radius-s);
-        color: var(--text-on-ink-muted);
-        font-size: 0.9rem;
-        font-weight: 500;
-        text-decoration: none;
-        transition: all 0.2s ease;
-        border: 0;
-        background: transparent;
-        cursor: pointer;
-        width: 100%;
-        text-align: left;
-      }
-      .nav-item:hover {
-        background: rgba(255, 255, 255, 0.06);
-        color: var(--paper);
-      }
-      .nav-item.is-active {
-        background: var(--ink-raised);
-        color: var(--tint);
-        border-left: 3px solid var(--accent);
-      }
-      .nav-item svg {
-        flex-shrink: 0;
-      }
-      .sidebar-footer {
-        border-top: 1px solid rgba(255, 255, 255, 0.08);
-        padding-top: 1rem;
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-      }
-      .nav-logout:hover {
-        color: #ef4444;
-      }
-      .dash-main-container {
-        display: flex;
-        flex-direction: column;
-        min-width: 0;
-      }
-      .dash-topbar {
-        height: 64px;
-        background: var(--paper);
-        border-bottom: 1px solid var(--line);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding-inline: clamp(1rem, 3vw, 2rem);
-        position: sticky;
-        top: 0;
-        z-index: 20;
-      }
-      .topbar-left {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-      }
-      .topbar-toggle-btn {
-        display: none;
-        background: none;
-        border: 1px solid var(--line);
-        border-radius: var(--radius-s);
-        padding: 6px;
-        color: var(--ink);
-        cursor: pointer;
-      }
-      .dash-breadcrumbs {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 0.9rem;
-      }
-      .bread-root {
-        color: var(--text-muted);
-        font-size: 0.8rem;
-        background: var(--paper-sunk);
-        padding: 0.15rem 0.5rem;
-        border-radius: 4px;
-      }
-      .bread-sep {
-        color: var(--text-muted);
-      }
-      .bread-link {
-        color: var(--text-muted);
-        text-decoration: none;
-      }
-      .bread-link:hover {
-        color: var(--ink);
-        text-decoration: underline;
-      }
-      .bread-current {
-        font-weight: 600;
-        color: var(--ink);
-      }
-      .topbar-right {
-        display: flex;
-        align-items: center;
-        gap: 1.25rem;
-      }
-      .realtime-status-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.45rem;
-        background: var(--paper-raised);
-        border: 1px solid var(--line);
-        border-radius: 999px;
-        padding: 0.3rem 0.75rem;
-        font-size: 0.72rem;
-        color: var(--text-muted);
-      }
-      .live-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #10b981;
-        box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
-        animation: pulseLive 2s infinite ease-in-out;
-      }
-      .live-dot.dot-syncing {
-        background: var(--accent);
-        box-shadow: 0 0 8px rgba(89, 128, 166, 0.6);
-      }
-      @keyframes pulseLive {
-        0%, 100% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(0.85); opacity: 0.6; }
-      }
-      .admin-topbar-profile {
-        display: flex;
-        align-items: center;
-        gap: 0.65rem;
-      }
-      .admin-avatar-img,
-      .admin-avatar-placeholder {
-        width: 34px;
-        height: 34px;
-        border-radius: 50%;
-        border: 1px solid var(--line);
-        flex-shrink: 0;
-      }
-      .admin-avatar-placeholder {
-        background: var(--ink);
-        color: var(--paper);
-        display: grid;
-        place-items: center;
-        font-size: 0.85rem;
-        font-weight: 700;
-      }
-      .admin-topbar-details {
-        display: flex;
-        flex-direction: column;
-        line-height: 1.2;
-      }
-      .admin-topbar-name {
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: var(--ink);
-      }
-      .admin-topbar-email {
-        font-size: 0.7rem;
-        color: var(--text-muted);
-      }
-      .dash-content {
-        padding: clamp(1.25rem, 3vw, 2.25rem);
-        flex: 1;
-      }
-
-      /* Responsive rules */
-      @media (max-width: 1024px) {
-        .dash-layout { grid-template-columns: 1fr; }
-        .dash-sidebar {
-          position: fixed;
-          inset: 0 auto 0 0;
-          width: min(280px, 80vw);
-          z-index: 50;
-          transform: translateX(-100%);
-          transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .dash-sidebar.is-open { transform: translateX(0); }
-        .sidebar-close-btn, .topbar-toggle-btn { display: inline-flex; }
-        .dash-sidebar-backdrop {
-          position: fixed;
-          inset: 0;
-          background: rgba(20, 33, 48, 0.5);
-          backdrop-filter: blur(4px);
-          z-index: 40;
-          display: none;
-        }
-        .dash-sidebar-backdrop.is-open { display: block; }
-        .admin-topbar-details { display: none; }
-      }
-    </style>
 
     <script>
       // Sidebar mobile drawer toggles
