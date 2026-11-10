@@ -964,14 +964,20 @@ const PAYMENT_STATUS_OPTIONS = [
 
         if (res.ok) {
           window.showAdminToast?.('Statuses and project progress saved successfully!', 'success');
-          // Broadcast real-time change to all open admin tabs and overview page
+          // Broadcast real-time change to all open admin tabs and customer portal
           try {
             const bc = new BroadcastChannel('asc_admin_sync');
             bc.postMessage({ type: 'QUOTATION_UPDATED', quotationId: quoteId, quotationStatus: qStatus, paymentStatus: pStatus, timestamp: Date.now() });
             bc.close();
           } catch (e) {}
           try {
+            const custBc = new BroadcastChannel('asc_customer_sync');
+            custBc.postMessage({ type: 'QUOTATION_UPDATED', quotationId: quoteId, quotationStatus: qStatus, paymentStatus: pStatus, timestamp: Date.now() });
+            custBc.close();
+          } catch (e) {}
+          try {
             localStorage.setItem('asc_admin_sync_tick', String(Date.now()));
+            localStorage.setItem('asc_customer_sync_tick', String(Date.now()));
           } catch (e) {}
           window.dispatchEvent(new CustomEvent('asc:db-sync', { detail: { type: 'QUOTATION_UPDATED', quotationId: quoteId } }));
 
@@ -1036,7 +1042,13 @@ const PAYMENT_STATUS_OPTIONS = [
             bc.close();
           } catch (e) {}
           try {
+            const custBc = new BroadcastChannel('asc_customer_sync');
+            custBc.postMessage({ type: 'QUOTATION_PRICING_UPDATED', quotationId: quoteId, timestamp: Date.now() });
+            custBc.close();
+          } catch (e) {}
+          try {
             localStorage.setItem('asc_admin_sync_tick', String(Date.now()));
+            localStorage.setItem('asc_customer_sync_tick', String(Date.now()));
           } catch (e) {}
           window.dispatchEvent(new CustomEvent('asc:db-sync', { detail: { type: 'QUOTATION_PRICING_UPDATED', quotationId: quoteId } }));
 

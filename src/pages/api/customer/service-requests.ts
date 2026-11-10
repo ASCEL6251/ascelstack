@@ -16,13 +16,14 @@ export const GET: APIRoute = async (context) => {
       });
     }
 
-    // Fetch all requests owned by this customer
+    // Fetch all requests owned by this customer with live quotation details
     const requests = await db
       .select({
         id: serviceRequests.id,
         businessId: serviceRequests.businessId,
         userId: serviceRequests.userId,
         serviceId: serviceRequests.serviceId,
+        quotationId: serviceRequests.quotationId,
         requirements: serviceRequests.requirements,
         status: serviceRequests.status,
         requestedAt: serviceRequests.requestedAt,
@@ -42,16 +43,32 @@ export const GET: APIRoute = async (context) => {
           businessName: businesses.businessName,
           industry: businesses.industry,
         },
+        quotation: {
+          id: quotations.id,
+          quotationNumber: quotations.quotationNumber,
+          quotationStatus: quotations.quotationStatus,
+          paymentStatus: quotations.paymentStatus,
+          paymentVerified: quotations.paymentVerified,
+          projectProgress: quotations.projectProgress,
+          finalQuotationAmount: quotations.finalQuotationAmount,
+          currency: quotations.currency,
+          customerNotes: quotations.customerNotes,
+          updatedAt: quotations.updatedAt,
+        },
       })
       .from(serviceRequests)
       .innerJoin(services, eq(serviceRequests.serviceId, services.id))
       .innerJoin(businesses, eq(serviceRequests.businessId, businesses.id))
+      .leftJoin(quotations, eq(serviceRequests.quotationId, quotations.id))
       .where(eq(serviceRequests.userId, authData.user.id))
       .orderBy(desc(serviceRequests.requestedAt));
 
     return new Response(JSON.stringify({ requests }), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+      },
     });
   } catch (error: any) {
     console.error('API service-requests GET error:', error);

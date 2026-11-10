@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { db, quotations, quotationHistory, activityLogs } from '../../../../../db';
+import { db, quotations, quotationHistory, activityLogs, serviceRequests } from '../../../../../db';
 import { getAdminSession, logAdminAction } from '../../../../../lib/admin-auth';
 import { eq, sql } from 'drizzle-orm';
 
@@ -203,6 +203,37 @@ export const PATCH: APIRoute = async (context) => {
       .set(updatePayload)
       .where(eq(quotations.id, current.id))
       .returning();
+
+    // 2b. Synchronize linked service requests in database so customer dashboard updates immediately
+    let newServiceStatus: string | null = null;
+    if (
+      updated.quotationStatus === 'Approved' ||
+      updated.paymentStatus === 'Payment Completed' ||
+      updated.paymentStatus === 'Partially Paid' ||
+      (updated.projectProgress > 0 && updated.projectProgress < 100)
+    ) {
+      newServiceStatus = 'active';
+    } else if (updated.quotationStatus === 'Completed' || updated.projectProgress === 100) {
+      newServiceStatus = 'completed';
+    } else if (updated.quotationStatus === 'Cancelled' || updated.quotationStatus === 'Rejected') {
+      newServiceStatus = 'cancelled';
+    } else if (
+      ['Under Review', 'Processing', 'Estimation in Progress', 'Quotation Prepared', 'Quotation Sent', 'Awaiting Customer Approval'].includes(updated.quotationStatus)
+    ) {
+      newServiceStatus = 'reviewing';
+    } else if (updated.quotationStatus === 'New Inquiry') {
+      newServiceStatus = 'pending';
+    }
+
+    if (newServiceStatus) {
+      await db
+        .update(serviceRequests)
+        .set({
+          status: newServiceStatus,
+          updatedAt: new Date(),
+        })
+        .where(eq(serviceRequests.quotationId, current.id));
+    }
 
     // 3. Insert history records
     if (historyRecords.length > 0) {

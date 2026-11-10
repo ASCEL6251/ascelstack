@@ -86,6 +86,8 @@ export function isAuthorizedAdminEmail(email: string | null | undefined, context
   return authorizedList.includes(normalized);
 }
 
+export const isAdminAuthorized = isAuthorizedAdminEmail;
+
 /**
  * Get secret key for signing session tokens
  */

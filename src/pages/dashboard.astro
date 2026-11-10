@@ -106,10 +106,25 @@ const recentActivities = await db
   .orderBy(desc(activityLogs.createdAt))
   .limit(10);
 
-// Calculate initial statistics
-const activeServicesCount = customerRequests.filter((r) => r.status === 'active').length;
-const pendingServicesCount = customerRequests.filter((r) => ['pending', 'reviewing'].includes(r.status)).length;
-const completedServicesCount = customerRequests.filter((r) => r.status === 'completed').length;
+// Calculate initial statistics taking into account both direct service requests and linked quotation states
+const isActive = (r: any) =>
+  r.status === 'active' ||
+  (r.quotation && (
+    ['Approved', 'Processing', 'Estimation in Progress', 'Quotation Prepared', 'Quotation Sent', 'Awaiting Customer Approval'].includes(r.quotation.quotationStatus) ||
+    ['Payment Completed', 'Partially Paid'].includes(r.quotation.paymentStatus) ||
+    (r.quotation.projectProgress > 0 && r.quotation.projectProgress < 100)
+  ));
+
+const isCompleted = (r: any) =>
+  r.status === 'completed' ||
+  (r.quotation && (r.quotation.quotationStatus === 'Completed' || r.quotation.projectProgress === 100));
+
+const isPending = (r: any) =>
+  !isCompleted(r) && !isActive(r) && r.status !== 'cancelled';
+
+const activeServicesCount = customerRequests.filter(isActive).length;
+const pendingServicesCount = customerRequests.filter(isPending).length;
+const completedServicesCount = customerRequests.filter(isCompleted).length;
 const totalServicesCount = customerRequests.length;
 
 // Pre-fill initial business data if user hasn't created one
@@ -119,6 +134,7 @@ const defaultBusinessEmail = business?.email || user.email;
 // Pass safe initial state to client for instant hydration without extra initial requests
 const initialData = {
   user,
+  role: authData.role,
   business: business || {
     id: '',
     businessName: defaultBusinessName,
@@ -311,8 +327,18 @@ const initialData = {
           </div>
 
           <div class="topbar-right">
-            <!-- Clerk User Profile Button -->
-            <div class="clerk-user-slot" title="Clerk Profile">
+            {authData.role === 'admin' && (
+              <a href="/admin" class="admin-quick-switch-btn mono" title="Switch to Administrative Control Panel">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <span>Admin Console</span>
+              </a>
+            )}
+            <button type="button" class="cloud-sync-status mono" id="cloud-sync-status" title="Real-Time Cloud Synchronization (Click to Refresh)" aria-label="Cloud sync status">
+              <span class="sync-indicator-dot live-pulse" id="sync-dot"></span>
+              <span id="sync-status-label">Cloud Synced</span>
+            </button>
+            <!-- User Profile Button -->
+            <div class="clerk-user-slot" title="Account Profile">
               <UserButton afterSignOutUrl="/login" />
             </div>
           </div>
@@ -414,7 +440,7 @@ const initialData = {
                   <button class="text-link mono" data-action="go-my-services">View All ({totalServicesCount}) →</button>
                 </div>
 
-                <div class="requests-table-wrap">
+                <div class="requests-table-wrap" id="overview-requests-table-wrap">
                   {customerRequests.length === 0 ? (
                     <div class="empty-state">
                       <div class="empty-icon">
@@ -484,7 +510,7 @@ const initialData = {
                   </div>
                 </div>
 
-                <div class="activity-feed">
+                <div class="activity-feed" id="overview-activity-feed">
                   {recentActivities.length === 0 ? (
                     <p class="empty-subtext">No activity recorded yet.</p>
                   ) : (
@@ -857,7 +883,8 @@ const initialData = {
                 <button class="tab-pill" data-my-filter="run">Run Layer</button>
               </div>
 
-              {customerRequests.length === 0 ? (
+              <div id="my-services-content-wrap">
+                {customerRequests.length === 0 ? (
                 <div class="empty-state">
                   <div class="empty-icon">
                     <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path></svg>
@@ -969,6 +996,7 @@ const initialData = {
                   ))}
                 </div>
               )}
+              </div>
             </div>
           </section>
 
@@ -989,7 +1017,8 @@ const initialData = {
                 </button>
               </div>
 
-              {customerQuotations.length === 0 ? (
+              <div id="customer-quotes-content-wrap">
+                {customerQuotations.length === 0 ? (
                 <div class="empty-state">
                   <div class="empty-icon">
                     <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -1071,6 +1100,7 @@ const initialData = {
                   ))}
                 </div>
               )}
+              </div>
             </div>
           </section>
 
@@ -1593,7 +1623,7 @@ const initialData = {
       </div>
     </div>
 
-    <!-- MODAL 5: SUBMIT PROJECT REQUESTS TO NEON PIPELINE -->
+    <!-- MODAL 5: SUBMIT PROJECT REQUESTS TO CLOUD PIPELINE -->
     <div class="modal-backdrop" id="modal-confirm-submit-stack" hidden>
       <div class="modal-dialog modal-dialog-submit">
         <div class="modal-header">
@@ -1686,17 +1716,496 @@ const initialData = {
         user: any;
         business: any;
         requests: any[];
+        quotations: any[];
         activities: any[];
         allServices: any[];
+        pricing: any;
         stats: {
           total: number;
           active: number;
           pending: number;
           completed: number;
         };
+        role?: string;
       }
 
       let state: SyncData = (window as any).__ASC_DASH__;
+
+      function escapeHtml(str: any): string {
+        if (str === null || str === undefined) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function formatDate(dateStr: any): string {
+        if (!dateStr) return '';
+        try {
+          return new Date(dateStr).toLocaleDateString('en-IN', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          });
+        } catch {
+          return String(dateStr);
+        }
+      }
+
+      function getPriceTag(code: string) {
+        const p = state.pricing?.[code];
+        if (!p) return null;
+        if (p.packages?.length) {
+          return { prefix: 'from', amount: '₹' + p.packages[0].price.toLocaleString('en-IN') };
+        }
+        if (p.small?.price) {
+          return {
+            prefix: p.small.billing ? 'from' : '',
+            amount: '₹' + p.small.price.toLocaleString('en-IN') + (p.small.billing === 'monthly' ? '/mo' : p.small.billing === 'yearly' ? '/yr' : ''),
+          };
+        }
+        return null;
+      }
+
+      function renderMetrics(stats: any) {
+        if (!stats) return;
+        const elTotal = document.querySelector('[data-bind-total]');
+        const elActive = document.querySelector('[data-bind-active]');
+        const elPending = document.querySelector('[data-bind-pending]');
+        const elCompleted = document.querySelector('[data-bind-completed]');
+        const badgeTotal = document.querySelector('[data-bind-total-badge]');
+        const badgeQuotes = document.querySelector('[data-bind-quotes-badge]');
+
+        if (elTotal) elTotal.textContent = String(stats.total ?? 0);
+        if (elActive) elActive.textContent = String(stats.active ?? 0);
+        if (elPending) elPending.textContent = String(stats.pending ?? 0);
+        if (elCompleted) elCompleted.textContent = String(stats.completed ?? 0);
+        if (badgeTotal) badgeTotal.textContent = String(stats.total ?? 0);
+        if (badgeQuotes) badgeQuotes.textContent = String(state.quotations?.length ?? 0);
+      }
+
+      function renderOverviewRecentRequests(requests: any[]) {
+        const wrap = document.getElementById('overview-requests-table-wrap');
+        if (!wrap) return;
+
+        if (!requests || requests.length === 0) {
+          wrap.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-icon">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m7.5 4.27 9 5.15"></path>
+                  <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path>
+                  <path d="m3.3 7 8.7 5 8.7-5"></path>
+                  <path d="M12 22V12"></path>
+                </svg>
+              </div>
+              <h3 class="display empty-title">No services requested yet</h3>
+              <p class="empty-desc">Build your stack using our interactive Estimation Planner or browse 232 services across Software, Marketing, and Operations.</p>
+              <div class="empty-actions">
+                <button class="btn btn-primary" data-action="go-planner"><span>Open Estimation Planner</span><span class="arrow">→</span></button>
+                <button class="btn btn-ghost" data-action="go-explore">Browse 232 Services</button>
+              </div>
+            </div>
+          `;
+          wrap.querySelector('[data-action="go-planner"]')?.addEventListener('click', () => switchTab('planner'));
+          wrap.querySelector('[data-action="go-explore"]')?.addEventListener('click', () => switchTab('explore'));
+          return;
+        }
+
+        const recent5 = requests.slice(0, 5);
+        const rowsHtml = recent5.map((req) => {
+          const statusText = req.quotation?.quotationStatus || req.status;
+          const statusClass = `status-${statusText.toLowerCase().replace(/\\s+/g, '-')}`;
+          return `
+            <tr>
+              <td class="table-service-name">
+                <strong>${escapeHtml(req.service.name)}</strong>
+                <span class="mono table-code">${escapeHtml(req.service.code)}</span>
+              </td>
+              <td>
+                <span class="layer-tag layer-${escapeHtml(req.service.layer)}">${escapeHtml(req.service.layer)}</span>
+              </td>
+              <td class="text-muted">${escapeHtml(req.service.discipline)}</td>
+              <td>
+                <span class="status-tag ${statusClass}">${escapeHtml(statusText)}</span>
+              </td>
+              <td class="mono text-muted">
+                ${formatDate(req.requestedAt)}
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        wrap.innerHTML = `
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Service</th>
+                <th>Layer</th>
+                <th>Discipline</th>
+                <th>Status</th>
+                <th>Requested</th>
+              </tr>
+            </thead>
+            <tbody data-bind-recent-requests>
+              ${rowsHtml}
+            </tbody>
+          </table>
+        `;
+      }
+
+      function renderOverviewActivities(activities: any[]) {
+        const feed = document.getElementById('overview-activity-feed');
+        if (!feed) return;
+
+        if (!activities || activities.length === 0) {
+          feed.innerHTML = '<p class="empty-subtext">No activity recorded yet.</p>';
+          return;
+        }
+
+        feed.innerHTML = activities.map((act) => `
+          <div class="activity-item">
+            <div class="activity-bullet"></div>
+            <div class="activity-body">
+              <p class="activity-desc">${escapeHtml(act.description)}</p>
+              <span class="mono activity-time">
+                ${new Date(act.createdAt).toLocaleDateString('en-IN', {
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </span>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      function rebindMyServiceActions() {
+        const modalEditReq = document.getElementById('modal-edit-req') as HTMLElement;
+        document.querySelectorAll('[data-action="edit-req"]').forEach((btn) => {
+          btn.addEventListener('click', (e) => {
+            const target = e.currentTarget as HTMLElement;
+            (document.getElementById('edit-req-id') as HTMLInputElement).value = target.dataset.id || '';
+            (document.getElementById('edit-req-text') as HTMLTextAreaElement).value = target.dataset.req || '';
+            document.getElementById('edit-req-title')!.textContent = `Update Scope: ${target.dataset.name}`;
+            if (modalEditReq) modalEditReq.hidden = false;
+          });
+        });
+
+        document.querySelectorAll('[data-action="cancel-req"]').forEach((btn) => {
+          btn.addEventListener('click', async (e) => {
+            const target = e.currentTarget as HTMLElement;
+            const id = target.dataset.id;
+            const name = target.dataset.name;
+            const status = target.dataset.status;
+
+            const promptMsg =
+              status === 'active'
+                ? `Are you sure you want to request cancellation for active service "${name}"?`
+                : `Cancel pending request for "${name}"?`;
+
+            if (!confirm(promptMsg)) return;
+
+            try {
+              const res = await fetch('/api/customer/service-requests/cancel', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ requestId: id }),
+              });
+
+              const data = await res.json();
+              if (!res.ok) throw new Error(data.error || 'Failed to cancel request');
+
+              showToast(`Cancelled service request for ${name}`, 'info');
+              syncDashboardData(true);
+              try {
+                const bc = new BroadcastChannel('asc_customer_sync');
+                bc.postMessage({ type: 'REQUEST_CANCELLED', id, timestamp: Date.now() });
+                bc.close();
+              } catch {}
+            } catch (err: any) {
+              showToast(err.message, 'error');
+            }
+          });
+        });
+      }
+
+      function renderMyServicesGrid(requests: any[]) {
+        const wrap = document.getElementById('my-services-content-wrap');
+        if (!wrap) return;
+
+        if (!requests || requests.length === 0) {
+          wrap.innerHTML = `
+            <div class="empty-state" id="my-services-empty-state">
+              <div class="empty-icon">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path></svg>
+              </div>
+              <h3 class="display empty-title">Your portfolio is currently empty</h3>
+              <p class="empty-desc">Start by using the Project Estimation Planner or exploring 232 services in the catalogue to request your first service.</p>
+              <div class="empty-actions">
+                <button class="btn btn-primary" data-action="go-planner"><span>Project Estimation Planner</span><span class="arrow">→</span></button>
+                <button class="btn btn-ghost" data-action="go-explore">Explore All 232 Services</button>
+              </div>
+            </div>
+          `;
+          wrap.querySelector('[data-action="go-planner"]')?.addEventListener('click', () => switchTab('planner'));
+          wrap.querySelector('[data-action="go-explore"]')?.addEventListener('click', () => switchTab('explore'));
+          return;
+        }
+
+        const cardsHtml = requests.map((req) => {
+          const statusText = req.quotation?.quotationStatus || req.status;
+          const statusClass = `status-${statusText.toLowerCase().replace(/\\s+/g, '-')}`;
+          const price = getPriceTag(req.service.code);
+          const quoteSyncHtml = req.quotation ? `
+            <div class="my-service-quote-sync">
+              <div class="msqs-progress">
+                <span class="mono text-xs text-muted">Project Progress: ${req.quotation.projectProgress}%</span>
+                <div class="mini-progress-bar">
+                  <div class="mini-progress-fill" style="width: ${req.quotation.projectProgress}%;"></div>
+                </div>
+              </div>
+              ${req.quotation.customerNotes ? `
+                <div class="cust-notes-callout mono text-xs">
+                  <span class="text-accent">Admin Note:</span> ${escapeHtml(req.quotation.customerNotes)}
+                </div>
+              ` : ''}
+            </div>
+          ` : '';
+
+          return `
+            <article class="my-service-card" data-my-layer="${escapeHtml(req.service.layer)}" data-request-id="${req.id}">
+              <div class="card-header-line">
+                <span class="layer-tag layer-${escapeHtml(req.service.layer)}">${escapeHtml(req.service.layer)}</span>
+                <span class="status-tag ${statusClass}">${escapeHtml(statusText)}</span>
+              </div>
+
+              <div class="my-service-info">
+                <span class="mono table-code">${escapeHtml(req.service.code)}</span>
+                <h3 class="my-service-title">${escapeHtml(req.service.name)}</h3>
+                <p class="my-service-desc">${escapeHtml(req.service.description)}</p>
+              </div>
+
+              <div class="my-service-meta">
+                <div>
+                  <span class="meta-k">Discipline</span>
+                  <span class="meta-v">${escapeHtml(req.service.discipline)}</span>
+                </div>
+                ${price ? `
+                  <div>
+                    <span class="meta-k">Price Tag</span>
+                    <span class="meta-v mono">${escapeHtml(price.prefix)} ${escapeHtml(price.amount)}</span>
+                  </div>
+                ` : ''}
+                <div>
+                  <span class="meta-k">Requested On</span>
+                  <span class="meta-v mono">${formatDate(req.requestedAt)}</span>
+                </div>
+              </div>
+
+              <div class="my-service-req-box">
+                <span class="req-box-title mono">Scope & Requirements</span>
+                <p class="req-box-text">${escapeHtml(req.requirements || 'Standard baseline scope agreed upon onboarding.')}</p>
+              </div>
+
+              ${quoteSyncHtml}
+
+              <div class="my-service-actions">
+                <button
+                  class="btn-sm btn-ghost"
+                  data-action="edit-req"
+                  data-id="${req.id}"
+                  data-req="${escapeHtml(req.requirements || '')}"
+                  data-name="${escapeHtml(req.service.name)}"
+                >
+                  Update Scope
+                </button>
+                ${req.status !== 'completed' ? `
+                  <button
+                    class="btn-sm btn-danger-ghost"
+                    data-action="cancel-req"
+                    data-id="${req.id}"
+                    data-name="${escapeHtml(req.service.name)}"
+                    data-status="${req.status}"
+                  >
+                    Cancel
+                  </button>
+                ` : ''}
+              </div>
+            </article>
+          `;
+        }).join('');
+
+        wrap.innerHTML = `<div class="my-services-grid" id="my-services-grid">${cardsHtml}</div>`;
+        rebindMyServiceActions();
+      }
+
+      function renderCustomerQuotesGrid(quotations: any[]) {
+        const wrap = document.getElementById('customer-quotes-content-wrap');
+        if (!wrap) return;
+
+        if (!quotations || quotations.length === 0) {
+          wrap.innerHTML = `
+            <div class="empty-state" id="customer-quotes-empty-state">
+              <div class="empty-icon">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+              </div>
+              <h3 class="display empty-title">No quotations prepared yet</h3>
+              <p class="empty-desc">Configure your project stack using the Project Estimation Planner to generate an official quotation.</p>
+              <button class="btn btn-primary" data-action="go-planner"><span>Open Estimation Planner</span><span class="arrow">→</span></button>
+            </div>
+          `;
+          wrap.querySelector('[data-action="go-planner"]')?.addEventListener('click', () => switchTab('planner'));
+          return;
+        }
+
+        const cardsHtml = quotations.map((q) => {
+          const qStatusClass = `status-${q.quotationStatus.toLowerCase().replace(/\\s+/g, '-')}`;
+          const pStatusClass = `payment-${q.paymentStatus.toLowerCase().replace(/\\s+/g, '-')}`;
+          const amount = parseFloat(String(q.finalQuotationAmount || q.initialEstimatedCost || 0)).toLocaleString();
+
+          return `
+            <div class="cust-quote-card" data-quote-id="${q.id}">
+              <div class="cust-qc-top">
+                <div>
+                  <span class="mono text-xs text-muted">${escapeHtml(q.quotationNumber)}</span>
+                  <h3 class="cust-qc-title">${escapeHtml(q.projectTitle)}</h3>
+                </div>
+                <div class="cust-qc-tags">
+                  <span class="status-tag ${qStatusClass}">${escapeHtml(q.quotationStatus)}</span>
+                  <span class="payment-pill ${pStatusClass}">${escapeHtml(q.paymentStatus)}</span>
+                </div>
+              </div>
+
+              ${q.projectDescription ? `<p class="cust-qc-desc">${escapeHtml(q.projectDescription)}</p>` : ''}
+
+              <div class="cust-qc-progress-block">
+                <div class="cust-qc-progress-head">
+                  <span class="mono text-xs text-muted">Project Execution Progress</span>
+                  <strong class="mono text-sm">${q.projectProgress}%</strong>
+                </div>
+                <div class="live-progress-bar">
+                  <div class="live-progress-fill" style="width: ${q.projectProgress}%;"></div>
+                </div>
+              </div>
+
+              ${q.customerNotes ? `
+                <div class="cust-qc-notes-box">
+                  <div class="cust-notes-head">
+                    <span class="mono text-xs text-accent">TEAM UPDATE NOTE</span>
+                    <span class="mono text-xs text-muted">${formatDate(q.updatedAt)}</span>
+                  </div>
+                  <p class="cust-notes-text">${escapeHtml(q.customerNotes)}</p>
+                </div>
+              ` : ''}
+
+              <div class="cust-qc-footer">
+                <div>
+                  <span class="mono text-xs text-muted">Agreed Investment:</span>
+                  <div class="mono cust-qc-amount">${escapeHtml(q.currency)} ${amount}</div>
+                </div>
+                <span class="mono text-xs text-muted">Last Updated: ${formatDate(q.updatedAt)}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        wrap.innerHTML = `<div class="customer-quotes-grid" id="customer-quotes-grid">${cardsHtml}</div>`;
+      }
+
+      let isSyncing = false;
+      async function syncDashboardData(silent = false) {
+        if (isSyncing) return;
+        isSyncing = true;
+
+        const syncDot = document.getElementById('sync-dot');
+        const syncLabel = document.getElementById('sync-status-label');
+        if (syncDot) {
+          syncDot.classList.remove('live-pulse');
+          syncDot.classList.add('is-syncing');
+        }
+        if (syncLabel) syncLabel.textContent = 'Syncing...';
+
+        try {
+          const res = await fetch(`/api/customer/sync?_t=${Date.now()}`);
+          if (!res.ok) throw new Error('Sync failed with status ' + res.status);
+          const data = await res.json();
+
+          if (data && data.success) {
+            state.requests = data.requests || [];
+            state.quotations = data.quotations || [];
+            state.activities = data.activities || [];
+            state.stats = data.stats || state.stats;
+            if (data.business) state.business = data.business;
+            if (data.role) state.role = data.role;
+
+            renderMetrics(state.stats);
+            renderOverviewRecentRequests(state.requests);
+            renderOverviewActivities(state.activities);
+            renderMyServicesGrid(state.requests);
+            renderCustomerQuotesGrid(state.quotations);
+
+            if (syncDot) {
+              syncDot.classList.remove('is-syncing');
+              syncDot.classList.add('live-pulse');
+            }
+            if (syncLabel) syncLabel.textContent = 'Cloud Synced';
+            const statusBtn = document.getElementById('cloud-sync-status');
+            if (statusBtn) statusBtn.title = `Last synchronized with cloud: ${new Date().toLocaleTimeString()}`;
+
+            if (!silent) {
+              showToast('Project & service portfolio synchronized in real time', 'success');
+            }
+          }
+        } catch (err) {
+          console.warn('Real-time sync error:', err);
+          if (syncDot) syncDot.classList.remove('is-syncing');
+          if (syncLabel) syncLabel.textContent = 'Sync Pending';
+        } finally {
+          isSyncing = false;
+        }
+      }
+
+      // Real-time cross-tab and cloud event listeners
+      try {
+        const adminBc = new BroadcastChannel('asc_admin_sync');
+        adminBc.onmessage = () => syncDashboardData(true);
+      } catch (e) {}
+
+      try {
+        const custBc = new BroadcastChannel('asc_customer_sync');
+        custBc.onmessage = () => syncDashboardData(true);
+      } catch (e) {}
+
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'asc_admin_sync_tick' || e.key === 'asc_customer_sync_tick') {
+          syncDashboardData(true);
+        }
+      });
+
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) syncDashboardData(true);
+      });
+      window.addEventListener('focus', () => syncDashboardData(true));
+      window.addEventListener('pageshow', () => syncDashboardData(true));
+
+      setInterval(() => {
+        if (!document.hidden) {
+          syncDashboardData(true);
+        }
+      }, 8000);
+
+      document.getElementById('cloud-sync-status')?.addEventListener('click', () => {
+        syncDashboardData(false);
+      });
 
       // Toast Notification Helper (clean SVGs, no emojis)
       function showToast(message: string, type: 'success' | 'error' | 'info' = 'success') {
@@ -2302,7 +2811,7 @@ const initialData = {
         showToast('Planner reset to empty state', 'info');
       });
 
-      // Submit as Project Requests (Neon DB) Custom Modal Flow
+      // Submit as Project Requests Custom Modal Flow
       const btnSubmitEstimate = document.getElementById('btn-submit-estimate') as HTMLButtonElement;
       const modalSubmitStack = document.getElementById('modal-confirm-submit-stack') as HTMLElement;
       const btnConfirmSubmitPipeline = document.getElementById('btn-confirm-submit-pipeline') as HTMLButtonElement;
@@ -2411,7 +2920,16 @@ const initialData = {
 
         if (successCount > 0) {
           showToast(`Successfully registered ${successCount} service requests!`, 'success');
-          setTimeout(() => location.reload(), 1200);
+          syncDashboardData(true);
+          try {
+            const bc = new BroadcastChannel('asc_customer_sync');
+            bc.postMessage({ type: 'SERVICES_REGISTERED', count: successCount, timestamp: Date.now() });
+            bc.close();
+          } catch {}
+          try {
+            localStorage.setItem('asc_customer_sync_tick', String(Date.now()));
+          } catch {}
+          switchTab('my-services');
         } else if (duplicateCount > 0) {
           showToast('Selected services are already active or pending in your pipeline.', 'info');
         } else {
@@ -2594,7 +3112,16 @@ const initialData = {
           modalAddService.hidden = true;
           formAddService.reset();
           showToast(`Request registered for ${data.request?.service?.name}! Status: Pending.`, 'success');
-          location.reload();
+          syncDashboardData(true);
+          try {
+            const bc = new BroadcastChannel('asc_customer_sync');
+            bc.postMessage({ type: 'SERVICE_ADDED', timestamp: Date.now() });
+            bc.close();
+          } catch {}
+          try {
+            localStorage.setItem('asc_customer_sync_tick', String(Date.now()));
+          } catch {}
+          switchTab('my-services');
         } catch (err: any) {
           showToast(err.message, 'error');
         } finally {
@@ -2638,7 +3165,15 @@ const initialData = {
 
           modalEditReq.hidden = true;
           showToast('Requirements saved in database', 'success');
-          location.reload();
+          syncDashboardData(true);
+          try {
+            const bc = new BroadcastChannel('asc_customer_sync');
+            bc.postMessage({ type: 'SCOPE_UPDATED', requestId, timestamp: Date.now() });
+            bc.close();
+          } catch {}
+          try {
+            localStorage.setItem('asc_customer_sync_tick', String(Date.now()));
+          } catch {}
         } catch (err: any) {
           showToast(err.message, 'error');
         } finally {
@@ -2672,7 +3207,15 @@ const initialData = {
             if (!res.ok) throw new Error(data.error || 'Failed to cancel request');
 
             showToast(`Cancelled service request for ${name}`, 'info');
-            location.reload();
+            syncDashboardData(true);
+            try {
+              const bc = new BroadcastChannel('asc_customer_sync');
+              bc.postMessage({ type: 'REQUEST_CANCELLED', id, timestamp: Date.now() });
+              bc.close();
+            } catch {}
+            try {
+              localStorage.setItem('asc_customer_sync_tick', String(Date.now()));
+            } catch {}
           } catch (err: any) {
             showToast(err.message, 'error');
           }
@@ -3102,6 +3645,63 @@ const initialData = {
         font-family: var(--font-mono);
       }
       .clerk-user-slot { display: flex; align-items: center; }
+
+      .cloud-sync-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        background: rgba(29, 45, 61, 0.05);
+        border: 1px solid rgba(29, 45, 61, 0.12);
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .cloud-sync-status:hover {
+        background: rgba(29, 45, 61, 0.09);
+        color: var(--ink);
+      }
+      .sync-indicator-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #10b981;
+        display: inline-block;
+      }
+      .sync-indicator-dot.live-pulse {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        animation: pulseSyncDot 2s infinite;
+      }
+      .sync-indicator-dot.is-syncing {
+        background: var(--accent);
+        box-shadow: 0 0 0 0 rgba(89, 128, 166, 0.7);
+        animation: pulseSyncDot 0.6s infinite;
+      }
+      @keyframes pulseSyncDot {
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+        70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+      }
+      .admin-quick-switch-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        background: var(--ink);
+        color: var(--paper);
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 0.35rem 0.8rem;
+        border-radius: 999px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+      }
+      .admin-quick-switch-btn:hover {
+        background: var(--accent);
+        color: #ffffff;
+      }
 
       /* ------------------------------------------------------------- Content Area */
       .dash-content {

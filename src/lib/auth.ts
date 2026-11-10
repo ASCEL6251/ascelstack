@@ -2,11 +2,15 @@ import type { APIContext } from 'astro';
 import { clerkClient, createClerkClient } from '@clerk/astro/server';
 import { eq, desc, sql } from 'drizzle-orm';
 import { db, users, businesses, activityLogs, type User, type Business } from '../db';
+import { isAdminAuthorized } from './admin-auth';
+
+export type UserRole = 'admin' | 'customer';
 
 export interface AuthenticatedContext {
-  userId: string; // Clerk User ID
-  user: User; // Neon User
+  userId: string; // Cloud Auth User ID
+  user: User; // Database User
   business: Business | null; // Primary or most recent business
+  role: UserRole; // Role-based access level
 }
 
 /**
@@ -114,11 +118,57 @@ export async function getAuthenticatedUser(
     .orderBy(desc(businesses.updatedAt))
     .limit(1);
 
+  // 4. Role-based privilege resolution
+  const isAdmin = isAdminAuthorized(user.email, context);
+  const role: UserRole = isAdmin ? 'admin' : ((user as any).role as UserRole) || 'customer';
+
+  // Keep database user role synchronized with current policy
+  if ((user as any).role !== role) {
+    try {
+      const [updatedUser] = await db
+        .update(users)
+        .set({ role, updatedAt: new Date() })
+        .where(eq(users.id, user.id))
+        .returning();
+      if (updatedUser) {
+        user = updatedUser;
+      }
+    } catch (e) {
+      console.warn('Could not update user role column:', e);
+    }
+  }
+
   return {
     userId: clerkUserId,
     user,
     business: business || null,
+    role,
   };
+}
+
+/**
+ * Role-based access guard helper
+ */
+export async function requireUserRole(
+  context: APIContext,
+  allowedRoles: UserRole[] = ['customer', 'admin']
+): Promise<AuthenticatedContext | Response> {
+  const authData = await getAuthenticatedUser(context);
+  if (!authData) {
+    return new Response(JSON.stringify({ error: 'Unauthorized: Authentication required' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  if (!allowedRoles.includes(authData.role)) {
+    return new Response(JSON.stringify({ error: 'Forbidden: Insufficient privileges' }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  return authData;
 }
 
 /**

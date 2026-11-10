@@ -41,7 +41,13 @@ export const GET: APIRoute = async (context) => {
 
     return new Response(
       JSON.stringify({ quotations: userQuotations }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
+        },
+      }
     );
   } catch (error: any) {
     console.error('API /api/customer/quotations error:', error);
