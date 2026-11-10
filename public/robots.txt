@@ -1,0 +1,14 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Disallow authenticated client dashboard and API endpoints
+Disallow: /dashboard
+Disallow: /account
+Disallow: /login
+Disallow: /sign-in
+Disallow: /sign-up
+Disallow: /api/
+
+# Sitemap
+Sitemap: https://ascelstack.com/sitemap.xml
