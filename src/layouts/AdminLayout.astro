@@ -531,6 +531,9 @@ if (!session) {
       confirmLogoutBtn?.addEventListener('click', async () => {
         try {
           await fetch('/api/admin/auth/logout', { method: 'POST' });
+          if ((window as any).Clerk) {
+            await (window as any).Clerk.signOut();
+          }
           window.location.href = '/admin/login';
         } catch {
           window.location.href = '/admin/login';

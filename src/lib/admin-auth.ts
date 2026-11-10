@@ -1,4 +1,5 @@
 import type { APIContext } from 'astro';
+import { clerkClient, createClerkClient } from '@clerk/astro/server';
 import { db, adminActivityLogs } from '../db';
 
 export interface AdminSession {
@@ -6,7 +7,7 @@ export interface AdminSession {
   name: string;
   avatarUrl?: string;
   sub?: string;
-  provider: 'google';
+  provider: 'google' | 'clerk';
   iat: number;
   exp: number;
 }
@@ -209,26 +210,101 @@ function parseCookies(cookieHeader: string | null): Record<string, string> {
 }
 
 /**
+ * Safely retrieve the currently authenticated Clerk user's email, name, and ID.
+ * Returns null if the request is not authenticated via Clerk or if Clerk is unavailable.
+ */
+export async function getClerkAdminUser(
+  context: APIContext | any
+): Promise<{ email: string; name: string; avatarUrl: string; userId: string } | null> {
+  const auth = typeof context?.locals?.auth === 'function' ? context.locals.auth() : null;
+  if (!auth?.userId) {
+    return null;
+  }
+
+  try {
+    let client;
+    try {
+      client = clerkClient(context);
+    } catch {
+      const secretKey =
+        getEnvVariable('CLERK_SECRET_KEY', context) ||
+        process.env.CLERK_SECRET_KEY ||
+        (import.meta as any).env?.CLERK_SECRET_KEY;
+      client = createClerkClient({ secretKey });
+    }
+
+    const clerkUserData = await client.users.getUser(auth.userId);
+    const email =
+      clerkUserData.emailAddresses?.find((e: any) => e.id === clerkUserData.primaryEmailAddressId)
+        ?.emailAddress ||
+      clerkUserData.emailAddresses?.[0]?.emailAddress ||
+      '';
+
+    if (!email) return null;
+
+    const name =
+      `${clerkUserData.firstName || ''} ${clerkUserData.lastName || ''}`.trim() ||
+      clerkUserData.username ||
+      email.split('@')[0];
+    const avatarUrl = clerkUserData.imageUrl || '';
+
+    return {
+      email: email.trim().toLowerCase(),
+      name,
+      avatarUrl,
+      userId: auth.userId,
+    };
+  } catch (err) {
+    return null;
+  }
+}
+
+/**
  * Extract and strictly verify active admin session on any request/context.
+ * Supports both:
+ *   1. Cryptographically signed __asc_admin_session cookies
+ *   2. Existing Clerk authenticated user session
  * CRITICAL REQUIREMENT: Revalidates that the session's email is STILL in the current ADMIN_EMAILS allowlist!
  * If an admin was removed from Cloudflare environment variables, authorization is instantly denied.
  */
 export async function getAdminSession(context: APIContext | { request: Request; locals?: any }): Promise<AdminSession | null> {
+  // 1. Fast path: Check __asc_admin_session signed cookie
   const cookieHeader = context.request.headers.get('cookie');
   const cookies = parseCookies(cookieHeader);
   const token = cookies[COOKIE_NAME];
-  if (!token) return null;
-
-  const session = await verifyAdminSessionToken(token, context);
-  if (!session) return null;
-
-  // Immediate Revocation Check against current server environment
-  const isAuthorized = isAuthorizedAdminEmail(session.email, context);
-  if (!isAuthorized) {
-    return null;
+  if (token) {
+    const session = await verifyAdminSessionToken(token, context);
+    if (session && isAuthorizedAdminEmail(session.email, context)) {
+      return session;
+    }
   }
 
-  return session;
+  // 2. Integration path: Check existing Clerk authenticated user
+  const clerkUser = await getClerkAdminUser(context);
+  if (clerkUser && isAuthorizedAdminEmail(clerkUser.email, context)) {
+    const now = Math.floor(Date.now() / 1000);
+    const session: AdminSession = {
+      email: clerkUser.email,
+      name: clerkUser.name,
+      avatarUrl: clerkUser.avatarUrl,
+      sub: clerkUser.userId,
+      provider: 'clerk',
+      iat: now,
+      exp: now + DEFAULT_SESSION_DURATION,
+    };
+
+    // Attempt to issue __asc_admin_session cookie on Astro response if headers available
+    try {
+      if ((context as any).response?.headers) {
+        const sessionToken = await createAdminSessionToken(session, context);
+        setAdminSessionCookie((context as any).response.headers, sessionToken, context.request);
+      }
+    } catch {}
+
+    return session;
+  }
+
+  return null;
 }
 
 /**
