@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { eq, and, desc, inArray, sql } from 'drizzle-orm';
+import { eq, and, or, desc, inArray, sql } from 'drizzle-orm';
 import { db, serviceRequests, services, businesses, quotations } from '../../../db';
 import { getAuthenticatedUser, logActivity } from '../../../lib/auth';
 import { serviceRequestCreateSchema, serviceRequestUpdateSchema } from '../../../lib/validations';
@@ -257,38 +257,124 @@ export const PATCH: APIRoute = async (context) => {
 
     const { requestId, requirements } = parsed.data;
 
-    // Verify ownership
+    // 1. Verify ownership by checking serviceRequests table
     const [existing] = await db
       .select()
       .from(serviceRequests)
-      .where(and(eq(serviceRequests.id, requestId), eq(serviceRequests.userId, authData.user.id)))
+      .where(
+        and(
+          or(eq(serviceRequests.id, requestId), eq(serviceRequests.quotationId, requestId)),
+          eq(serviceRequests.userId, authData.user.id)
+        )
+      )
       .limit(1);
 
-    if (!existing) {
-      return new Response(JSON.stringify({ error: 'Service request not found or access denied' }), {
+    if (existing) {
+      // Reopen to pending if it was previously cancelled or rejected
+      const reopenStatus =
+        existing.status === 'cancelled' || existing.status === 'rejected'
+          ? 'pending'
+          : existing.status;
+
+      const [updated] = await db
+        .update(serviceRequests)
+        .set({
+          requirements,
+          status: reopenStatus,
+          updatedAt: new Date(),
+        })
+        .where(eq(serviceRequests.id, existing.id))
+        .returning();
+
+      // If linked to a quotation, update quotation requirements and reset rejected/cancelled status
+      if (existing.quotationId) {
+        const [linkedQuote] = await db
+          .select({ quotationStatus: quotations.quotationStatus })
+          .from(quotations)
+          .where(eq(quotations.id, existing.quotationId))
+          .limit(1);
+
+        const newQuoteStatus =
+          linkedQuote && ['Rejected', 'Cancelled'].includes(linkedQuote.quotationStatus)
+            ? 'New Inquiry'
+            : undefined;
+
+        await db
+          .update(quotations)
+          .set({
+            requirements,
+            ...(newQuoteStatus ? { quotationStatus: newQuoteStatus } : {}),
+            updatedAt: new Date(),
+          })
+          .where(eq(quotations.id, existing.quotationId));
+      }
+
+      await logActivity({
+        userId: authData.user.id,
+        businessId: existing.businessId,
+        activityType: 'requirements_updated',
+        description: 'Updated service requirements and project scope',
+        metadata: {
+          requestId: existing.id,
+          quotationId: existing.quotationId,
+          reopened: reopenStatus === 'pending' && existing.status !== 'pending',
+        },
+      });
+
+      return new Response(JSON.stringify({ success: true, request: updated }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // 2. If not found in service requests, check if requestId is a quotationId
+    const [existingQuote] = await db
+      .select()
+      .from(quotations)
+      .where(and(eq(quotations.id, requestId), eq(quotations.userId, authData.user.id)))
+      .limit(1);
+
+    if (!existingQuote) {
+      return new Response(JSON.stringify({ error: 'Service request or quotation not found or access denied' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    const [updated] = await db
+    const newQuoteStatus =
+      ['Rejected', 'Cancelled'].includes(existingQuote.quotationStatus)
+        ? 'New Inquiry'
+        : existingQuote.quotationStatus;
+
+    const [updatedQuote] = await db
+      .update(quotations)
+      .set({
+        requirements,
+        quotationStatus: newQuoteStatus,
+        updatedAt: new Date(),
+      })
+      .where(eq(quotations.id, existingQuote.id))
+      .returning();
+
+    // Update any linked service requests
+    await db
       .update(serviceRequests)
       .set({
         requirements,
+        status: 'pending',
         updatedAt: new Date(),
       })
-      .where(eq(serviceRequests.id, requestId))
-      .returning();
+      .where(eq(serviceRequests.quotationId, existingQuote.id));
 
     await logActivity({
       userId: authData.user.id,
-      businessId: existing.businessId,
+      businessId: existingQuote.businessId,
       activityType: 'requirements_updated',
-      description: 'Updated service requirements',
-      metadata: { requestId },
+      description: `Updated requirements for quotation ${existingQuote.quotationNumber}`,
+      metadata: { quotationId: existingQuote.id },
     });
 
-    return new Response(JSON.stringify({ success: true, request: updated }), {
+    return new Response(JSON.stringify({ success: true, quotation: updatedQuote }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
