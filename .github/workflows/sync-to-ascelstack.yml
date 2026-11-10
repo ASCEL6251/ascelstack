@@ -10,6 +10,7 @@ jobs:
   sync-to-ascelstack:
     name: Sync to ASCEL6251/ascelstack
     runs-on: ubuntu-latest
+    if: github.repository != 'ASCEL6251/ascelstack'
     steps:
       - name: Checkout Source Repository
         uses: actions/checkout@v4
@@ -20,7 +21,13 @@ jobs:
       - name: Configure Git Credentials & Sync
         env:
           SYNC_TOKEN: ${{ secrets.ASCELSTACK_SYNC_TOKEN || secrets.ASCELSTACK_TOKEN }}
+          CLOUDFLARE_DEPLOY_HOOK: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK }}
         run: |
+          if [ "$GITHUB_REPOSITORY" = "ASCEL6251/ascelstack" ]; then
+            echo "Already running on target repository (ASCEL6251/ascelstack). Skipping sync."
+            exit 0
+          fi
+
           if [ -z "$SYNC_TOKEN" ]; then
             echo "::error::Secret ASCELSTACK_SYNC_TOKEN is not set in this repository."
             echo "Please create a GitHub Personal Access Token in the ASCEL6251 account with repository write access,"
@@ -34,6 +41,11 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Push with PAT credentials
-          git push --force "https://${SYNC_TOKEN}@github.com/ASCEL6251/ascelstack.git" main:main
+          # Push with PAT credentials to trigger Cloudflare deploy on ASCEL6251/ascelstack
+          git push --force "https://${SYNC_TOKEN}@github.com/ASCEL6251/ascelstack.git" HEAD:refs/heads/main
           echo "Sync successful! Commits pushed to ASCEL6251/ascelstack main branch."
+
+          if [ -n "$CLOUDFLARE_DEPLOY_HOOK" ]; then
+            echo "Triggering Cloudflare Deploy Hook..."
+            curl -s -X POST "$CLOUDFLARE_DEPLOY_HOOK" || true
+          fi
