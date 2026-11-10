@@ -873,6 +873,30 @@ const PAYMENT_STATUS_OPTIONS = [
       .notes-split-grid { grid-template-columns: 1fr; }
       .quote-price-header-block { text-align: left; }
     }
+    @media (max-width: 640px) {
+      .quote-header-card {
+        padding: 1.25rem;
+      }
+      .quote-title-line {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+      .pricing-inputs-grid {
+        grid-template-columns: 1fr;
+      }
+      .form-actions-row {
+        flex-direction: column;
+      }
+      .form-actions-row .btn {
+        width: 100%;
+        justify-content: center;
+      }
+      .slider-control-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
   </style>
 
   <script is:inline define:vars={{ quoteId: quotation.id }}>
@@ -940,6 +964,17 @@ const PAYMENT_STATUS_OPTIONS = [
 
         if (res.ok) {
           window.showAdminToast?.('Statuses and project progress saved successfully!', 'success');
+          // Broadcast real-time change to all open admin tabs and overview page
+          try {
+            const bc = new BroadcastChannel('asc_admin_sync');
+            bc.postMessage({ type: 'QUOTATION_UPDATED', quotationId: quoteId, quotationStatus: qStatus, paymentStatus: pStatus, timestamp: Date.now() });
+            bc.close();
+          } catch (e) {}
+          try {
+            localStorage.setItem('asc_admin_sync_tick', String(Date.now()));
+          } catch (e) {}
+          window.dispatchEvent(new CustomEvent('asc:db-sync', { detail: { type: 'QUOTATION_UPDATED', quotationId: quoteId } }));
+
           // Update top badges
           const badgeQ = document.getElementById('badge-quote-status');
           const badgeP = document.getElementById('badge-payment-status');
@@ -995,6 +1030,16 @@ const PAYMENT_STATUS_OPTIONS = [
 
         if (res.ok) {
           window.showAdminToast?.('Pricing and estimation notes saved successfully!', 'success');
+          try {
+            const bc = new BroadcastChannel('asc_admin_sync');
+            bc.postMessage({ type: 'QUOTATION_PRICING_UPDATED', quotationId: quoteId, timestamp: Date.now() });
+            bc.close();
+          } catch (e) {}
+          try {
+            localStorage.setItem('asc_admin_sync_tick', String(Date.now()));
+          } catch (e) {}
+          window.dispatchEvent(new CustomEvent('asc:db-sync', { detail: { type: 'QUOTATION_PRICING_UPDATED', quotationId: quoteId } }));
+
           const displayFinal = document.getElementById('display-final-amount');
           const displayInitial = document.getElementById('display-initial-amount');
           if (displayFinal) displayFinal.textContent = `${currency} ${finalAmount.toLocaleString()}`;

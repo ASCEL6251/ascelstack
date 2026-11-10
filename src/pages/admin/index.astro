@@ -17,6 +17,13 @@ let totalUsers = 0;
 let newUsers = 0;
 let totalQuotations = 0;
 let pendingQuotations = 0;
+let approvedQuotations = 0;
+let completedQuotations = 0;
+let paidQuotations = 0;
+let partiallyPaidQuotations = 0;
+let newInquiriesCount = 0;
+let totalRevenue = 0;
+let pipelineValue = 0;
 let recentQuotations: any[] = [];
 let recentHistory: any[] = [];
 
@@ -53,7 +60,47 @@ try {
     );
   pendingQuotations = pendingResult[0]?.pendingQuotations || 0;
 
+  const approvedResult = await db
+    .select({ approvedQuotations: sql<number>`count(*)::int` })
+    .from(quotations)
+    .where(eq(quotations.quotationStatus, 'Approved'));
+  approvedQuotations = approvedResult[0]?.approvedQuotations || 0;
+
+  const completedResult = await db
+    .select({ completedQuotations: sql<number>`count(*)::int` })
+    .from(quotations)
+    .where(eq(quotations.quotationStatus, 'Completed'));
+  completedQuotations = completedResult[0]?.completedQuotations || 0;
+
+  const paidResult = await db
+    .select({ paidQuotations: sql<number>`count(*)::int` })
+    .from(quotations)
+    .where(eq(quotations.paymentStatus, 'Payment Completed'));
+  paidQuotations = paidResult[0]?.paidQuotations || 0;
+
+  const partiallyPaidResult = await db
+    .select({ partiallyPaidQuotations: sql<number>`count(*)::int` })
+    .from(quotations)
+    .where(eq(quotations.paymentStatus, 'Partially Paid'));
+  partiallyPaidQuotations = partiallyPaidResult[0]?.partiallyPaidQuotations || 0;
+
+  const newInqResult = await db
+    .select({ newInquiriesCount: sql<number>`count(*)::int` })
+    .from(quotations)
+    .where(eq(quotations.quotationStatus, 'New Inquiry'));
+  newInquiriesCount = newInqResult[0]?.newInquiriesCount || 0;
+
+  const revenueResult = await db
+    .select({
+      totalRevenue: sql<number>`COALESCE(SUM(CASE WHEN ${quotations.paymentStatus} = 'Payment Completed' THEN ${quotations.finalQuotationAmount}::numeric ELSE 0 END), 0)::float`,
+      pipelineValue: sql<number>`COALESCE(SUM(COALESCE(${quotations.finalQuotationAmount}::numeric, ${quotations.initialEstimatedCost}::numeric, 0)), 0)::float`,
+    })
+    .from(quotations);
+  totalRevenue = revenueResult[0]?.totalRevenue || 0;
+  pipelineValue = revenueResult[0]?.pipelineValue || 0;
+
   // 2. Fetch Recent Real Quotations & Inquiries from Neon DB
+  // Ordered by latest update/creation so any status or payment update jumps to the top in real time!
   recentQuotations = await db
     .select({
       id: quotations.id,
@@ -65,6 +112,7 @@ try {
       finalQuotationAmount: quotations.finalQuotationAmount,
       currency: quotations.currency,
       createdAt: quotations.createdAt,
+      updatedAt: quotations.updatedAt,
       customer: {
         id: users.id,
         fullName: users.fullName,
@@ -73,8 +121,8 @@ try {
     })
     .from(quotations)
     .innerJoin(users, eq(quotations.userId, users.id))
-    .orderBy(desc(quotations.createdAt))
-    .limit(6);
+    .orderBy(desc(sql`COALESCE(${quotations.updatedAt}, ${quotations.createdAt})`))
+    .limit(8);
 
   // 3. Fetch Recent Change History from Neon DB
   recentHistory = await db
@@ -97,19 +145,43 @@ try {
   console.warn('Non-fatal error loading admin dashboard metrics:', dbErr);
 }
 
-// Calculate percentage for circular indicators
+// Donut math for Big Circular Chart
+// Radius = 75, Circumference = 2 * PI * 75 = 471.24
+const CIRCUMFERENCE = 471.24;
+const totalQuotesCount = Math.max(1, totalQuotations);
+
+// Fractions of circle
+const paidLen = (paidQuotations / totalQuotesCount) * CIRCUMFERENCE;
+const approvedLen = (approvedQuotations / totalQuotesCount) * CIRCUMFERENCE;
+const pendingLen = (pendingQuotations / totalQuotesCount) * CIRCUMFERENCE;
+const otherLen = Math.max(0, CIRCUMFERENCE - (paidLen + approvedLen + pendingLen));
+
+// Offsets
+const paidOffset = 0;
+const approvedOffset = -(paidLen);
+const pendingOffset = -(paidLen + approvedLen);
+const otherOffset = -(paidLen + approvedLen + pendingLen);
+
+const healthRatePct = totalQuotations > 0 ? Math.round(((approvedQuotations + completedQuotations + paidQuotations) / (totalQuotations * 2 || 1)) * 100) : 0;
+const paidPct = totalQuotations > 0 ? Math.round((paidQuotations / totalQuotations) * 100) : 0;
 const pendingPct = totalQuotations > 0 ? Math.round((pendingQuotations / totalQuotations) * 100) : 0;
-const newUsersPct = totalUsers > 0 ? Math.round((newUsers / totalUsers) * 100) : 0;
+const approvedPct = totalQuotations > 0 ? Math.round((approvedQuotations / totalQuotations) * 100) : 0;
 ---
 
 <AdminLayout title="Overview" activeNav="overview" breadcrumbs={[{ label: 'Overview' }]} session={session}>
   <!-- Dashboard Hero Welcome Card -->
   <div class="dash-welcome-card">
     <div class="welcome-copy">
-      <p class="eyebrow">Enterprise Control Plane</p>
+      <div class="welcome-tag-row">
+        <span class="eyebrow">Enterprise Control Plane</span>
+        <div class="live-pulse-badge" title="Live Auto-Sync with Neon Database & Clerk">
+          <span class="buzzblink-dot"></span>
+          <span class="mono text-xs">REAL-TIME AUTO-SYNC</span>
+        </div>
+      </div>
       <h1 class="display welcome-title">Ascelstack <em>Overview</em></h1>
       <p class="welcome-desc">
-        Real-time pipeline monitoring, quotation management, customer activity audit, and project progress oversight directly synchronized with your Neon database.
+        Real-time pipeline monitoring, live quotation tracking, customer activity audit, and project progress oversight directly synchronized with your Neon database.
       </p>
     </div>
     <div class="welcome-actions">
@@ -118,7 +190,7 @@ const newUsersPct = totalUsers > 0 ? Math.round((newUsers / totalUsers) * 100) :
         <span class="arrow">→</span>
       </a>
       <a href="/admin/users" class="btn btn-ghost">
-        <span>View Registered Users</span>
+        <span>Registered Users</span>
         <span class="arrow">→</span>
       </a>
       <a href="/admin/logs" class="btn btn-ghost">
@@ -136,8 +208,7 @@ const newUsersPct = totalUsers > 0 ? Math.round((newUsers / totalUsers) * 100) :
           <span class="mono metric-label">REGISTERED USERS</span>
           <span class="metric-dot"></span>
         </div>
-        <!-- Circular indicator -->
-        <div class="circ-indicator" title="Total active customer accounts">
+        <div class="circ-indicator" title="Total unique accounts">
           <svg viewBox="0 0 36 36" class="circ-svg">
             <path class="circ-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
             <path class="circ-fill circ-blue" stroke-dasharray="100, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
@@ -146,48 +217,48 @@ const newUsersPct = totalUsers > 0 ? Math.round((newUsers / totalUsers) * 100) :
         </div>
       </div>
       <div class="metric-value" id="stat-total-users">{totalUsers}</div>
-      <span class="metric-hint">Synchronized with Clerk & Neon</span>
+      <span class="metric-hint">Deduplicated & Synced</span>
     </div>
 
-    <!-- Card 2: New Users (Last 30 Days) -->
-    <div class="metric-card metric-card--active">
-      <div class="metric-top-row">
-        <div class="metric-meta">
-          <span class="mono metric-label">NEW USERS (30D)</span>
-          <span class="metric-dot dot-accent"></span>
-        </div>
-        <div class="circ-indicator" title={`${newUsersPct}% of total users joined recently`}>
-          <svg viewBox="0 0 36 36" class="circ-svg">
-            <path class="circ-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
-            <path class="circ-fill circ-accent" stroke-dasharray={`${newUsersPct}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
-          </svg>
-          <span class="mono circ-val">{newUsersPct}%</span>
-        </div>
-      </div>
-      <div class="metric-value text-accent" id="stat-new-users">{newUsers}</div>
-      <span class="metric-hint">New account acquisitions</span>
-    </div>
-
-    <!-- Card 3: Total Quotations -->
+    <!-- Card 2: Total Quotations -->
     <div class="metric-card metric-card--completed">
       <div class="metric-top-row">
         <div class="metric-meta">
-          <span class="mono metric-label">TOTAL QUOTATIONS</span>
-          <span class="metric-dot dot-success"></span>
+          <span class="mono metric-label">TOTAL PIPELINES</span>
+          <span class="metric-dot dot-accent"></span>
         </div>
         <div class="circ-indicator" title="Total project scopes">
           <svg viewBox="0 0 36 36" class="circ-svg">
             <path class="circ-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
-            <path class="circ-fill circ-green" stroke-dasharray="100, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+            <path class="circ-fill circ-accent" stroke-dasharray="100, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
           </svg>
-          <span class="mono circ-val">100%</span>
+          <span class="mono circ-val">{totalQuotations}</span>
         </div>
       </div>
-      <div class="metric-value text-success" id="stat-total-quotations">{totalQuotations}</div>
-      <span class="metric-hint">Inquiries & estimation scopes</span>
+      <div class="metric-value text-accent" id="stat-total-quotations">{totalQuotations}</div>
+      <span class="metric-hint">Client project scopes</span>
     </div>
 
-    <!-- Card 4: Pending Quotations -->
+    <!-- Card 3: Fully Paid & Verified Revenue -->
+    <div class="metric-card metric-card--paid">
+      <div class="metric-top-row">
+        <div class="metric-meta">
+          <span class="mono metric-label">FULLY PAID & APPROVED</span>
+          <span class="metric-dot dot-success"></span>
+        </div>
+        <div class="circ-indicator" title={`${paidPct}% of quotations fully paid`}>
+          <svg viewBox="0 0 36 36" class="circ-svg">
+            <path class="circ-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+            <path class="circ-fill circ-green" id="circ-fill-paid" stroke-dasharray={`${paidPct}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+          </svg>
+          <span class="mono circ-val" id="circ-val-paid">{paidPct}%</span>
+        </div>
+      </div>
+      <div class="metric-value text-success" id="stat-paid-quotations">{paidQuotations}</div>
+      <span class="metric-hint" id="stat-revenue-hint">₹{totalRevenue.toLocaleString()} Verified</span>
+    </div>
+
+    <!-- Card 4: Pending Review / Action -->
     <div class="metric-card metric-card--pending">
       <div class="metric-top-row">
         <div class="metric-meta">
@@ -197,13 +268,187 @@ const newUsersPct = totalUsers > 0 ? Math.round((newUsers / totalUsers) * 100) :
         <div class="circ-indicator" title={`${pendingPct}% of quotations awaiting review or pricing`}>
           <svg viewBox="0 0 36 36" class="circ-svg">
             <path class="circ-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
-            <path class="circ-fill circ-warn" stroke-dasharray={`${pendingPct}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
+            <path class="circ-fill circ-warn" id="circ-fill-pending" stroke-dasharray={`${pendingPct}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"></path>
           </svg>
-          <span class="mono circ-val">{pendingPct}%</span>
+          <span class="mono circ-val" id="circ-val-pending">{pendingPct}%</span>
         </div>
       </div>
       <div class="metric-value text-warn" id="stat-pending-quotations">{pendingQuotations}</div>
-      <span class="metric-hint">Require quotation preparation</span>
+      <span class="metric-hint">Awaiting quote prep</span>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- BIG CIRCULAR VISUAL RADAR: Live Status & Fulfillment Ring -->
+  <!-- ============================================================== -->
+  <div class="card-panel radar-panel">
+    <div class="panel-header radar-header">
+      <div>
+        <div class="radar-tag-row">
+          <span class="eyebrow">Visual Telemetry</span>
+          <div class="buzzblink-badge">
+            <span class="buzzblink-dot"></span>
+            <span class="mono text-xs">BUZZBLINK TELEMETRY</span>
+          </div>
+        </div>
+        <h2 class="display h3 panel-title">Pipeline & Fulfillment Radar</h2>
+        <p class="panel-subtitle">
+          Instant high-contrast circular visualization of current project stages, payments, and approvals across all customer services
+        </p>
+      </div>
+
+      <div class="radar-quick-stats mono">
+        <span class="radar-stat-chip">
+          <span class="chip-dot chip-dot-paid"></span> Paid: <strong id="chip-paid-count">{paidQuotations}</strong>
+        </span>
+        <span class="radar-stat-chip">
+          <span class="chip-dot chip-dot-approved"></span> Approved: <strong id="chip-approved-count">{approvedQuotations}</strong>
+        </span>
+        <span class="radar-stat-chip">
+          <span class="chip-dot chip-dot-pending"></span> Pending: <strong id="chip-pending-count">{pendingQuotations}</strong>
+        </span>
+      </div>
+    </div>
+
+    <div class="radar-layout">
+      <!-- The Big Circular Ring Visualization -->
+      <div class="radar-circle-wrap">
+        <div class="radar-circle-container">
+          <svg viewBox="0 0 200 200" class="radar-svg" id="radar-svg-elem">
+            <!-- Background track -->
+            <circle cx="100" cy="100" r="75" class="radar-track-bg" />
+
+            <!-- Segment 1: Fully Paid (Emerald Green) -->
+            <circle
+              cx="100"
+              cy="100"
+              r="75"
+              class="radar-segment segment-paid"
+              id="seg-paid"
+              stroke-dasharray={`${paidLen} ${CIRCUMFERENCE}`}
+              stroke-dashoffset={paidOffset}
+            />
+
+            <!-- Segment 2: Approved Workflows (Cyan/Teal) -->
+            <circle
+              cx="100"
+              cy="100"
+              r="75"
+              class="radar-segment segment-approved"
+              id="seg-approved"
+              stroke-dasharray={`${approvedLen} ${CIRCUMFERENCE}`}
+              stroke-dashoffset={approvedOffset}
+            />
+
+            <!-- Segment 3: In Review / Pending (Amber) -->
+            <circle
+              cx="100"
+              cy="100"
+              r="75"
+              class="radar-segment segment-pending"
+              id="seg-pending"
+              stroke-dasharray={`${pendingLen} ${CIRCUMFERENCE}`}
+              stroke-dashoffset={pendingOffset}
+            />
+
+            <!-- Segment 4: Other / New Inquiries (Indigo) -->
+            <circle
+              cx="100"
+              cy="100"
+              r="75"
+              class="radar-segment segment-other"
+              id="seg-other"
+              stroke-dasharray={`${otherLen} ${CIRCUMFERENCE}`}
+              stroke-dashoffset={otherOffset}
+            />
+          </svg>
+
+          <!-- Center Information with Buzzblink Pulse -->
+          <div class="radar-center-content">
+            <div class="center-pulse-wrap">
+              <span class="buzzblink-dot-large"></span>
+            </div>
+            <strong class="radar-center-pct" id="radar-center-pct">{paidPct}%</strong>
+            <span class="radar-center-label">PAID / COMPLETE</span>
+            <span class="radar-center-sub" id="radar-center-sub">₹{totalRevenue.toLocaleString()}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Radar Legend & Metric Breakdown Cards -->
+      <div class="radar-legend-grid">
+        <!-- Legend Item 1: Fully Paid -->
+        <div class="radar-card card-paid">
+          <div class="radar-card-top">
+            <span class="radar-badge-dot dot-emerald"></span>
+            <span class="mono radar-card-cat">PAYMENT COMPLETED</span>
+          </div>
+          <div class="radar-card-body">
+            <span class="radar-card-num" id="radar-num-paid">{paidQuotations}</span>
+            <div class="radar-card-details">
+              <strong class="radar-card-val text-success">₹{totalRevenue.toLocaleString()}</strong>
+              <span class="mono text-xs text-muted">{paidPct}% of total orders</span>
+            </div>
+          </div>
+          <div class="radar-progress-mini">
+            <div class="progress-bar-fill fill-emerald" id="bar-paid" style={`width: ${paidPct}%;`}></div>
+          </div>
+        </div>
+
+        <!-- Legend Item 2: Approved Workflows -->
+        <div class="radar-card card-approved">
+          <div class="radar-card-top">
+            <span class="radar-badge-dot dot-cyan"></span>
+            <span class="mono radar-card-cat">APPROVED WORKFLOWS</span>
+          </div>
+          <div class="radar-card-body">
+            <span class="radar-card-num" id="radar-num-approved">{approvedQuotations}</span>
+            <div class="radar-card-details">
+              <strong class="radar-card-val text-accent">Active Delivery</strong>
+              <span class="mono text-xs text-muted">{approvedPct}% approved scopes</span>
+            </div>
+          </div>
+          <div class="radar-progress-mini">
+            <div class="progress-bar-fill fill-cyan" id="bar-approved" style={`width: ${approvedPct}%;`}></div>
+          </div>
+        </div>
+
+        <!-- Legend Item 3: Under Review / Estimation -->
+        <div class="radar-card card-pending">
+          <div class="radar-card-top">
+            <span class="radar-badge-dot dot-amber"></span>
+            <span class="mono radar-card-cat">UNDER REVIEW</span>
+          </div>
+          <div class="radar-card-body">
+            <span class="radar-card-num" id="radar-num-pending">{pendingQuotations}</span>
+            <div class="radar-card-details">
+              <strong class="radar-card-val text-warn">Awaiting Preparation</strong>
+              <span class="mono text-xs text-muted">{pendingPct}% requiring action</span>
+            </div>
+          </div>
+          <div class="radar-progress-mini">
+            <div class="progress-bar-fill fill-amber" id="bar-pending" style={`width: ${pendingPct}%;`}></div>
+          </div>
+        </div>
+
+        <!-- Legend Item 4: New Customer Inquiries -->
+        <div class="radar-card card-inquiries">
+          <div class="radar-card-top">
+            <span class="radar-badge-dot dot-indigo"></span>
+            <span class="mono radar-card-cat">NEW INQUIRIES</span>
+          </div>
+          <div class="radar-card-body">
+            <span class="radar-card-num" id="radar-num-inquiries">{newInquiriesCount}</span>
+            <div class="radar-card-details">
+              <strong class="radar-card-val">Client Inbound</strong>
+              <span class="mono text-xs text-muted">Awaiting initial triage</span>
+            </div>
+          </div>
+          <div class="radar-progress-mini">
+            <div class="progress-bar-fill fill-indigo" id="bar-inquiries" style={`width: ${Math.round((newInquiriesCount / totalQuotesCount) * 100)}%;`}></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -214,39 +459,40 @@ const newUsersPct = totalUsers > 0 ? Math.round((newUsers / totalUsers) * 100) :
       <div class="panel-header">
         <div>
           <h2 class="panel-title display h3">Recent Quotations & Inquiries</h2>
-          <p class="panel-subtitle">Customer-submitted requirements and pipelines</p>
+          <p class="panel-subtitle">Latest customer requirements and status updates</p>
         </div>
         <a href="/admin/quotations" class="text-link mono">View All ({totalQuotations}) →</a>
       </div>
 
       <div class="requests-table-wrap">
-        {recentQuotations.length === 0 ? (
-          <div class="empty-state">
-            <h3 class="display empty-title">No quotations recorded yet</h3>
-            <p class="empty-desc">When customers request services or estimate projects, they will appear here automatically.</p>
-          </div>
-        ) : (
-          <table class="data-table">
-            <thead>
+        <table class="data-table" id="recent-quotes-table">
+          <thead>
+            <tr>
+              <th>Quotation Ref & Title</th>
+              <th>Customer</th>
+              <th>Quotation Status</th>
+              <th>Payment Status</th>
+              <th>Progress</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="recent-quotes-tbody">
+            {recentQuotations.length === 0 ? (
               <tr>
-                <th>Quotation</th>
-                <th>Customer</th>
-                <th>Status</th>
-                <th>Payment</th>
-                <th>Progress</th>
-                <th>Action</th>
+                <td colspan="6" class="text-center py-4 text-muted">No quotations recorded yet.</td>
               </tr>
-            </thead>
-            <tbody>
-              {recentQuotations.map((q) => (
-                <tr>
+            ) : (
+              recentQuotations.map((q) => (
+                <tr class="table-row-hover">
                   <td>
                     <strong class="table-proj-title">{q.projectTitle}</strong>
                     <span class="mono table-code">{q.quotationNumber}</span>
                   </td>
                   <td>
                     <div class="cust-cell">
-                      <span class="cust-name">{q.customer.fullName || 'Ascelstack Customer'}</span>
+                      <a href={`/admin/users/${q.customer.id}`} class="cust-name-link" title="Open customer account">
+                        {q.customer.fullName || 'Ascelstack Customer'}
+                      </a>
                       <span class="mono cust-email">{q.customer.email}</span>
                     </div>
                   </td>
@@ -274,10 +520,10 @@ const newUsersPct = totalUsers > 0 ? Math.round((newUsers / totalUsers) * 100) :
                     </a>
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -291,7 +537,7 @@ const newUsersPct = totalUsers > 0 ? Math.round((newUsers / totalUsers) * 100) :
         <a href="/admin/logs" class="text-link mono">Full Log →</a>
       </div>
 
-      <div class="activity-feed">
+      <div class="activity-feed" id="recent-activity-feed">
         {recentHistory.length === 0 ? (
           <p class="empty-subtext">No historical updates recorded yet. Modifications made to quotations will appear here.</p>
         ) : (
@@ -323,6 +569,60 @@ const newUsersPct = totalUsers > 0 ? Math.round((newUsers / totalUsers) * 100) :
   </div>
 
   <style>
+    .welcome-tag-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.4rem;
+      flex-wrap: wrap;
+    }
+    .live-pulse-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #065f46;
+      font-weight: 600;
+    }
+
+    /* Buzzblink Animation: Pulsing radar effect */
+    .buzzblink-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      display: inline-block;
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+      animation: buzzblink 2s infinite cubic-bezier(0.66, 0, 0, 1);
+    }
+    .buzzblink-dot-large {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #10b981;
+      display: inline-block;
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8);
+      animation: buzzblink 1.8s infinite cubic-bezier(0.66, 0, 0, 1);
+    }
+
+    @keyframes buzzblink {
+      0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+      }
+      70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+      }
+      100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+      }
+    }
+
     .metric-top-row {
       display: flex;
       align-items: center;
@@ -330,8 +630,8 @@ const newUsersPct = totalUsers > 0 ? Math.round((newUsers / totalUsers) * 100) :
       width: 100%;
     }
     .circ-indicator {
-      width: 32px;
-      height: 32px;
+      width: 34px;
+      height: 34px;
       position: relative;
       display: grid;
       place-items: center;
@@ -350,7 +650,7 @@ const newUsersPct = totalUsers > 0 ? Math.round((newUsers / totalUsers) * 100) :
       fill: none;
       stroke-width: 3.8;
       stroke-linecap: round;
-      transition: stroke-dasharray 0.5s ease;
+      transition: stroke-dasharray 0.6s ease;
     }
     .circ-blue { stroke: var(--ink); }
     .circ-accent { stroke: var(--accent); }
@@ -358,23 +658,245 @@ const newUsersPct = totalUsers > 0 ? Math.round((newUsers / totalUsers) * 100) :
     .circ-warn { stroke: #f59e0b; }
     .circ-val {
       position: absolute;
-      font-size: 0.55rem;
+      font-size: 0.58rem;
       font-weight: 700;
       color: var(--ink);
     }
+
+    /* Radar Section Styling */
+    .radar-panel {
+      margin-bottom: 2rem;
+      background: var(--paper-raised);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-l);
+      box-shadow: 0 12px 36px -16px rgba(20, 33, 48, 0.08);
+      padding: clamp(1.25rem, 3vw, 2rem);
+    }
+    .radar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .radar-tag-row {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      margin-bottom: 0.25rem;
+    }
+    .buzzblink-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: rgba(14, 165, 233, 0.1);
+      color: #0369a1;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 700;
+    }
+    .radar-quick-stats {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .radar-stat-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.75rem;
+      background: var(--paper-sunk);
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      color: var(--text);
+    }
+    .chip-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+    .chip-dot-paid { background: #10b981; }
+    .chip-dot-approved { background: #06b6d4; }
+    .chip-dot-pending { background: #f59e0b; }
+
+    /* Radar Main Layout */
+    .radar-layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 2rem;
+      align-items: center;
+    }
+    .radar-circle-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .radar-circle-container {
+      width: 220px;
+      height: 220px;
+      position: relative;
+      display: grid;
+      place-items: center;
+    }
+    .radar-svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+    .radar-track-bg {
+      fill: none;
+      stroke: var(--paper-sunk);
+      stroke-width: 14;
+    }
+    .radar-segment {
+      fill: none;
+      stroke-width: 14;
+      stroke-linecap: round;
+      transition: stroke-dasharray 0.75s cubic-bezier(0.4, 0, 0.2, 1), stroke-dashoffset 0.75s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .segment-paid { stroke: #10b981; }
+    .segment-approved { stroke: #06b6d4; }
+    .segment-pending { stroke: #f59e0b; }
+    .segment-other { stroke: #6366f1; }
+
+    .radar-center-content {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      pointer-events: none;
+    }
+    .center-pulse-wrap {
+      margin-bottom: 0.2rem;
+    }
+    .radar-center-pct {
+      font-size: 1.85rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1;
+    }
+    .radar-center-label {
+      font-size: 0.65rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      margin-top: 0.2rem;
+    }
+    .radar-center-sub {
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: #10b981;
+    }
+
+    /* Radar Legend Breakdown Cards */
+    .radar-legend-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+    }
+    .radar-card {
+      background: var(--paper-sunk);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1rem 1.15rem;
+      display: grid;
+      gap: 0.6rem;
+      transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+    .radar-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(89, 128, 166, 0.35);
+      box-shadow: 0 6px 18px -8px rgba(29, 45, 61, 0.12);
+    }
+    .radar-card-top {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+    .radar-badge-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+    }
+    .dot-emerald { background: #10b981; }
+    .dot-cyan { background: #06b6d4; }
+    .dot-amber { background: #f59e0b; }
+    .dot-indigo { background: #6366f1; }
+    .radar-card-cat {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+    }
+    .radar-card-body {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+    .radar-card-num {
+      font-size: 1.65rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1;
+    }
+    .radar-card-details {
+      display: grid;
+      text-align: right;
+      gap: 0.1rem;
+    }
+    .radar-card-val {
+      font-size: 0.88rem;
+    }
+    .radar-progress-mini {
+      height: 4px;
+      background: rgba(29, 45, 61, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.6s ease;
+    }
+    .fill-emerald { background: #10b981; }
+    .fill-cyan { background: #06b6d4; }
+    .fill-amber { background: #f59e0b; }
+    .fill-indigo { background: #6366f1; }
+
+    /* Tables & Common */
     .table-proj-title {
       display: block;
       color: var(--ink);
       font-size: 0.92rem;
     }
+    .table-code {
+      display: block;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
     .cust-cell {
       display: grid;
       gap: 0.1rem;
     }
-    .cust-name {
+    .cust-name-link {
       font-size: 0.88rem;
       font-weight: 600;
       color: var(--ink);
+      text-decoration: none;
+    }
+    .cust-name-link:hover {
+      color: var(--accent);
+      text-decoration: underline;
     }
     .cust-email {
       font-size: 0.72rem;
@@ -396,6 +918,7 @@ const newUsersPct = totalUsers > 0 ? Math.round((newUsers / totalUsers) * 100) :
       height: 100%;
       background: var(--accent);
       border-radius: 999px;
+      transition: width 0.5s ease;
     }
     .btn-table-action {
       display: inline-flex;
@@ -418,6 +941,7 @@ const newUsersPct = totalUsers > 0 ? Math.round((newUsers / totalUsers) * 100) :
       align-items: center;
       gap: 0.5rem;
       margin-bottom: 0.2rem;
+      flex-wrap: wrap;
     }
     .activity-ref-pill {
       font-size: 0.65rem;
@@ -450,34 +974,262 @@ const newUsersPct = totalUsers > 0 ? Math.round((newUsers / totalUsers) * 100) :
       color: #92400e;
       border: 1px solid #fde68a;
     }
-    .payment-payment-processing {
-      background: #eff6ff;
-      color: #1e40af;
-      border: 1px solid #bfdbfe;
+    .payment-partially-paid {
+      background: #f0fdfa;
+      color: #0f766e;
+      border: 1px solid #99f6e4;
+    }
+    .payment-not-required {
+      background: var(--paper-sunk);
+      color: var(--text-muted);
+    }
+
+    /* Mobile & Tablet Responsiveness for Overview */
+    @media (max-width: 900px) {
+      .radar-layout {
+        grid-template-columns: 1fr;
+        justify-items: center;
+      }
+      .radar-legend-grid {
+        width: 100%;
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .welcome-tag-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .radar-header {
+        flex-direction: column;
+      }
+      .radar-quick-stats {
+        width: 100%;
+      }
+      .radar-legend-grid {
+        grid-template-columns: 1fr;
+      }
+      .overview-columns {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 
+  <!-- ============================================================== -->
+  <!-- REAL-TIME SYNC ENGINE: BroadcastChannel, SSE & Auto-Update -->
+  <!-- ============================================================== -->
   <script>
-    // Listen for real-time DB sync events
-    window.addEventListener('asc:db-sync', async () => {
+    const CIRCUMFERENCE = 471.24;
+    let isUpdating = false;
+
+    async function refreshOverview(silent = false) {
+      if (isUpdating) return;
+      isUpdating = true;
+
       try {
-        const res = await fetch('/api/admin/stats');
-        if (res.ok) {
-          const data = await res.json();
-          const totalUsersEl = document.getElementById('stat-total-users');
-          const newUsersEl = document.getElementById('stat-new-users');
-          const totalQuotesEl = document.getElementById('stat-total-quotations');
-          const pendingQuotesEl = document.getElementById('stat-pending-quotations');
+        const res = await fetch('/api/admin/stats', {
+          headers: { 'Cache-Control': 'no-cache' },
+          cache: 'no-store',
+        });
 
-          if (totalUsersEl) totalUsersEl.textContent = String(data.stats.totalUsers);
-          if (newUsersEl) newUsersEl.textContent = String(data.stats.newUsers);
-          if (totalQuotesEl) totalQuotesEl.textContent = String(data.stats.totalQuotations);
-          if (pendingQuotesEl) pendingQuotesEl.textContent = String(data.stats.pendingQuotations);
+        if (!res.ok) {
+          isUpdating = false;
+          return;
+        }
 
+        const data = await res.json();
+        const s = data.stats;
+
+        // 1. Update Top Metric Cards
+        const totalUsersEl = document.getElementById('stat-total-users');
+        const totalQuotesEl = document.getElementById('stat-total-quotations');
+        const paidQuotesEl = document.getElementById('stat-paid-quotations');
+        const pendingQuotesEl = document.getElementById('stat-pending-quotations');
+        const revenueHintEl = document.getElementById('stat-revenue-hint');
+
+        if (totalUsersEl) totalUsersEl.textContent = String(s.totalUsers);
+        if (totalQuotesEl) totalQuotesEl.textContent = String(s.totalQuotations);
+        if (paidQuotesEl) paidQuotesEl.textContent = String(s.paidQuotations || 0);
+        if (pendingQuotesEl) pendingQuotesEl.textContent = String(s.pendingQuotations);
+        if (revenueHintEl) revenueHintEl.textContent = `₹${(s.totalRevenue || 0).toLocaleString()} Verified`;
+
+        // Circular indicators in top cards
+        const circFillPaid = document.getElementById('circ-fill-paid');
+        const circValPaid = document.getElementById('circ-val-paid');
+        const circFillPending = document.getElementById('circ-fill-pending');
+        const circValPending = document.getElementById('circ-val-pending');
+
+        const totalQ = Math.max(1, s.totalQuotations);
+        const paidPct = Math.round(((s.paidQuotations || 0) / totalQ) * 100);
+        const pendingPct = Math.round((s.pendingQuotations / totalQ) * 100);
+        const approvedPct = Math.round(((s.approvedQuotations || 0) / totalQ) * 100);
+        const newInqCount = s.newInquiriesCount || 0;
+
+        if (circFillPaid) circFillPaid.setAttribute('stroke-dasharray', `${paidPct}, 100`);
+        if (circValPaid) circValPaid.textContent = `${paidPct}%`;
+        if (circFillPending) circFillPending.setAttribute('stroke-dasharray', `${pendingPct}, 100`);
+        if (circValPending) circValPending.textContent = `${pendingPct}%`;
+
+        // 2. Update Big Radar SVG Donut Arcs & Calculations
+        const paidLen = ((s.paidQuotations || 0) / totalQ) * CIRCUMFERENCE;
+        const approvedLen = ((s.approvedQuotations || 0) / totalQ) * CIRCUMFERENCE;
+        const pendingLen = (s.pendingQuotations / totalQ) * CIRCUMFERENCE;
+        const otherLen = Math.max(0, CIRCUMFERENCE - (paidLen + approvedLen + pendingLen));
+
+        const paidOffset = 0;
+        const approvedOffset = -paidLen;
+        const pendingOffset = -(paidLen + approvedLen);
+        const otherOffset = -(paidLen + approvedLen + pendingLen);
+
+        const segPaid = document.getElementById('seg-paid');
+        const segApproved = document.getElementById('seg-approved');
+        const segPending = document.getElementById('seg-pending');
+        const segOther = document.getElementById('seg-other');
+
+        if (segPaid) {
+          segPaid.setAttribute('stroke-dasharray', `${paidLen} ${CIRCUMFERENCE}`);
+          segPaid.setAttribute('stroke-dashoffset', String(paidOffset));
+        }
+        if (segApproved) {
+          segApproved.setAttribute('stroke-dasharray', `${approvedLen} ${CIRCUMFERENCE}`);
+          segApproved.setAttribute('stroke-dashoffset', String(approvedOffset));
+        }
+        if (segPending) {
+          segPending.setAttribute('stroke-dasharray', `${pendingLen} ${CIRCUMFERENCE}`);
+          segPending.setAttribute('stroke-dashoffset', String(pendingOffset));
+        }
+        if (segOther) {
+          segOther.setAttribute('stroke-dasharray', `${otherLen} ${CIRCUMFERENCE}`);
+          segOther.setAttribute('stroke-dashoffset', String(otherOffset));
+        }
+
+        // Radar center
+        const radarPctEl = document.getElementById('radar-center-pct');
+        const radarSubEl = document.getElementById('radar-center-sub');
+        if (radarPctEl) radarPctEl.textContent = `${paidPct}%`;
+        if (radarSubEl) radarSubEl.textContent = `₹${(s.totalRevenue || 0).toLocaleString()}`;
+
+        // Radar Chips & Legend
+        const chipPaid = document.getElementById('chip-paid-count');
+        const chipApproved = document.getElementById('chip-approved-count');
+        const chipPending = document.getElementById('chip-pending-count');
+        if (chipPaid) chipPaid.textContent = String(s.paidQuotations || 0);
+        if (chipApproved) chipApproved.textContent = String(s.approvedQuotations || 0);
+        if (chipPending) chipPending.textContent = String(s.pendingQuotations);
+
+        const numPaid = document.getElementById('radar-num-paid');
+        const numApproved = document.getElementById('radar-num-approved');
+        const numPending = document.getElementById('radar-num-pending');
+        const numInquiries = document.getElementById('radar-num-inquiries');
+        if (numPaid) numPaid.textContent = String(s.paidQuotations || 0);
+        if (numApproved) numApproved.textContent = String(s.approvedQuotations || 0);
+        if (numPending) numPending.textContent = String(s.pendingQuotations);
+        if (numInquiries) numInquiries.textContent = String(newInqCount);
+
+        const barPaid = document.getElementById('bar-paid');
+        const barApproved = document.getElementById('bar-approved');
+        const barPending = document.getElementById('bar-pending');
+        const barInquiries = document.getElementById('bar-inquiries');
+        if (barPaid) barPaid.style.width = `${paidPct}%`;
+        if (barApproved) barApproved.style.width = `${approvedPct}%`;
+        if (barPending) barPending.style.width = `${pendingPct}%`;
+        if (barInquiries) barInquiries.style.width = `${Math.round((newInqCount / totalQ) * 100)}%`;
+
+        // 3. Update Recent Quotations Table (Live Reactive Row Rendering)
+        if (Array.isArray(data.recentQuotations)) {
+          const tbody = document.getElementById('recent-quotes-tbody');
+          if (tbody) {
+            tbody.innerHTML = data.recentQuotations.map((q: any) => `
+              <tr class="table-row-hover">
+                <td>
+                  <strong class="table-proj-title">${escapeHtml(q.projectTitle)}</strong>
+                  <span class="mono table-code">${escapeHtml(q.quotationNumber)}</span>
+                </td>
+                <td>
+                  <div class="cust-cell">
+                    <a href="/admin/users/${q.customer.id}" class="cust-name-link" title="Open customer account">
+                      ${escapeHtml(q.customer.fullName || 'Ascelstack Customer')}
+                    </a>
+                    <span class="mono cust-email">${escapeHtml(q.customer.email)}</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="status-tag status-${q.quotationStatus.toLowerCase().replace(/\\s+/g, '-')}">
+                    ${escapeHtml(q.quotationStatus)}
+                  </span>
+                </td>
+                <td>
+                  <span class="payment-pill payment-${q.paymentStatus.toLowerCase().replace(/\\s+/g, '-')}">
+                    ${escapeHtml(q.paymentStatus)}
+                  </span>
+                </td>
+                <td>
+                  <div class="progress-cell">
+                    <div class="mini-progress-bar">
+                      <div class="mini-progress-fill" style="width: ${q.projectProgress}%;"></div>
+                    </div>
+                    <span class="mono text-xs">${q.projectProgress}%</span>
+                  </div>
+                </td>
+                <td>
+                  <a href="/admin/quotations/${q.id}" class="btn-table-action" title="Open Quotation">
+                    Manage →
+                  </a>
+                </td>
+              </tr>
+            `).join('');
+          }
+        }
+
+        if (!silent) {
           (window as any).showAdminToast?.('Dashboard synchronized with latest database changes', 'info');
         }
-      } catch (e) {
+      } catch (err) {
         // silent
+      } finally {
+        isUpdating = false;
+      }
+    }
+
+    function escapeHtml(str: string) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // 1. Cross-tab BroadcastChannel listener
+    try {
+      const bc = new BroadcastChannel('asc_admin_sync');
+      bc.onmessage = (event) => {
+        refreshOverview(false);
+      };
+    } catch (e) {}
+
+    // 2. Storage event for cross-tab sync
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'asc_admin_sync_tick') {
+        refreshOverview(false);
+      }
+    });
+
+    // 3. Heartbeat event dispatched by AdminLayout
+    window.addEventListener('asc:db-sync', () => {
+      refreshOverview(true);
+    });
+
+    // 4. Back / Forward cache navigation: instantly sync fresh data
+    window.addEventListener('pageshow', (e) => {
+      refreshOverview(true);
+    });
+
+    // 5. Visibility change: when admin switches back to this tab, refresh
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        refreshOverview(true);
       }
     });
   </script>

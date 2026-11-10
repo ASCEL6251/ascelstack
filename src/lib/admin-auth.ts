@@ -305,18 +305,29 @@ export async function getClerkAdminUser(
         email.split('@')[0];
       const avatarUrl = clerkUserData.imageUrl || '';
 
-      // Sync into Neon users table if not present
+      // Sync into Neon users table if not present, deduplicating by email
       try {
-        const { eq } = await import('drizzle-orm');
+        const { eq, sql } = await import('drizzle-orm');
         const { users } = await import('../db');
-        const [existing] = await db.select().from(users).where(eq(users.clerkUserId, auth.userId)).limit(1);
+        const normEmail = email.trim().toLowerCase();
+        const [existing] = await db
+          .select()
+          .from(users)
+          .where(sql`${users.clerkUserId} = ${auth.userId} OR lower(${users.email}) = ${normEmail}`)
+          .limit(1);
+
         if (!existing) {
           await db.insert(users).values({
             clerkUserId: auth.userId,
-            email: email.trim().toLowerCase(),
+            email: normEmail,
             fullName: name,
             avatarUrl,
           });
+        } else if (existing.clerkUserId !== auth.userId) {
+          await db
+            .update(users)
+            .set({ clerkUserId: auth.userId, fullName: name || existing.fullName, avatarUrl: avatarUrl || existing.avatarUrl, updatedAt: new Date() })
+            .where(eq(users.id, existing.id));
         }
       } catch {}
 

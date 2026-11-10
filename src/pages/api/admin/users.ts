@@ -51,6 +51,11 @@ export const GET: APIRoute = async (context) => {
         updatedAt: users.updatedAt,
         quotationCount: sql<number>`(SELECT count(*)::int FROM quotations WHERE quotations.user_id = users.id)`,
         lastActivityAt: sql<string | null>`(SELECT max(created_at) FROM activity_logs WHERE activity_logs.user_id = users.id)`,
+        latestQueryTitle: sql<string | null>`(SELECT project_title FROM quotations WHERE quotations.user_id = users.id ORDER BY created_at DESC LIMIT 1)`,
+        latestQueryStatus: sql<string | null>`(SELECT quotation_status FROM quotations WHERE quotations.user_id = users.id ORDER BY created_at DESC LIMIT 1)`,
+        latestQueryNumber: sql<string | null>`(SELECT quotation_number FROM quotations WHERE quotations.user_id = users.id ORDER BY created_at DESC LIMIT 1)`,
+        latestQueryDate: sql<string | null>`(SELECT created_at::text FROM quotations WHERE quotations.user_id = users.id ORDER BY created_at DESC LIMIT 1)`,
+        latestQueryAmount: sql<string | null>`(SELECT COALESCE(final_quotation_amount, initial_estimated_cost)::text FROM quotations WHERE quotations.user_id = users.id ORDER BY created_at DESC LIMIT 1)`,
       })
       .from(users)
       .where(whereConditions)

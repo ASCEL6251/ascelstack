@@ -225,5 +225,28 @@ const totalPages = Math.ceil(totalLogs / limit) || 1;
       color: #065f46;
       font-weight: 600;
     }
+    .filter-pills-row {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    @media (max-width: 768px) {
+      .panel-header-flex {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .filter-pills-row {
+        width: 100%;
+      }
+      .tab-pill {
+        flex: 1;
+        text-align: center;
+        font-size: 0.75rem;
+      }
+      .pagination-bar {
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+    }
   </style>
 </AdminLayout>

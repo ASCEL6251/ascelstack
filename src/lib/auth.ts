@@ -1,6 +1,6 @@
 import type { APIContext } from 'astro';
 import { clerkClient, createClerkClient } from '@clerk/astro/server';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, sql } from 'drizzle-orm';
 import { db, users, businesses, activityLogs, type User, type Business } from '../db';
 
 export interface AuthenticatedContext {
@@ -29,7 +29,7 @@ export async function getAuthenticatedUser(
     .where(eq(users.clerkUserId, clerkUserId))
     .limit(1);
 
-  // 2. If user doesn't exist in Neon, fetch from Clerk API and insert
+  // 2. If user doesn't exist by clerkUserId in Neon, fetch from Clerk API and check by email to prevent duplicate accounts
   if (!user) {
     let email = '';
     let fullName = '';
@@ -62,23 +62,48 @@ export async function getAuthenticatedUser(
       fullName = 'Ascelstack Customer';
     }
 
-    [user] = await db
-      .insert(users)
-      .values({
-        clerkUserId,
-        email: email || `user_${clerkUserId.slice(-8)}@customer.ascelstack.com`,
-        fullName: fullName || 'Ascelstack Customer',
-        avatarUrl,
-      })
-      .returning();
+    const normalizedEmail = email.trim().toLowerCase();
 
-    // Log the registration/initial sync
-    await db.insert(activityLogs).values({
-      userId: user.id,
-      activityType: 'account_created',
-      description: 'Account created and synchronized with Ascelstack',
-      metadata: { clerkUserId, email },
-    });
+    // Deduplication check: Check if an account with this email already exists in Neon
+    const [existingByEmail] = await db
+      .select()
+      .from(users)
+      .where(sql`lower(${users.email}) = ${normalizedEmail}`)
+      .limit(1);
+
+    if (existingByEmail) {
+      // Re-link the existing account with the current Clerk user ID and latest details
+      const [updated] = await db
+        .update(users)
+        .set({
+          clerkUserId,
+          fullName: fullName || existingByEmail.fullName,
+          avatarUrl: avatarUrl || existingByEmail.avatarUrl,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, existingByEmail.id))
+        .returning();
+      user = updated;
+    } else {
+      // Brand new user registration
+      [user] = await db
+        .insert(users)
+        .values({
+          clerkUserId,
+          email: normalizedEmail || `user_${clerkUserId.slice(-8)}@customer.ascelstack.com`,
+          fullName: fullName || 'Ascelstack Customer',
+          avatarUrl,
+        })
+        .returning();
+
+      // Log the registration/initial sync
+      await db.insert(activityLogs).values({
+        userId: user.id,
+        activityType: 'account_created',
+        description: 'Account created and synchronized with Ascelstack',
+        metadata: { clerkUserId, email: normalizedEmail },
+      });
+    }
   }
 
   // 3. Find user's primary/active business

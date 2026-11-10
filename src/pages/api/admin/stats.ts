@@ -58,7 +58,29 @@ export const GET: APIRoute = async (context) => {
       .from(quotations)
       .where(eq(quotations.quotationStatus, 'Completed'));
 
-    // Recent Activity Feed: aggregate recent quotations, history changes, and user creations
+    const [{ paidQuotations }] = await db
+      .select({ paidQuotations: sql<number>`count(*)::int` })
+      .from(quotations)
+      .where(eq(quotations.paymentStatus, 'Payment Completed'));
+
+    const [{ partiallyPaidQuotations }] = await db
+      .select({ partiallyPaidQuotations: sql<number>`count(*)::int` })
+      .from(quotations)
+      .where(eq(quotations.paymentStatus, 'Partially Paid'));
+
+    const [{ newInquiriesCount }] = await db
+      .select({ newInquiriesCount: sql<number>`count(*)::int` })
+      .from(quotations)
+      .where(eq(quotations.quotationStatus, 'New Inquiry'));
+
+    const [{ totalRevenue, pipelineValue }] = await db
+      .select({
+        totalRevenue: sql<number>`COALESCE(SUM(CASE WHEN ${quotations.paymentStatus} = 'Payment Completed' THEN ${quotations.finalQuotationAmount}::numeric ELSE 0 END), 0)::float`,
+        pipelineValue: sql<number>`COALESCE(SUM(COALESCE(${quotations.finalQuotationAmount}::numeric, ${quotations.initialEstimatedCost}::numeric, 0)), 0)::float`,
+      })
+      .from(quotations);
+
+    // Recent Activity Feed: ordered by latest update/created time so status changes appear at the top in real time!
     const recentQuotations = await db
       .select({
         id: quotations.id,
@@ -67,14 +89,17 @@ export const GET: APIRoute = async (context) => {
         quotationStatus: quotations.quotationStatus,
         paymentStatus: quotations.paymentStatus,
         projectProgress: quotations.projectProgress,
+        finalQuotationAmount: quotations.finalQuotationAmount,
+        currency: quotations.currency,
         createdAt: quotations.createdAt,
+        updatedAt: quotations.updatedAt,
         userFullName: users.fullName,
         userEmail: users.email,
       })
       .from(quotations)
       .innerJoin(users, eq(quotations.userId, users.id))
-      .orderBy(desc(quotations.createdAt))
-      .limit(6);
+      .orderBy(desc(sql`COALESCE(${quotations.updatedAt}, ${quotations.createdAt})`))
+      .limit(8);
 
     const recentHistory = await db
       .select({
@@ -111,12 +136,23 @@ export const GET: APIRoute = async (context) => {
           pendingQuotations,
           approvedQuotations,
           completedQuotations,
+          paidQuotations,
+          partiallyPaidQuotations,
+          newInquiriesCount,
+          totalRevenue,
+          pipelineValue,
         },
         recentQuotations,
         recentHistory,
         recentUsers,
       }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
+        },
+      }
     );
   } catch (error: any) {
     console.error('API /api/admin/stats error:', error);

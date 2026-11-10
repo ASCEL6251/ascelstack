@@ -1,5 +1,5 @@
 import { pgTable, uuid, varchar, text, timestamp, jsonb, index, uniqueIndex, numeric, integer, boolean } from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 
 // 1. Users Table (identity mapping from Clerk)
 export const users = pgTable(
@@ -15,6 +15,7 @@ export const users = pgTable(
   },
   (table) => [
     uniqueIndex('users_clerk_id_idx').on(table.clerkUserId),
+    uniqueIndex('users_email_lower_uidx').on(sql`lower(${table.email})`),
     index('users_email_idx').on(table.email),
   ]
 );

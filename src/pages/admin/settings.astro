@@ -226,5 +226,12 @@ const hasDbUrl = Boolean(getEnvVariable('DATABASE_URL', Astro));
       font-size: 0.8rem;
       font-weight: 600;
     }
+    @media (max-width: 640px) {
+      .diag-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+    }
   </style>
 </AdminLayout>

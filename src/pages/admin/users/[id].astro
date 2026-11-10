@@ -3,7 +3,8 @@ export const prerender = false;
 
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { getAdminSession } from '../../../lib/admin-auth';
-import { db, users, businesses, quotations, activityLogs } from '../../../db';
+import { db, users, businesses, quotations, activityLogs, serviceRequests, services } from '../../../db';
+import { clerkClient, createClerkClient } from '@clerk/astro/server';
 import { eq, desc, sql } from 'drizzle-orm';
 
 // Strict Server-Side Session Check
@@ -17,25 +18,52 @@ if (!targetId) {
   return Astro.redirect('/admin/users');
 }
 
-// 1. Fetch user by id or clerkUserId
+// 1. Fetch user by id, clerkUserId, or email
 const [user] = await db
   .select()
   .from(users)
-  .where(sql`${users.id}::text = ${targetId} OR ${users.clerkUserId} = ${targetId}`)
+  .where(sql`${users.id}::text = ${targetId} OR ${users.clerkUserId} = ${targetId} OR lower(${users.email}) = lower(${targetId})`)
   .limit(1);
 
 if (!user) {
   return Astro.redirect('/admin/users');
 }
 
-// 2. Fetch businesses owned by this user
+// 2. Fetch live Cloud Auth (Clerk) profile metadata
+let clerkAuth: any = null;
+try {
+  let client;
+  try {
+    client = clerkClient(Astro);
+  } catch {
+    const secretKey = process.env.CLERK_SECRET_KEY || (import.meta as any).env?.CLERK_SECRET_KEY;
+    client = createClerkClient({ secretKey });
+  }
+  const cu = await client.users.getUser(user.clerkUserId);
+  if (cu) {
+    const isVerified = cu.emailAddresses?.some((e) => e.verification?.status === 'verified');
+    const ext = cu.externalAccounts?.[0];
+    clerkAuth = {
+      verified: isVerified,
+      primaryEmail: cu.emailAddresses?.find((e) => e.id === cu.primaryEmailAddressId)?.emailAddress || cu.emailAddresses?.[0]?.emailAddress || user.email,
+      provider: ext?.provider === 'oauth_google' ? 'Google OAuth' : ext?.provider || 'Email / Clerk Auth',
+      lastSignInAt: cu.lastSignInAt,
+      createdAt: cu.createdAt,
+      banned: cu.banned,
+    };
+  }
+} catch (clerkErr) {
+  // Silent fallback if Clerk API is offline
+}
+
+// 3. Fetch businesses owned by this user
 const userBusinesses = await db
   .select()
   .from(businesses)
   .where(eq(businesses.ownerUserId, user.id))
   .orderBy(desc(businesses.updatedAt));
 
-// 3. Fetch user's quotation history (strictly isolated to this user)
+// 4. Fetch user's quotation history (strictly isolated to this user)
 const userQuotations = await db
   .select({
     id: quotations.id,
@@ -57,13 +85,37 @@ const userQuotations = await db
   .where(eq(quotations.userId, user.id))
   .orderBy(desc(quotations.createdAt));
 
-// 4. Fetch user's account activity logs
+// 5. Fetch all individual service requests submitted by this user
+const userRequests = await db
+  .select({
+    id: serviceRequests.id,
+    businessId: serviceRequests.businessId,
+    serviceId: serviceRequests.serviceId,
+    quotationId: serviceRequests.quotationId,
+    requirements: serviceRequests.requirements,
+    status: serviceRequests.status,
+    requestedAt: serviceRequests.requestedAt,
+    service: {
+      id: services.id,
+      code: services.code,
+      name: services.name,
+      slug: services.slug,
+      layer: services.layer,
+      discipline: services.discipline,
+    },
+  })
+  .from(serviceRequests)
+  .innerJoin(services, eq(serviceRequests.serviceId, services.id))
+  .where(eq(serviceRequests.userId, user.id))
+  .orderBy(desc(serviceRequests.requestedAt));
+
+// 6. Fetch user's account activity logs
 const userActivity = await db
   .select()
   .from(activityLogs)
   .where(eq(activityLogs.userId, user.id))
   .orderBy(desc(activityLogs.createdAt))
-  .limit(20);
+  .limit(25);
 
 const totalUserSpent = userQuotations
   .filter((q) => q.paymentStatus === 'Payment Completed')
@@ -77,37 +129,69 @@ const totalUserSpent = userQuotations
   session={session}
 >
   <div class="user-detail-layout">
-    <!-- Back button header -->
+    <!-- Top Nav: Back button + Auto-Sync Action -->
     <div class="detail-top-nav">
       <a href="/admin/users" class="back-link">
-        <span aria-hidden="true">←</span> Back to Users
+        <span aria-hidden="true">←</span> Back to Users List
       </a>
+
+      <div class="top-nav-actions">
+        <button type="button" class="btn btn-ghost btn-sm" id="btn-sync-user">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+          </svg>
+          <span id="sync-btn-text">Sync with Cloud Auth & Neon</span>
+        </button>
+      </div>
     </div>
 
     <!-- Account Overview Card -->
     <div class="user-overview-card">
       <div class="user-profile-head">
         {user.avatarUrl ? (
-          <img src={user.avatarUrl} alt={user.fullName || 'User'} class="user-profile-avatar" />
+          <img src={user.avatarUrl} alt={user.fullName || 'User'} class="user-profile-avatar" id="user-display-avatar" />
         ) : (
-          <div class="user-profile-placeholder mono">
+          <div class="user-profile-placeholder mono" id="user-display-placeholder">
             {(user.fullName || user.email)[0].toUpperCase()}
           </div>
         )}
 
         <div class="user-profile-meta">
           <div class="user-title-row">
-            <h1 class="display h2 user-title-name">{user.fullName || 'Ascelstack Customer'}</h1>
-            <span class="badge-status-active">
-              <span class="status-dot"></span> Active Account
-            </span>
+            <h1 class="display h2 user-title-name" id="user-display-name">{user.fullName || 'Ascelstack Customer'}</h1>
+            <div class="user-badges-flex">
+              <span class="badge-status-active">
+                <span class="status-dot"></span> Active Account
+              </span>
+              {clerkAuth ? (
+                <span class="badge-cloud-auth" title={`Clerk Provider: ${clerkAuth.provider}`}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                  </svg>
+                  <span>{clerkAuth.provider} {clerkAuth.verified ? '✓' : ''}</span>
+                </span>
+              ) : (
+                <span class="badge-cloud-auth badge-cloud-neon">
+                  <span>Neon Synced</span>
+                </span>
+              )}
+            </div>
           </div>
 
-          <p class="user-meta-email mono">{user.email}</p>
+          <p class="user-meta-email mono" id="user-display-email">{user.email}</p>
 
           <div class="user-tags-row">
-            <span class="mono user-id-tag" title="Neon Database UUID">UUID: {user.id}</span>
-            <span class="mono user-id-tag" title="Clerk Identity ID">Clerk: {user.clerkUserId}</span>
+            <span class="mono user-id-tag tag-neon" title={`Neon Database UUID: ${user.id}`}>
+              UUID: {user.id}
+            </span>
+            <span class="mono user-id-tag tag-clerk" title={`Clerk Cloud Auth ID: ${user.clerkUserId}`}>
+              Clerk: {user.clerkUserId}
+            </span>
+            {clerkAuth?.lastSignInAt && (
+              <span class="mono user-id-tag tag-time">
+                Last Login: {new Date(clerkAuth.lastSignInAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -126,8 +210,13 @@ const totalUserSpent = userQuotations
         </div>
 
         <div class="user-metric-col">
-          <span class="mono user-m-label">TOTAL QUOTATIONS</span>
-          <strong class="user-m-val text-accent">{userQuotations.length} Scopes</strong>
+          <span class="mono user-m-label">RAISED QUOTATIONS</span>
+          <strong class="user-m-val text-accent" id="user-quote-count">{userQuotations.length} Scopes</strong>
+        </div>
+
+        <div class="user-metric-col">
+          <span class="mono user-m-label">SERVICE REQUESTS</span>
+          <strong class="user-m-val text-accent">{userRequests.length} Pipelines</strong>
         </div>
 
         <div class="user-metric-col">
@@ -144,27 +233,27 @@ const totalUserSpent = userQuotations
       </div>
     </div>
 
-    <!-- Two Column Grid: Quotation History (Left) and Account Info & Activity (Right) -->
+    <!-- Two Column Grid: Inquiries & Quotations (Left) and Account Info & Activity (Right) -->
     <div class="user-content-grid">
-      <!-- Left Column: User Quotation History -->
+      <!-- Left Column: User Quotation History & Inquiries -->
       <div class="card-panel">
         <div class="panel-header">
           <div>
             <span class="eyebrow">Customer Pipeline</span>
-            <h2 class="display h3">Quotation History ({userQuotations.length})</h2>
-            <p class="panel-subtitle">All project scopes submitted by this customer</p>
+            <h2 class="display h3">All Raised Inquiries & Quotations ({userQuotations.length})</h2>
+            <p class="panel-subtitle">All project scopes, requirements, and services requested by this customer</p>
           </div>
         </div>
 
         {userQuotations.length === 0 ? (
           <div class="empty-state">
             <h3 class="display empty-title">No quotations submitted yet</h3>
-            <p class="empty-desc">This user has not submitted any project inquiries or service requests.</p>
+            <p class="empty-desc">This user has not submitted any project inquiries or quotation scopes yet.</p>
           </div>
         ) : (
-          <div class="user-quotes-list">
+          <div class="user-quotes-list" id="user-quotes-container">
             {userQuotations.map((q) => (
-              <div class="user-quote-card">
+              <div class="user-quote-card" id={`quote-card-${q.id}`}>
                 <div class="quote-card-header">
                   <div>
                     <span class="mono text-xs text-muted">{q.quotationNumber}</span>
@@ -211,13 +300,39 @@ const totalUserSpent = userQuotations
 
                   <div class="quote-actions">
                     <a href={`/admin/quotations/${q.id}`} class="btn btn-primary btn-sm">
-                      <span>Open Quotation</span>
+                      <span>Manage Quotation</span>
                       <span class="arrow">→</span>
                     </a>
                   </div>
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        <!-- Additional Section: Individual Service Requests if any -->
+        {userRequests.length > 0 && (
+          <div class="service-requests-subpanel">
+            <h3 class="display h4 subpanel-heading">Individual Service Requests ({userRequests.length})</h3>
+            <div class="requests-mini-list">
+              {userRequests.map((req) => (
+                <div class="req-mini-item">
+                  <div class="req-mini-head">
+                    <strong class="req-service-name">{req.service.name}</strong>
+                    <span class={`status-tag status-${req.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                      {req.status}
+                    </span>
+                  </div>
+                  {req.requirements && (
+                    <p class="req-mini-desc mono text-xs">{req.requirements}</p>
+                  )}
+                  <div class="req-mini-meta mono text-xs text-muted">
+                    <span>{req.service.code || req.service.discipline} · Layer: {req.service.layer}</span>
+                    <span>{new Date(req.requestedAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -229,7 +344,7 @@ const totalUserSpent = userQuotations
           <div class="panel-header">
             <div>
               <span class="eyebrow">Organization</span>
-              <h3 class="display h3">Registered Businesses</h3>
+              <h3 class="display h3">Registered Businesses ({userBusinesses.length})</h3>
             </div>
           </div>
 
@@ -295,7 +410,12 @@ const totalUserSpent = userQuotations
       gap: 1.5rem;
     }
     .detail-top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 0.5rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
     }
     .back-link {
       display: inline-flex;
@@ -314,21 +434,21 @@ const totalUserSpent = userQuotations
       background: var(--paper-raised);
       border: 1px solid var(--line);
       border-radius: var(--radius-l);
-      padding: clamp(1.5rem, 3vw, 2.25rem);
+      padding: clamp(1.25rem, 3vw, 2.25rem);
       box-shadow: 0 10px 30px -15px rgba(20, 33, 48, 0.1);
       display: grid;
       gap: 1.75rem;
     }
     .user-profile-head {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 1.5rem;
       flex-wrap: wrap;
     }
     .user-profile-avatar,
     .user-profile-placeholder {
-      width: 76px;
-      height: 76px;
+      width: 72px;
+      height: 72px;
       border-radius: 50%;
       border: 2px solid var(--line);
       flex-shrink: 0;
@@ -338,27 +458,54 @@ const totalUserSpent = userQuotations
       color: var(--paper);
       display: grid;
       place-items: center;
-      font-size: 2rem;
+      font-size: 1.75rem;
       font-weight: 700;
     }
     .user-profile-meta {
       display: grid;
-      gap: 0.35rem;
+      gap: 0.4rem;
+      flex: 1;
+      min-width: 260px;
     }
     .user-title-row {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.75rem;
       flex-wrap: wrap;
     }
     .user-title-name {
-      font-size: clamp(1.6rem, 2vw, 2.2rem);
       margin: 0;
-      line-height: 1.1;
+      color: var(--ink);
+      font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+    }
+    .user-badges-flex {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .badge-cloud-auth {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: rgba(14, 165, 233, 0.1);
+      color: #0369a1;
+      border: 1px solid rgba(14, 165, 233, 0.25);
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+    .badge-cloud-neon {
+      background: rgba(16, 185, 129, 0.1);
+      color: #065f46;
+      border-color: rgba(16, 185, 129, 0.25);
     }
     .user-meta-email {
-      font-size: 0.95rem;
+      font-size: 0.88rem;
       color: var(--text-muted);
+      margin: 0;
     }
     .user-tags-row {
       display: flex;
@@ -368,35 +515,47 @@ const totalUserSpent = userQuotations
     }
     .user-id-tag {
       font-size: 0.7rem;
+      padding: 0.2rem 0.55rem;
       background: var(--paper-sunk);
-      padding: 0.2rem 0.5rem;
+      border: 1px solid var(--line);
       border-radius: 4px;
+      color: var(--text-muted);
+    }
+    .tag-neon {
+      color: var(--ink);
+    }
+    .tag-clerk {
+      color: var(--accent);
+    }
+    .tag-time {
       color: var(--text-muted);
     }
     .user-metrics-strip {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 1.25rem;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+      padding-top: 1.25rem;
       border-top: 1px solid var(--line);
-      padding-top: 1.5rem;
     }
     .user-metric-col {
       display: grid;
-      gap: 0.25rem;
+      gap: 0.2rem;
     }
     .user-m-label {
-      font-size: 0.68rem;
+      font-size: 0.65rem;
       color: var(--text-muted);
+      letter-spacing: 0.05em;
     }
     .user-m-val {
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       color: var(--ink);
+      font-family: var(--font-mono);
     }
     .user-content-grid {
       display: grid;
-      grid-template-columns: 1.5fr 1fr;
+      grid-template-columns: 2fr 1fr;
       gap: 1.5rem;
-      align-items: start;
+      align-items: flex-start;
     }
     .user-side-column {
       display: grid;
@@ -404,32 +563,32 @@ const totalUserSpent = userQuotations
     }
     .user-quotes-list {
       display: grid;
-      gap: 1.25rem;
+      gap: 1rem;
     }
     .user-quote-card {
-      background: var(--paper);
+      background: var(--paper-raised);
       border: 1px solid var(--line);
       border-radius: var(--radius);
       padding: 1.25rem;
       display: grid;
       gap: 0.85rem;
-      transition: all 0.2s;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
     .user-quote-card:hover {
-      box-shadow: 0 10px 24px -12px rgba(29, 45, 61, 0.15);
-      border-color: var(--accent);
+      border-color: rgba(89, 128, 166, 0.4);
+      box-shadow: 0 4px 16px -8px rgba(29, 45, 61, 0.1);
     }
     .quote-card-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       gap: 1rem;
+      flex-wrap: wrap;
     }
     .quote-card-title {
-      font-size: 1.15rem;
-      font-weight: 600;
+      font-size: 1.05rem;
       color: var(--ink);
-      margin: 0.2rem 0 0;
+      margin: 0.15rem 0 0;
     }
     .quote-tags {
       display: flex;
@@ -437,16 +596,15 @@ const totalUserSpent = userQuotations
       flex-wrap: wrap;
     }
     .quote-card-desc {
-      font-size: 0.88rem;
+      font-size: 0.85rem;
       color: var(--text-muted);
       line-height: 1.45;
       margin: 0;
     }
     .quote-card-reqs {
-      background: var(--paper-raised);
-      border-left: 3px solid var(--accent);
-      padding: 0.5rem 0.75rem;
-      border-radius: 0 4px 4px 0;
+      background: var(--paper-sunk);
+      padding: 0.6rem 0.85rem;
+      border-radius: var(--radius-s);
       font-size: 0.75rem;
       color: var(--text);
       display: flex;
@@ -480,6 +638,48 @@ const totalUserSpent = userQuotations
       align-items: center;
       gap: 0.5rem;
     }
+    .service-requests-subpanel {
+      margin-top: 1.75rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--line);
+    }
+    .subpanel-heading {
+      margin-bottom: 1rem;
+      font-size: 1rem;
+      color: var(--ink);
+    }
+    .requests-mini-list {
+      display: grid;
+      gap: 0.75rem;
+    }
+    .req-mini-item {
+      background: var(--paper-sunk);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-s);
+      padding: 0.85rem;
+      display: grid;
+      gap: 0.35rem;
+    }
+    .req-mini-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .req-service-name {
+      font-size: 0.9rem;
+      color: var(--ink);
+    }
+    .req-mini-desc {
+      color: var(--text);
+      margin: 0;
+    }
+    .req-mini-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
     .biz-list {
       display: grid;
       gap: 0.75rem;
@@ -502,10 +702,89 @@ const totalUserSpent = userQuotations
       color: var(--text-muted);
     }
 
+    /* Mobile & Tablet Responsiveness */
     @media (max-width: 1024px) {
       .user-content-grid {
         grid-template-columns: 1fr;
       }
     }
+    @media (max-width: 640px) {
+      .user-profile-head {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .user-title-row {
+        justify-content: center;
+      }
+      .user-tags-row {
+        justify-content: center;
+      }
+      .user-metrics-strip {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .quote-card-footer {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .quote-actions {
+        width: 100%;
+      }
+      .quote-actions .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
   </style>
+
+  <script define:vars={{ userId: user.id }}>
+    // On-demand Sync with Cloud Auth & Neon
+    const btnSync = document.getElementById('btn-sync-user');
+    const syncText = document.getElementById('sync-btn-text');
+
+    btnSync?.addEventListener('click', async () => {
+      try {
+        if (syncText) syncText.textContent = 'Syncing...';
+        btnSync.setAttribute('disabled', 'true');
+
+        const res = await fetch(`/api/admin/users/${userId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        const data = await res.json();
+        btnSync.removeAttribute('disabled');
+        if (syncText) syncText.textContent = 'Sync with Cloud Auth & Neon';
+
+        if (res.ok) {
+          (window as any).showAdminToast?.(data.message || 'User synchronized with Clerk & Neon!', 'success');
+          // Reload page to reflect fresh synced data
+          setTimeout(() => window.location.reload(), 800);
+        } else {
+          (window as any).showAdminToast?.(data.error || 'Failed to sync user', 'error');
+        }
+      } catch (err) {
+        btnSync.removeAttribute('disabled');
+        if (syncText) syncText.textContent = 'Sync with Cloud Auth & Neon';
+        (window as any).showAdminToast?.('Connection error during sync', 'error');
+      }
+    });
+
+    // Real-time listener for quotation updates
+    function handleRealtimeUpdate() {
+      // Refresh page if any quotation change occurs
+      window.location.reload();
+    }
+
+    try {
+      const bc = new BroadcastChannel('asc_admin_sync');
+      bc.onmessage = (event) => {
+        if (event.data?.type === 'QUOTATION_UPDATED') {
+          handleRealtimeUpdate();
+        }
+      };
+    } catch (e) {}
+
+    window.addEventListener('asc:db-sync', handleRealtimeUpdate);
+  </script>
 </AdminLayout>
