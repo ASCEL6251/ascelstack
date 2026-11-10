@@ -107,7 +107,15 @@ const typeLabel = p ? { package: '5 packages', fixed: 'Fixed price', starting: '
   .card-price-type { color: var(--text-muted); text-transform: uppercase; font-size: 0.65rem; }
   .card-price-row { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.35rem; }
   .card-price-from { font-size: 0.8rem; color: var(--text-muted); }
-  .card-price-amt { font-size: 1.25rem; font-weight: 600; color: var(--ink); letter-spacing: -0.01em; }
+  .card-price-amt {
+    font-family: var(--font-body);
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: 'tnum' 1, 'lnum' 1;
+  }
   .card-price-unit { font-size: 0.8rem; color: var(--text-muted); }
   .card-market { font-size: 0.75rem; color: var(--text-muted); opacity: 0.85; line-height: 1.4; }
 

@@ -175,6 +175,13 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
   letter-spacing: 0.06em;
 }
 
+.num,
+.tabular-nums {
+  font-family: var(--font-body);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+}
+
 .temp::after {
   content: 'TEMP';
   margin-left: 0.5em;

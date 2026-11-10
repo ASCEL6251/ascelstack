@@ -662,7 +662,7 @@ const initialData = {
 
                   <div class="est-price-block">
                     <span class="mono est-price-label">ESTIMATED INVESTMENT</span>
-                    <div class="display est-price-value" id="est-total-price">₹0</div>
+                    <div class="est-price-value" id="est-total-price">₹0</div>
                     <div class="est-synergy-pill" id="est-synergy-banner" hidden>
                       <span>Stack Synergy Savings Applied</span>
                       <span class="mono" id="est-synergy-amount">-₹0</span>
@@ -2766,7 +2766,10 @@ const initialData = {
         border-radius: 999px;
         background: rgba(242, 242, 243, 0.15);
         font-size: 0.72rem;
-        font-family: var(--font-mono);
+        font-family: var(--font-body);
+        font-weight: 700;
+        font-variant-numeric: tabular-nums lining-nums;
+        font-feature-settings: 'tnum' 1, 'lnum' 1;
         color: var(--text-on-ink);
       }
       .badge-accent {
@@ -2818,9 +2821,7 @@ const initialData = {
 
       .dash-topbar {
         height: 64px;
-        background: color-mix(in srgb, var(--paper-raised) 85%, transparent);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
+        background: var(--paper-raised);
         border-bottom: 1px solid var(--line);
         display: flex;
         align-items: center;
@@ -2829,6 +2830,7 @@ const initialData = {
         position: sticky;
         top: 0;
         z-index: 30;
+        box-shadow: 0 1px 3px rgba(29, 45, 61, 0.04);
       }
 
       .topbar-left {
@@ -3004,10 +3006,13 @@ const initialData = {
       .dot-success { background: #16a34a; }
 
       .metric-value {
-        font-family: var(--font-display);
-        font-size: 3rem;
+        font-family: var(--font-body);
+        font-weight: 800;
+        font-size: clamp(2.4rem, 1.8rem + 1.5vw, 3.25rem);
         line-height: 1;
-        letter-spacing: -0.02em;
+        letter-spacing: -0.03em;
+        font-variant-numeric: tabular-nums lining-nums;
+        font-feature-settings: 'tnum' 1, 'lnum' 1;
         color: var(--ink);
       }
       .metric-hint { font-size: 0.8rem; color: var(--text-muted); }
@@ -3224,10 +3229,13 @@ const initialData = {
         box-shadow: 0 10px 20px -10px rgba(29, 45, 61, 0.15);
       }
       .preset-tag {
-        font-size: 0.65rem;
-        letter-spacing: 0.1em;
+        font-family: var(--font-body);
+        font-size: 0.68rem;
+        letter-spacing: 0.08em;
         color: var(--accent);
-        font-weight: 700;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums lining-nums;
+        font-feature-settings: 'tnum' 1, 'lnum' 1;
         margin-bottom: 0.1rem;
       }
       .preset-name { font-size: 0.92rem; font-weight: 700; color: var(--ink); }
@@ -3256,9 +3264,11 @@ const initialData = {
         border-radius: 999px;
         border: 0;
         background: transparent;
-        font-family: var(--font-mono);
+        font-family: var(--font-body);
         font-size: 0.75rem;
-        font-weight: 600;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums lining-nums;
+        font-feature-settings: 'tnum' 1, 'lnum' 1;
         cursor: pointer;
         color: var(--text-muted);
         transition: all 0.2s;
@@ -3290,13 +3300,18 @@ const initialData = {
         box-shadow: 0 0 0 2px var(--accent);
       }
       .tier-badge {
-        font-size: 0.65rem;
+        font-family: var(--font-body);
+        font-size: 0.68rem;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums lining-nums;
+        font-feature-settings: 'tnum' 1, 'lnum' 1;
         background: var(--paper-sunk);
-        padding: 0.15rem 0.5rem;
+        padding: 0.15rem 0.55rem;
         border-radius: 999px;
-        color: var(--text-muted);
+        color: var(--ink);
         display: inline-block;
         margin-bottom: 0.4rem;
+        letter-spacing: 0.02em;
       }
       .tier-title {
         display: block;
@@ -3386,8 +3401,12 @@ const initialData = {
       .svc-select-disc { font-size: 0.75rem; color: var(--text-muted); }
       .svc-select-base-price {
         margin-left: auto;
-        font-size: 0.78rem;
-        font-weight: 700;
+        font-family: var(--font-body);
+        font-size: 0.82rem;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums lining-nums;
+        font-feature-settings: 'tnum' 1, 'lnum' 1;
+        letter-spacing: -0.015em;
         color: var(--ink);
       }
       .svc-select-title { font-size: 0.98rem; color: var(--ink); display: block; }
@@ -3439,10 +3458,17 @@ const initialData = {
       }
       .est-price-label { font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.1em; }
       .est-price-value {
-        font-size: clamp(2.75rem, 2rem + 2vw, 3.75rem);
+        font-family: var(--font-body);
+        font-weight: 800;
+        font-size: clamp(2.4rem, 1.8rem + 1.8vw, 3.5rem);
         color: var(--ink);
         line-height: 1.05;
         margin-top: 0.25rem;
+        letter-spacing: -0.03em;
+        font-variant-numeric: tabular-nums lining-nums;
+        font-feature-settings: 'tnum' 1, 'lnum' 1;
+        white-space: nowrap;
+        word-break: normal;
       }
       .est-synergy-pill {
         display: inline-flex;
@@ -3455,6 +3481,11 @@ const initialData = {
         font-size: 0.75rem;
         font-weight: 600;
         margin-top: 0.65rem;
+      }
+      .est-synergy-pill .mono {
+        font-family: var(--font-body);
+        font-weight: 800;
+        font-variant-numeric: tabular-nums lining-nums;
       }
 
       .est-metrics-row {
@@ -3469,7 +3500,16 @@ const initialData = {
       }
       .est-metric { display: grid; gap: 0.2rem; }
       .est-m-label { font-size: 0.65rem; color: var(--text-muted); letter-spacing: 0.08em; }
-      .est-m-val { font-size: 1.15rem; font-weight: 700; color: var(--ink); }
+      .est-m-val {
+        font-family: var(--font-body);
+        font-size: clamp(1.05rem, 0.95rem + 0.3vw, 1.25rem);
+        font-weight: 800;
+        font-variant-numeric: tabular-nums lining-nums;
+        font-feature-settings: 'tnum' 1, 'lnum' 1;
+        color: var(--ink);
+        letter-spacing: -0.015em;
+        line-height: 1.15;
+      }
 
       .est-breakdown-box { margin-bottom: 1.5rem; }
       .est-subhead {
@@ -3497,6 +3537,13 @@ const initialData = {
         font-size: 0.72rem;
         color: var(--text-muted);
       }
+      .est-legend strong {
+        font-family: var(--font-body);
+        font-weight: 800;
+        color: var(--ink);
+        font-variant-numeric: tabular-nums lining-nums;
+        font-feature-settings: 'tnum' 1, 'lnum' 1;
+      }
       .leg-item { display: inline-flex; align-items: center; gap: 0.35rem; }
       .leg-dot { width: 7px; height: 7px; border-radius: 50%; }
       .leg-build { background: var(--tint); }
@@ -3517,13 +3564,24 @@ const initialData = {
         border-radius: 50%;
         background: var(--paper-sunk);
         color: var(--ink);
-        font-size: 0.7rem;
-        font-weight: 700;
+        font-family: var(--font-body);
+        font-size: 0.72rem;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums lining-nums;
+        font-feature-settings: 'tnum' 1, 'lnum' 1;
         display: grid;
         place-items: center;
         border: 1px solid var(--line);
+        flex: none;
       }
       .ms-body { display: grid; gap: 0.1rem; font-size: 0.85rem; }
+      .ms-body .mono {
+        font-family: var(--font-body);
+        font-size: 0.74rem;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums lining-nums;
+        font-feature-settings: 'tnum' 1, 'lnum' 1;
+      }
 
       .est-basket-box {
         margin-bottom: 1.5rem;
@@ -3629,9 +3687,12 @@ const initialData = {
         flex: none;
       }
       .basket-item-price {
-        font-family: var(--font-mono);
-        font-size: 0.8rem;
-        font-weight: 600;
+        font-family: var(--font-body);
+        font-size: 0.82rem;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums lining-nums;
+        font-feature-settings: 'tnum' 1, 'lnum' 1;
+        letter-spacing: -0.015em;
         color: var(--ink);
       }
       .basket-remove-btn {
@@ -3716,8 +3777,12 @@ const initialData = {
         color: var(--text-muted);
       }
       .submit-metric-cell .cell-val {
+        font-family: var(--font-body);
         font-size: 0.95rem;
-        font-weight: 700;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums lining-nums;
+        font-feature-settings: 'tnum' 1, 'lnum' 1;
+        letter-spacing: -0.015em;
         color: var(--ink);
       }
       .submit-scope-section {
@@ -4017,10 +4082,13 @@ const initialData = {
         color: var(--text-muted);
       }
       .explore-price-amt {
-        font-size: 1.15rem;
-        font-weight: 600;
+        font-family: var(--font-body);
+        font-size: 1.25rem;
+        font-weight: 800;
         color: var(--ink);
-        letter-spacing: -0.01em;
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums lining-nums;
+        font-feature-settings: 'tnum' 1, 'lnum' 1;
       }
       .explore-price-unit {
         font-size: 0.75rem;
@@ -4048,8 +4116,12 @@ const initialData = {
         gap: 0.4rem;
       }
       .modal-price-val {
-        font-size: 1.25rem;
-        font-weight: 700;
+        font-family: var(--font-body);
+        font-size: 1.35rem;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums lining-nums;
+        font-feature-settings: 'tnum' 1, 'lnum' 1;
+        letter-spacing: -0.02em;
         color: var(--ink);
       }
       .modal-price-unit {
@@ -4206,7 +4278,14 @@ const initialData = {
         border-radius: 8px;
       }
       .sow-stat-col { display: grid; gap: 0.25rem; }
-      .sow-stat-col strong { font-size: 1.1rem; }
+      .sow-stat-col strong {
+        font-family: var(--font-body);
+        font-size: 1.15rem;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums lining-nums;
+        font-feature-settings: 'tnum' 1, 'lnum' 1;
+        letter-spacing: -0.02em;
+      }
       .sow-services-table-wrap { overflow-x: auto; }
 
       /* ------------------------------------------------------------- Toast Hub */
@@ -4428,11 +4507,14 @@ const initialData = {
           letter-spacing: 0.05em;
         }
         .pmd-price {
-          font-size: 1.15rem;
-          font-weight: 700;
+          font-family: var(--font-body);
+          font-size: 1.25rem;
+          font-weight: 800;
           color: var(--ink);
-          font-family: var(--font-display);
           line-height: 1.1;
+          letter-spacing: -0.02em;
+          font-variant-numeric: tabular-nums lining-nums;
+          font-feature-settings: 'tnum' 1, 'lnum' 1;
         }
         .pmd-btn {
           display: inline-flex;
@@ -4456,6 +4538,9 @@ const initialData = {
         }
         .bread-root, .bread-sep {
           display: none;
+        }
+        .est-price-value {
+          font-size: clamp(1.85rem, 6.5vw, 2.3rem);
         }
         .est-sub-actions {
           grid-template-columns: 1fr;

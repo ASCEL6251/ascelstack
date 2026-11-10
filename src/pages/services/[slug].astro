@@ -111,7 +111,15 @@ const layer = LAYERS[cat.layer];
     border-top: 1px solid color-mix(in srgb, var(--fg) 20%, transparent);
   }
   .hero-count { display: flex; align-items: baseline; gap: 0.6rem; }
-  .hero-count .display { font-size: clamp(2.5rem, 1.8rem + 2.5vw, 4.5rem); line-height: 1; }
+  .hero-count .display {
+    font-family: var(--font-body);
+    font-weight: 800;
+    font-size: clamp(2.5rem, 1.8rem + 2.5vw, 4.5rem);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: 'tnum' 1, 'lnum' 1;
+  }
   .hero-count .mono { color: var(--muted); text-transform: uppercase; }
 
   .body { padding-block: clamp(2.5rem, 5vw, 4.5rem) 5rem; display: grid; gap: 3rem; }

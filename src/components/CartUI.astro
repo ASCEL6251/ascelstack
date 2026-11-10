@@ -68,7 +68,16 @@
   .pkg-opt.is-in { border-color: var(--accent); background: color-mix(in srgb, var(--tint) 18%, var(--paper)); }
   .pkg-opt-name { font-weight: 700; display: flex; gap: 0.5rem; align-items: baseline; flex-wrap: wrap; }
   .pkg-opt-name .mono { color: var(--text-muted); font-weight: 400; }
-  .pkg-opt-price { font-weight: 700; font-size: 1.1rem; text-align: right; white-space: nowrap; }
+  .pkg-opt-price {
+    font-family: var(--font-body);
+    font-weight: 800;
+    font-size: 1.15rem;
+    text-align: right;
+    white-space: nowrap;
+    letter-spacing: -0.015em;
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: 'tnum' 1, 'lnum' 1;
+  }
   .pkg-opt-inc { grid-column: 1 / -1; font-size: 0.875rem; color: var(--text-muted); line-height: 1.5; }
   .pkg-opt-cta { grid-column: 1 / -1; font-size: 0.8rem; font-weight: 600; color: var(--accent); }
   .pkg-fine { font-size: 0.8rem; color: var(--text-muted); }

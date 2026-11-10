@@ -88,7 +88,15 @@ import { categories, counts, sharedServiceNames } from '../../data/catalog';
     border-top: 1px solid var(--line);
   }
   .cat-stats div { display: grid; gap: 0.25rem; min-width: 0; }
-  .cat-stats .display { font-size: clamp(2rem, 1.4rem + 2.4vw, 3.5rem); line-height: 1; }
+  .cat-stats .display {
+    font-family: var(--font-body);
+    font-weight: 800;
+    font-size: clamp(2rem, 1.4rem + 2.4vw, 3.5rem);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: 'tnum' 1, 'lnum' 1;
+  }
   .cat-stats .mono { color: var(--text-muted); text-transform: uppercase; font-size: clamp(0.68rem, 0.62rem + 0.2vw, 0.75rem); letter-spacing: 0.08em; }
 
   @media (max-width: 560px) {

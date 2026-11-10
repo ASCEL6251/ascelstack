@@ -93,7 +93,15 @@ import Base from '../layouts/Base.astro';
   .est-lines :global(.line-market) { font-size: 0.78rem; color: var(--text-muted); opacity: 0.85; }
   .est-lines :global(.line-note) { font-size: 0.78rem; color: var(--accent); }
   .est-lines :global(.line-total) { text-align: right; display: grid; gap: 0.2rem; align-content: start; }
-  .est-lines :global(.line-total strong) { font-size: 1.2rem; white-space: nowrap; }
+  .est-lines :global(.line-total strong) {
+    font-family: var(--font-body);
+    font-weight: 800;
+    font-size: 1.25rem;
+    white-space: nowrap;
+    letter-spacing: -0.015em;
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: 'tnum' 1, 'lnum' 1;
+  }
   .est-lines :global(.line-total .mono) { color: var(--text-muted); }
   .est-lines :global(.line-ctrl) {
     grid-column: 1 / -1;
@@ -150,11 +158,35 @@ import Base from '../layouts/Base.astro';
   }
   .sum-title { color: var(--text-on-ink-muted); text-transform: uppercase; }
   .sum-card :global(.grp) { display: grid; gap: 0.35rem; padding-bottom: 1rem; border-bottom: 1px solid var(--line-on-ink); }
-  .sum-card :global(.grp-row) { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.875rem; color: var(--text-on-ink-muted); }
+  .sum-card :global(.grp-row) {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.875rem;
+    color: var(--text-on-ink-muted);
+  }
+  .sum-card :global(.grp-row span:last-child) {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: 'tnum' 1, 'lnum' 1;
+  }
   .sum-card :global(.grp-head) { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--tint); }
-  .sum-card :global(.grp-total) { color: var(--paper); font-size: 1.05rem; font-weight: 700; }
-  .sum-card :global(.grp-total span:last-child) { font-size: 1.4rem; letter-spacing: -0.01em; }
-  .sum-card :global(.grp-total small) { font-size: 0.6em; font-weight: 500; color: var(--text-on-ink-muted); }
+  .sum-card :global(.grp-total) {
+    font-family: var(--font-body);
+    color: var(--paper);
+    font-size: 1.05rem;
+    font-weight: 800;
+  }
+  .sum-card :global(.grp-total span:last-child) {
+    font-family: var(--font-body);
+    font-size: 1.45rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: 'tnum' 1, 'lnum' 1;
+  }
+  .sum-card :global(.grp-total small) { font-size: 0.6em; font-weight: 600; color: var(--text-on-ink-muted); }
   .sum-card :global(.oq) { display: grid; gap: 0.35rem; font-size: 0.85rem; color: var(--text-on-ink-muted); }
   .sum-card :global(.oq strong) { color: var(--paper); font-size: 0.8rem; }
   .sum-fine { display: grid; gap: 0.3rem; font-size: 0.75rem; color: var(--text-on-ink-muted); list-style: disc; padding-left: 1rem; }
