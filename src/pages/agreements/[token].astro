@@ -1,0 +1,616 @@
+---
+export const prerender = false;
+
+import Base from '../../layouts/Base.astro';
+import { db, agreements, agreementSignatures, agreementAuditLogs } from '../../db';
+import { eq, and } from 'drizzle-orm';
+
+const { token } = Astro.params;
+if (!token) {
+  return Astro.redirect('/agreements');
+}
+
+const [agreement] = await db
+  .select()
+  .from(agreements)
+  .where(eq(agreements.secureToken, token))
+  .limit(1);
+
+if (!agreement) {
+  return Astro.redirect('/404');
+}
+
+// Auto-record "viewed" on first opening by client
+if (agreement.status === 'sent') {
+  const now = new Date();
+  await db
+    .update(agreements)
+    .set({
+      status: 'viewed',
+      viewedAt: now,
+      updatedAt: now,
+    })
+    .where(eq(agreements.id, agreement.id));
+
+  agreement.status = 'viewed';
+  agreement.viewedAt = now;
+
+  await db.insert(agreementAuditLogs).values({
+    agreementId: agreement.id,
+    action: 'viewed',
+    performedBy: agreement.clientEmail,
+    role: 'client',
+    description: `Agreement ${agreement.agreementNumber} was opened and viewed by client (${agreement.clientEmail})`,
+    ipAddress: Astro.clientAddress || null,
+  });
+}
+
+// Fetch existing signatures
+const signatures = await db
+  .select()
+  .from(agreementSignatures)
+  .where(eq(agreementSignatures.agreementId, agreement.id));
+
+const clientSig = signatures.find((s) => s.signerRole === 'client');
+const providerSig = signatures.find((s) => s.signerRole === 'provider');
+
+function formatCurrency(amount: string | number, curr = 'INR') {
+  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+  if (isNaN(num)) return '₹0';
+  if (curr === 'USD') return `$${num.toLocaleString('en-US')}`;
+  return `₹${num.toLocaleString('en-IN')}`;
+}
+
+const clauses = (agreement.clauses as any[]) || [];
+const deliverables = (agreement.deliverables as any[]) || [];
+const milestones = (agreement.milestones as any[]) || [];
+
+const printPdfUrl = `/agreements/${agreement.secureToken}/print`;
+
+const statusLabels: Record<string, string> = {
+  draft: 'Draft',
+  pending_review: 'Under Review',
+  sent: 'Ready for Signature',
+  viewed: 'Under Review by Client',
+  pending_signature: 'Signature Required',
+  partially_signed: 'Partially Signed',
+  signed: 'Executed & Binding',
+  rejected: 'Rejected',
+  expired: 'Expired',
+  cancelled: 'Cancelled',
+};
+
+const isClientSigned = Boolean(clientSig);
+---
+
+<Base
+  title={`${agreement.projectName} · Professional Service Agreement`}
+  description={`Review and execute Professional Service Agreement ${agreement.agreementNumber} between ${agreement.providerName} and ${agreement.clientName}.`}
+>
+  <!-- Client Agreement Interface -->
+  <div style="background: var(--paper-raised); padding-top: calc(var(--nav-h) + 1.5rem); padding-bottom: 5rem; min-height: 100vh;">
+    <div class="wrap" style="max-width: 960px;">
+      <!-- Action & Status Ribbon -->
+      <div class="card-panel" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; padding: 1.25rem 1.75rem; border-radius: var(--radius); background: #ffffff; box-shadow: 0 4px 20px -5px rgba(29, 45, 61, 0.08);">
+        <div>
+          <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.25rem;">
+            <span class="mono" style="font-weight: 700; color: var(--accent); font-size: 0.95rem;">
+              {agreement.agreementNumber}
+            </span>
+            <span class={`status-tag status-${agreement.status}`}>
+              {statusLabels[agreement.status] || agreement.status}
+            </span>
+            <span class="mono text-muted text-xs">Version {agreement.version}</span>
+            {agreement.isImmutable && (
+              <span class="mono" style="background: rgba(4, 120, 87, 0.1); color: #047857; padding: 2px 6px; border-radius: 4px; font-size: 0.68rem; font-weight: 700;">
+                IMMUTABLE
+              </span>
+            )}
+          </div>
+          <p class="text-muted text-xs" style="margin: 0;">
+            {isClientSigned
+              ? `Signed by you on ${new Date(clientSig!.signedAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}`
+              : 'Please review all terms carefully before affixing your electronic signature.'}
+          </p>
+        </div>
+
+        <div style="display: flex; gap: 0.6rem; align-items: center;">
+          <a
+            href={printPdfUrl}
+            target="_blank"
+            rel="noreferrer"
+            class="btn btn-sm btn-ghost"
+            title="Download or Print PDF Document"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Download PDF</span>
+          </a>
+
+          {!isClientSigned && !['cancelled', 'rejected', 'expired'].includes(agreement.status) && (
+            <a href="#signature-action-section" class="btn btn-sm btn-primary">
+              <span>Sign Agreement</span>
+              <span class="arrow">↓</span>
+            </a>
+          )}
+        </div>
+      </div>
+
+      <!-- MAIN BRANDED AGREEMENT DOCUMENT CONTAINER -->
+      <article class="agreement-paper" id="printable-agreement" style="margin-inline: auto;">
+        <!-- Corporate Document Header -->
+        <header class="doc-header">
+          <div class="doc-brand">
+            <div class="doc-brand-logo">
+              <!-- Actual Ascelstack Corporate Logo -->
+              <svg width="52" height="52" viewBox="0 0 100 100" aria-hidden="true">
+                <path d="M50 6 L66 38 L34 38 Z" fill="#94BCE3"></path>
+                <path d="M32 42 L68 42 L70 46 L80 66 L60 66 L50 46 L40 66 L20 66 L30 46 Z" fill="#5980A6"></path>
+                <path d="M18 70 L38 70 L26 94 L6 94 Z M82 70 L62 70 L74 94 L94 94 Z" fill="#1D2D3D"></path>
+              </svg>
+            </div>
+            <div class="doc-brand-info">
+              <h2>{agreement.providerName}</h2>
+              <p>{agreement.providerAddress}</p>
+              <p style="font-size: 0.75rem; color: #64748b; margin-top: 2px;">
+                <span>Email: {agreement.providerEmail}</span> · <span>Phone: {agreement.providerPhone}</span>
+                {agreement.providerGstinEnabled && agreement.providerGstin && (
+                  <span> · <strong>GSTIN: {agreement.providerGstin}</strong></span>
+                )}
+              </p>
+            </div>
+          </div>
+
+          <div class="doc-meta-box">
+            <span class="doc-number">{agreement.agreementNumber}</span>
+            <span class="doc-date">Date: {new Date(agreement.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+            <span class="mono" style="font-size: 0.72rem; color: #64748b;">Governing Law: Republic of India</span>
+            <span class="mono" style="font-size: 0.72rem; color: #64748b;">IT Act, 2000 Section 10A</span>
+          </div>
+        </header>
+
+        <!-- Document Title Banner -->
+        <div class="doc-title-banner">
+          <h1>PROFESSIONAL SERVICE AGREEMENT</h1>
+          <p class="mono text-muted text-xs" style="margin-top: 4px;">
+            MASTER SERVICES SPECIFICATION & ELECTRONIC CONTRACT
+          </p>
+        </div>
+
+        <!-- Contracting Parties Summary -->
+        <div class="doc-parties-grid">
+          <div class="doc-party-col">
+            <h4>SERVICE PROVIDER</h4>
+            <strong>{agreement.providerName}</strong>
+            <p>{agreement.providerAddress}</p>
+            <p style="font-size: 0.78rem; margin-top: 4px;">Signatory: {agreement.providerSignatoryName} ({agreement.providerSignatoryTitle})</p>
+          </div>
+
+          <div class="doc-party-col">
+            <h4>CLIENT</h4>
+            <strong>{agreement.clientName}</strong>
+            {agreement.clientCompany && <strong style="font-weight: 500; font-size: 0.95rem;">{agreement.clientCompany}</strong>}
+            <p>{agreement.clientAddress || 'Address on record'}</p>
+            <p style="font-size: 0.78rem; margin-top: 4px;">Contact: {agreement.clientEmail} {agreement.clientPhone ? `· ${agreement.clientPhone}` : ''}</p>
+          </div>
+        </div>
+
+        <!-- Project Overview & Commercials Highlight -->
+        <div class="card-panel" style="background: #f8fafc; padding: 1.25rem 1.5rem; border-radius: 6px; margin-bottom: 2.5rem; border: 1px solid #e2e8f0;">
+          <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1.25rem;">
+            <div>
+              <span class="mono text-muted text-xs">PROJECT SPECIFICATION</span>
+              <strong style="display: block; font-size: 1.05rem; color: var(--ink); margin-top: 2px;">
+                {agreement.projectName}
+              </strong>
+              {agreement.timeline && (
+                <span class="mono text-muted text-xs" style="display: block; margin-top: 4px;">
+                  Timeline: {agreement.timeline}
+                </span>
+              )}
+            </div>
+
+            <div>
+              <span class="mono text-muted text-xs">TOTAL CONTRACT VALUE</span>
+              <strong class="mono" style="display: block; font-size: 1.25rem; color: var(--accent); margin-top: 2px;">
+                {formatCurrency(agreement.totalAmount, agreement.currency)}
+              </strong>
+            </div>
+
+            <div>
+              <span class="mono text-muted text-xs">MOBILIZATION ADVANCE</span>
+              <strong class="mono" style="display: block; font-size: 1.05rem; color: var(--ink); margin-top: 2px;">
+                {formatCurrency(agreement.advanceAmount, agreement.currency)} ({agreement.advancePercentage}%)
+              </strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- ALL 25 AGREEMENT SECTIONS -->
+        <div class="doc-clauses-wrapper">
+          {clauses.map((c: any) => (
+            <section class="doc-section" id={`clause-${c.sectionNumber}`}>
+              <h3 class="doc-sec-title">
+                <span class="sec-num">Section {String(c.sectionNumber).padStart(2, '0')}.</span>
+                <span>{c.title}</span>
+              </h3>
+              <p class="doc-sec-content">{c.content}</p>
+            </section>
+          ))}
+        </div>
+
+        <!-- SIGNATURES BLOCK -->
+        <div class="doc-signatures-wrap" id="signature-action-section">
+          <h3 class="display" style="font-size: 1.25rem; margin-bottom: 1.5rem;">
+            IN WITNESS WHEREOF, THE PARTIES HERETO EXECUTE THIS AGREEMENT
+          </h3>
+
+          <div class="doc-signatures-grid">
+            <!-- Service Provider Signature Box -->
+            <div class="sig-box">
+              <span class="sig-box-title">FOR SERVICE PROVIDER</span>
+              {providerSig ? (
+                <div>
+                  <div class="sig-display-area">
+                    {providerSig.signatureType === 'drawn' ? (
+                      <img src={providerSig.signatureData} alt="Provider Signature" class="sig-drawn-img" />
+                    ) : (
+                      <span class="sig-typed-font">{providerSig.signatureData}</span>
+                    )}
+                  </div>
+                  <strong style="display: block; font-size: 0.9rem;">{agreement.providerName}</strong>
+                  <span class="sig-meta-line">By: {providerSig.signerName} ({providerSig.signerTitle})</span>
+                  <span class="sig-meta-line mono">
+                    Executed: {new Date(providerSig.signedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </span>
+                </div>
+              ) : (
+                <div style="display: flex; flex-direction: column; justify-content: center; height: 100%;">
+                  <span class="sig-pending-placeholder" style="text-align: center;">
+                    Pending Service Provider Countersignature
+                  </span>
+                  <div style="margin-top: 1rem;">
+                    <strong style="display: block; font-size: 0.9rem;">{agreement.providerName}</strong>
+                    <span class="sig-meta-line">By: {agreement.providerSignatoryName} ({agreement.providerSignatoryTitle})</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <!-- Client Signature Box -->
+            <div class="sig-box">
+              <span class="sig-box-title">FOR CLIENT / CUSTOMER</span>
+              {clientSig ? (
+                <div>
+                  <div class="sig-display-area">
+                    {clientSig.signatureType === 'drawn' ? (
+                      <img src={clientSig.signatureData} alt="Client Signature" class="sig-drawn-img" />
+                    ) : (
+                      <span class="sig-typed-font">{clientSig.signatureData}</span>
+                    )}
+                  </div>
+                  <strong style="display: block; font-size: 0.9rem;">{clientSig.signerName}</strong>
+                  <span class="sig-meta-line">{clientSig.signerTitle} · {clientSig.signerEmail}</span>
+                  <span class="sig-meta-line mono">
+                    Signed: {new Date(clientSig.signedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </span>
+                  {clientSig.ipAddress && (
+                    <span class="sig-meta-line mono" style="font-size: 0.65rem;">
+                      Recorded IP: {clientSig.ipAddress} · Consent Verified
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <div style="display: flex; flex-direction: column; justify-content: center; height: 100%; text-align: center;">
+                  <span class="sig-pending-placeholder">
+                    Signature Required by Client
+                  </span>
+                  <div style="margin-top: 1rem;">
+                    <strong style="display: block; font-size: 0.9rem;">{agreement.clientName}</strong>
+                    <span class="sig-meta-line">{agreement.clientCompany || 'Client Representative'}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- INTERACTIVE CLIENT SIGNING SECTION (If not yet signed) -->
+      {!isClientSigned && !['cancelled', 'rejected', 'expired'].includes(agreement.status) && (
+        <section class="card-panel" style="margin-top: 2.5rem; padding: 2.5rem; background: #ffffff; border-radius: var(--radius); box-shadow: 0 10px 40px -10px rgba(29, 45, 61, 0.12); border: 2px solid var(--accent);">
+          <div style="margin-bottom: 1.5rem;">
+            <span class="eyebrow">Electronic Signature Execution</span>
+            <h2 class="display h2" style="font-size: 1.85rem; margin-top: 4px;">Sign This Agreement</h2>
+            <p class="text-muted" style="font-size: 0.95rem; margin-top: 0.25rem;">
+              Affix your electronic signature below. Once submitted, your execution timestamp, recorded IP, and signature data will be permanently sealed into the audit trail.
+            </p>
+          </div>
+
+          <form id="client-signing-form">
+            <div class="form-row">
+              <label class="field">
+                <span class="mono">Full Legal Name *</span>
+                <input
+                  type="text"
+                  id="clientSignerName"
+                  value={agreement.clientName}
+                  required
+                  placeholder="Rahul Sharma"
+                />
+              </label>
+
+              <label class="field">
+                <span class="mono">Official Work / Corporate Email *</span>
+                <input
+                  type="email"
+                  id="clientSignerEmail"
+                  value={agreement.clientEmail}
+                  required
+                  placeholder="rahul@company.com"
+                />
+              </label>
+            </div>
+
+            <label class="field">
+              <span class="mono">Designation / Corporate Title *</span>
+              <input
+                type="text"
+                id="clientSignerTitle"
+                placeholder="e.g. Founder & Managing Director / Chief Executive Officer"
+                value="Authorized Signatory"
+                required
+              />
+            </label>
+
+            <!-- Mode Selector: Type Signature vs Draw Signature -->
+            <div class="field" style="margin-top: 1.25rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span class="mono">Affix Signature *</span>
+                <div style="display: flex; gap: 0.25rem;">
+                  <button type="button" class="tab-pill is-on" id="btn-client-type">Type Signature</button>
+                  <button type="button" class="tab-pill" id="btn-client-draw">Draw Signature</button>
+                </div>
+              </div>
+
+              <!-- Type Mode -->
+              <div id="client-box-type">
+                <input
+                  type="text"
+                  id="clientTypedInput"
+                  value={agreement.clientName}
+                  style="font-family: 'Brush Script MT', 'Dancing Script', cursive; font-size: 2rem; padding: 1rem; text-align: center; background: #f8fafc;"
+                />
+                <span class="mono text-muted text-xs" style="display: block; text-align: center; margin-top: 4px;">
+                  Digital cursive font representation
+                </span>
+              </div>
+
+              <!-- Draw Mode -->
+              <div id="client-box-draw" style="display: none;">
+                <div class="sig-canvas-wrap">
+                  <canvas id="clientCanvas" width="800" height="170" class="sig-canvas"></canvas>
+                  <span class="sig-canvas-hint" id="client-hint">Sign here using mouse, trackpad, or finger</span>
+                </div>
+                <div style="text-align: right; margin-top: 4px;">
+                  <button type="button" class="text-link mono text-xs" id="btn-clear-client-canvas">Clear Pad</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mandatory Legal Consent Checkbox -->
+            <div style="margin-top: 1.5rem; padding: 1.25rem; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0;">
+              <label style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; user-select: none;">
+                <input
+                  type="checkbox"
+                  id="clientConsentCheck"
+                  required
+                  style="width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0;"
+                />
+                <div style="font-size: 0.88rem; color: #334155; line-height: 1.5;">
+                  <strong>I have read, understood, and accept all 25 sections of this Professional Service Agreement.</strong>
+                  <p style="margin: 4px 0 0; font-size: 0.8rem; color: #64748b;">
+                    By checking this box and affixing my electronic signature, I warrant that I possess full authority to bind the Client entity to this contract under Section 10A of the Information Technology Act, 2000 (India).
+                  </p>
+                </div>
+              </label>
+            </div>
+
+            <!-- Statutory Notice -->
+            <p class="mono text-muted text-xs" style="margin-top: 1rem;">
+              STATUTORY NOTICE: This electronic signature is executed under Section 10A of the IT Act, 2000. It is not represented as an Aadhaar-based eSign or statutory Digital Signature Certificate (DSC) issued under CCA guidelines.
+            </p>
+
+            <div class="form-footer" style="display: flex; justify-content: flex-end; margin-top: 1.5rem;">
+              <button type="submit" class="btn btn-primary" id="btn-submit-client-sign" style="padding: 0.85rem 2rem; font-size: 1rem;">
+                <span>Sign and Execute Agreement</span>
+                <span class="arrow">✓</span>
+              </button>
+            </div>
+          </form>
+        </section>
+      )}
+
+      <!-- Signed Success Banner -->
+      {isClientSigned && (
+        <div class="card-panel" style="margin-top: 2.5rem; padding: 2rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius); text-align: center;">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: #22c55e; color: #fff; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem;">
+            ✓
+          </div>
+          <h3 class="display" style="font-size: 1.5rem; color: #166534;">Agreement Successfully Executed</h3>
+          <p style="color: #15803d; max-width: 54ch; margin: 0.5rem auto 1.5rem; font-size: 0.95rem;">
+            Your electronic signature has been verified and permanently bound to Agreement {agreement.agreementNumber}. You may download your copy of the agreement at any time.
+          </p>
+          <a href={printPdfUrl} target="_blank" class="btn btn-primary">
+            <span>Download Signed Agreement PDF</span>
+            <span class="arrow">↓</span>
+          </a>
+        </div>
+      )}
+    </div>
+  </div>
+
+  <div class="toast-hub" id="toast-hub" aria-live="polite"></div>
+</Base>
+
+<script is:inline define:vars={{ secureToken: agreement.secureToken }}>
+  function showToast(message, type = 'success') {
+    const hub = document.getElementById('toast-hub');
+    if (!hub) return;
+    const toast = document.createElement('div');
+    toast.className = `toast-item toast-${type}`;
+    toast.innerHTML = `<span>${message}</span>`;
+    hub.appendChild(toast);
+    setTimeout(() => {
+      toast.classList.add('fade-out');
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
+
+  // Type vs Draw Mode
+  let clientSigMode = 'typed';
+  const btnType = document.getElementById('btn-client-type');
+  const btnDraw = document.getElementById('btn-client-draw');
+  const boxType = document.getElementById('client-box-type');
+  const boxDraw = document.getElementById('client-box-draw');
+  const canvas = document.getElementById('clientCanvas');
+  const hint = document.getElementById('client-hint');
+
+  btnType?.addEventListener('click', () => {
+    clientSigMode = 'typed';
+    btnType.classList.add('is-on');
+    btnDraw?.classList.remove('is-on');
+    boxType.style.display = 'block';
+    boxDraw.style.display = 'none';
+  });
+
+  btnDraw?.addEventListener('click', () => {
+    clientSigMode = 'drawn';
+    btnDraw.classList.add('is-on');
+    btnType?.classList.remove('is-on');
+    boxDraw.style.display = 'block';
+    boxType.style.display = 'none';
+  });
+
+  // Canvas Logic
+  let isDrawing = false;
+  let hasDrawn = false;
+  const ctx = canvas?.getContext('2d');
+
+  function startDraw(e) {
+    isDrawing = true;
+    hasDrawn = true;
+    if (hint) hint.style.display = 'none';
+    const pos = getPos(e);
+    ctx?.beginPath();
+    ctx?.moveTo(pos.x, pos.y);
+  }
+
+  function draw(e) {
+    if (!isDrawing || !ctx) return;
+    const pos = getPos(e);
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+  }
+
+  function stopDraw() {
+    isDrawing = false;
+  }
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+      x: clientX - rect.left,
+      y: clientY - rect.top,
+    };
+  }
+
+  if (canvas) {
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', draw);
+    window.addEventListener('mouseup', stopDraw);
+
+    canvas.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      startDraw(e);
+    });
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      draw(e);
+    });
+    canvas.addEventListener('touchend', stopDraw);
+  }
+
+  document.getElementById('btn-clear-client-canvas')?.addEventListener('click', () => {
+    if (ctx && canvas) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      hasDrawn = false;
+      if (hint) hint.style.display = 'block';
+    }
+  });
+
+  // Form Submit Handler
+  document.getElementById('client-signing-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const consent = document.getElementById('clientConsentCheck');
+    if (!consent?.checked) {
+      alert('You must accept the agreement terms before signing.');
+      return;
+    }
+
+    const signerName = document.getElementById('clientSignerName')?.value.trim();
+    const signerEmail = document.getElementById('clientSignerEmail')?.value.trim();
+    const signerTitle = document.getElementById('clientSignerTitle')?.value.trim();
+
+    let signatureData = '';
+    if (clientSigMode === 'typed') {
+      signatureData = document.getElementById('clientTypedInput')?.value.trim();
+      if (!signatureData) {
+        alert('Please enter your signature');
+        return;
+      }
+    } else {
+      if (!hasDrawn || !canvas) {
+        alert('Please draw your signature on the pad');
+        return;
+      }
+      signatureData = canvas.toDataURL('image/png');
+    }
+
+    const submitBtn = document.getElementById('btn-submit-client-sign');
+    if (submitBtn) submitBtn.disabled = true;
+
+    try {
+      const res = await fetch(`/api/agreements/${secureToken}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          signerName,
+          signerEmail,
+          signerTitle,
+          signatureType: clientSigMode,
+          signatureData,
+          consentChecked: true,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to submit signature');
+
+      showToast('Agreement signed successfully!');
+      setTimeout(() => window.location.reload(), 1000);
+    } catch (err) {
+      alert(`Signature Error: ${err.message}`);
+      if (submitBtn) submitBtn.disabled = false;
+    }
+  });
+</script>

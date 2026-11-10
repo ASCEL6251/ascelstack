@@ -1,0 +1,388 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../../../layouts/AdminLayout.astro';
+import { getAdminSession } from '../../../../lib/admin-auth';
+import { db, agreements, agreementTemplates } from '../../../../db';
+import { eq, asc } from 'drizzle-orm';
+
+// Strict Server-Side Session Check
+const session = await getAdminSession(Astro);
+if (!session) {
+  return Astro.redirect('/admin/login');
+}
+
+const { id } = Astro.params;
+if (!id) {
+  return Astro.redirect('/admin/agreements');
+}
+
+const [agreement] = await db
+  .select()
+  .from(agreements)
+  .where(eq(agreements.id, id))
+  .limit(1);
+
+if (!agreement) {
+  return Astro.redirect('/admin/agreements');
+}
+
+// IMMUTABILITY CHECK
+if (agreement.isImmutable || agreement.status === 'signed') {
+  return Astro.redirect(`/admin/agreements/${agreement.id}`);
+}
+
+const clauses = (agreement.clauses as any[]) || [];
+const deliverables = (agreement.deliverables as any[]) || [];
+const milestones = (agreement.milestones as any[]) || [];
+
+const dbTemplates = await db.select().from(agreementTemplates).orderBy(asc(agreementTemplates.name));
+---
+
+<AdminLayout
+  title={`Edit ${agreement.agreementNumber} · Ascelstack Admin`}
+  activeNav="agreements"
+  breadcrumbs={[
+    { label: 'Agreements', href: '/admin/agreements' },
+    { label: agreement.agreementNumber, href: `/admin/agreements/${agreement.id}` },
+    { label: 'Edit' },
+  ]}
+  session={session}
+>
+  <div class="dash-view is-active">
+    <div class="dash-welcome-card" style="margin-bottom: 1.5rem;">
+      <div class="welcome-copy">
+        <p class="eyebrow">Agreement Editor · Version {agreement.version}</p>
+        <h1 class="display welcome-title">Edit <em>{agreement.agreementNumber}</em></h1>
+        <p class="welcome-desc">
+          Update client details, project specifications, commercial terms, or any of the 25 legal clauses. Saving will increment the agreement version and record an entry in the audit trail.
+        </p>
+      </div>
+
+      <div class="welcome-actions">
+        <a href={`/admin/agreements/${agreement.id}`} class="btn btn-ghost">
+          Cancel
+        </a>
+      </div>
+    </div>
+
+    <form id="edit-agreement-form" class="business-form">
+      <!-- Section 1: Client Information -->
+      <div class="card-panel" style="margin-bottom: 1.5rem;">
+        <div class="panel-header">
+          <div>
+            <span class="eyebrow">Parties</span>
+            <h3 class="display h3">Client Information</h3>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="field">
+            <span class="mono">Client Signatory Full Legal Name *</span>
+            <input type="text" id="clientName" value={agreement.clientName} required />
+          </label>
+          <label class="field">
+            <span class="mono">Client Official Email Address *</span>
+            <input type="email" id="clientEmail" value={agreement.clientEmail} required />
+          </label>
+        </div>
+
+        <div class="form-row">
+          <label class="field">
+            <span class="mono">Client Legal / Company Entity</span>
+            <input type="text" id="clientCompany" value={agreement.clientCompany || ''} />
+          </label>
+          <label class="field">
+            <span class="mono">Official Phone</span>
+            <input type="text" id="clientPhone" value={agreement.clientPhone || ''} />
+          </label>
+        </div>
+
+        <label class="field">
+          <span class="mono">Registered Business Address</span>
+          <textarea id="clientAddress" rows="2">{agreement.clientAddress || ''}</textarea>
+        </label>
+
+        <div class="form-row-3">
+          <label class="field">
+            <span class="mono">City</span>
+            <input type="text" id="clientCity" value={agreement.clientCity || ''} />
+          </label>
+          <label class="field">
+            <span class="mono">State</span>
+            <input type="text" id="clientState" value={agreement.clientState || ''} />
+          </label>
+          <label class="field">
+            <span class="mono">Country</span>
+            <input type="text" id="clientCountry" value={agreement.clientCountry || 'India'} />
+          </label>
+        </div>
+      </div>
+
+      <!-- Section 2: Project & Commercials -->
+      <div class="card-panel" style="margin-bottom: 1.5rem;">
+        <div class="panel-header">
+          <div>
+            <span class="eyebrow">Specifications</span>
+            <h3 class="display h3">Project & Pricing Terms</h3>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="mono">Project Name *</span>
+          <input type="text" id="projectName" value={agreement.projectName} required />
+        </div>
+
+        <div class="field">
+          <span class="mono">Project Overview</span>
+          <textarea id="projectDescription" rows="2">{agreement.projectDescription || ''}</textarea>
+        </div>
+
+        <div class="field">
+          <span class="mono">Detailed Scope of Work</span>
+          <textarea id="scopeOfWork" rows="4">{agreement.scopeOfWork || ''}</textarea>
+        </div>
+
+        <div class="form-row-3">
+          <label class="field">
+            <span class="mono">Currency</span>
+            <select id="currency">
+              <option value="INR" selected={agreement.currency === 'INR'}>₹ INR</option>
+              <option value="USD" selected={agreement.currency === 'USD'}>$ USD</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span class="mono">Total Commercial Amount *</span>
+            <input type="number" id="totalAmount" value={agreement.totalAmount} required min="0" step="0.01" />
+          </label>
+
+          <label class="field">
+            <span class="mono">Advance Payment %</span>
+            <input type="number" id="advancePercentage" value={agreement.advancePercentage} min="0" max="100" />
+          </label>
+        </div>
+
+        <div class="form-row">
+          <label class="field">
+            <span class="mono">Advance Amount</span>
+            <input type="number" id="advanceAmount" value={agreement.advanceAmount} min="0" step="0.01" />
+          </label>
+
+          <label class="field">
+            <span class="mono">Project Timeline</span>
+            <input type="text" id="timeline" value={agreement.timeline || ''} />
+          </label>
+        </div>
+
+        <div class="field">
+          <span class="mono">Payment Schedule Terms</span>
+          <textarea id="paymentSchedule" rows="3">{agreement.paymentSchedule || ''}</textarea>
+        </div>
+      </div>
+
+      <!-- Section 3: Legal Clauses Customization -->
+      <div class="card-panel" style="margin-bottom: 1.5rem;">
+        <div class="panel-header">
+          <div>
+            <span class="eyebrow">25 Sections</span>
+            <h3 class="display h3">Legal Clauses Editor</h3>
+            <p class="panel-subtitle">Edit the wording of any clause or reorder sections</p>
+          </div>
+
+          <div style="display: flex; gap: 0.5rem;">
+            <button type="button" class="btn btn-sm btn-ghost" id="btn-expand-all">Expand All</button>
+            <button type="button" class="btn btn-sm btn-ghost" id="btn-collapse-all">Collapse All</button>
+          </div>
+        </div>
+
+        <div id="clauses-editor-container" class="clause-list-container">
+          <!-- Populated by script -->
+        </div>
+      </div>
+
+      <!-- Footer Buttons -->
+      <div class="form-footer" style="display: flex; justify-content: space-between; align-items: center; padding-top: 1.5rem;">
+        <a href={`/admin/agreements/${agreement.id}`} class="btn btn-ghost">
+          Cancel
+        </a>
+        <button type="submit" class="btn btn-primary" id="btn-save-agreement">
+          <span>Save Agreement Changes</span>
+          <span class="arrow">✓</span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div class="toast-hub" id="toast-hub" aria-live="polite"></div>
+</AdminLayout>
+
+<script is:inline define:vars={{ agreementId: agreement.id, initialClauses: clauses }}>
+  let activeClauses = JSON.parse(JSON.stringify(initialClauses));
+
+  function showToast(message, type = 'success') {
+    const hub = document.getElementById('toast-hub');
+    if (!hub) return;
+    const toast = document.createElement('div');
+    toast.className = `toast-item toast-${type}`;
+    toast.innerHTML = `<span>${message}</span>`;
+    hub.appendChild(toast);
+    setTimeout(() => {
+      toast.classList.add('fade-out');
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
+
+  function renderClauses() {
+    const container = document.getElementById('clauses-editor-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    activeClauses.forEach((c, idx) => {
+      const card = document.createElement('div');
+      card.className = 'clause-card';
+      card.innerHTML = `
+        <div class="clause-card-header" data-toggle="${idx}">
+          <div class="clause-card-title">
+            <span class="clause-num-tag mono">Section ${String(c.sectionNumber || idx + 1).padStart(2, '0')}</span>
+            <span>${c.title}</span>
+          </div>
+          <div class="clause-actions" onclick="event.stopPropagation();">
+            <button type="button" class="clause-icon-btn" data-action="up" data-idx="${idx}" ${idx === 0 ? 'disabled style="opacity:0.4;"' : ''}>↑</button>
+            <button type="button" class="clause-icon-btn" data-action="down" data-idx="${idx}" ${idx === activeClauses.length - 1 ? 'disabled style="opacity:0.4;"' : ''}>↓</button>
+          </div>
+        </div>
+        <div class="clause-card-body" id="clause-body-${idx}" style="display: none;">
+          <label class="field">
+            <span class="mono">Section Title</span>
+            <input type="text" class="c-title" data-idx="${idx}" value="${c.title.replace(/"/g, '&quot;')}" />
+          </label>
+          <label class="field">
+            <span class="mono">Clause Content</span>
+            <textarea class="c-content" data-idx="${idx}" rows="5">${c.content}</textarea>
+          </label>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+
+    container.querySelectorAll('[data-toggle]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const i = btn.getAttribute('data-toggle');
+        const b = document.getElementById(`clause-body-${i}`);
+        if (b) b.style.display = b.style.display === 'none' ? 'grid' : 'none';
+      });
+    });
+
+    container.querySelectorAll('.c-title').forEach((inp) => {
+      inp.addEventListener('input', (e) => {
+        const i = parseInt(e.target.getAttribute('data-idx'), 10);
+        activeClauses[i].title = e.target.value;
+      });
+    });
+
+    container.querySelectorAll('.c-content').forEach((inp) => {
+      inp.addEventListener('input', (e) => {
+        const i = parseInt(e.target.getAttribute('data-idx'), 10);
+        activeClauses[i].content = e.target.value;
+      });
+    });
+
+    container.querySelectorAll('[data-action="up"]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const i = parseInt(btn.getAttribute('data-idx'), 10);
+        if (i > 0) {
+          const t = activeClauses[i];
+          activeClauses[i] = activeClauses[i - 1];
+          activeClauses[i - 1] = t;
+          activeClauses.forEach((x, k) => (x.sectionNumber = k + 1));
+          renderClauses();
+        }
+      });
+    });
+
+    container.querySelectorAll('[data-action="down"]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const i = parseInt(btn.getAttribute('data-idx'), 10);
+        if (i < activeClauses.length - 1) {
+          const t = activeClauses[i];
+          activeClauses[i] = activeClauses[i + 1];
+          activeClauses[i + 1] = t;
+          activeClauses.forEach((x, k) => (x.sectionNumber = k + 1));
+          renderClauses();
+        }
+      });
+    });
+  }
+
+  document.getElementById('btn-expand-all')?.addEventListener('click', () => {
+    document.querySelectorAll('[id^="clause-body-"]').forEach((b) => (b.style.display = 'grid'));
+  });
+  document.getElementById('btn-collapse-all')?.addEventListener('click', () => {
+    document.querySelectorAll('[id^="clause-body-"]').forEach((b) => (b.style.display = 'none'));
+  });
+
+  // Advance Calculation
+  const totInp = document.getElementById('totalAmount');
+  const pctInp = document.getElementById('advancePercentage');
+  const advInp = document.getElementById('advanceAmount');
+  function calcAdv() {
+    const tot = parseFloat(totInp?.value || '0');
+    const pct = parseFloat(pctInp?.value || '0');
+    if (advInp) advInp.value = ((tot * pct) / 100).toFixed(2);
+  }
+  totInp?.addEventListener('input', calcAdv);
+  pctInp?.addEventListener('input', calcAdv);
+
+  // Submit Update
+  document.getElementById('edit-agreement-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const saveBtn = document.getElementById('btn-save-agreement');
+    if (saveBtn) saveBtn.disabled = true;
+
+    const payload = {
+      clientName: document.getElementById('clientName')?.value.trim(),
+      clientEmail: document.getElementById('clientEmail')?.value.trim(),
+      clientCompany: document.getElementById('clientCompany')?.value.trim() || null,
+      clientPhone: document.getElementById('clientPhone')?.value.trim() || null,
+      clientAddress: document.getElementById('clientAddress')?.value.trim() || null,
+      clientCity: document.getElementById('clientCity')?.value.trim() || null,
+      clientState: document.getElementById('clientState')?.value.trim() || null,
+      clientCountry: document.getElementById('clientCountry')?.value.trim() || 'India',
+
+      projectName: document.getElementById('projectName')?.value.trim(),
+      projectDescription: document.getElementById('projectDescription')?.value.trim() || null,
+      scopeOfWork: document.getElementById('scopeOfWork')?.value.trim() || null,
+
+      currency: document.getElementById('currency')?.value || 'INR',
+      totalAmount: parseFloat(totInp?.value || '0'),
+      advancePercentage: parseInt(pctInp?.value || '50', 10),
+      advanceAmount: parseFloat(advInp?.value || '0'),
+      timeline: document.getElementById('timeline')?.value.trim() || null,
+      paymentSchedule: document.getElementById('paymentSchedule')?.value.trim() || null,
+
+      clauses: activeClauses,
+    };
+
+    try {
+      const res = await fetch(`/api/admin/agreements/${agreementId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update agreement');
+
+      showToast('Agreement updated successfully!');
+      setTimeout(() => {
+        window.location.href = `/admin/agreements/${agreementId}`;
+      }, 800);
+    } catch (err) {
+      alert(`Update Error: ${err.message}`);
+      if (saveBtn) saveBtn.disabled = false;
+    }
+  });
+
+  renderClauses();
+</script>

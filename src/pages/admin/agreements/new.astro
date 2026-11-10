@@ -1,0 +1,1189 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getAdminSession } from '../../../lib/admin-auth';
+import { db, users, businesses, companySettings, agreementTemplates, quotations } from '../../../db';
+import { STANDARD_25_CLAUSES, PRESET_TEMPLATES, DEFAULT_COMPANY_INFO } from '../../../lib/agreement-clauses';
+import { desc, asc } from 'drizzle-orm';
+
+// Strict Server-Side Session Check
+const session = await getAdminSession(Astro);
+if (!session) {
+  return Astro.redirect('/admin/login');
+}
+
+// Fetch active company settings
+const [settings] = await db.select().from(companySettings).limit(1);
+const companyInfo = {
+  legalName: settings?.companyLegalName || DEFAULT_COMPANY_INFO.legalName,
+  brandName: settings?.companyBrandName || DEFAULT_COMPANY_INFO.brandName,
+  address: settings?.registeredAddress || DEFAULT_COMPANY_INFO.address,
+  email: settings?.legalEmail || DEFAULT_COMPANY_INFO.email,
+  supportEmail: settings?.supportEmail || DEFAULT_COMPANY_INFO.supportEmail,
+  phone: settings?.contactPhone || DEFAULT_COMPANY_INFO.phone,
+  gstin: settings?.gstin || '',
+  gstinEnabled: settings?.gstinEnabled || false,
+  logoUrl: settings?.logoUrl || DEFAULT_COMPANY_INFO.logoUrl,
+  signatoryName: settings?.signatoryName || DEFAULT_COMPANY_INFO.signatoryName,
+  signatoryTitle: settings?.signatoryTitle || DEFAULT_COMPANY_INFO.signatoryTitle,
+  defaultCurrency: settings?.defaultCurrency || 'INR',
+};
+
+// Fetch registered clients for quick selection
+const registeredUsers = await db
+  .select({
+    id: users.id,
+    fullName: users.fullName,
+    email: users.email,
+  })
+  .from(users)
+  .orderBy(asc(users.fullName));
+
+// Fetch approved quotations if admin wants to base agreement on a quotation
+const approvedQuotations = await db
+  .select({
+    id: quotations.id,
+    quotationNumber: quotations.quotationNumber,
+    projectTitle: quotations.projectTitle,
+    finalQuotationAmount: quotations.finalQuotationAmount,
+    currency: quotations.currency,
+    userId: quotations.userId,
+    businessId: quotations.businessId,
+  })
+  .from(quotations)
+  .orderBy(desc(quotations.createdAt))
+  .limit(30);
+
+// Fetch saved templates from database
+const dbTemplates = await db.select().from(agreementTemplates).orderBy(asc(agreementTemplates.name));
+const templatesList = dbTemplates.length > 0 ? dbTemplates : PRESET_TEMPLATES;
+---
+
+<AdminLayout
+  title="Create Client Agreement"
+  activeNav="agreements"
+  breadcrumbs={[
+    { label: 'Agreements', href: '/admin/agreements' },
+    { label: 'New Agreement' },
+  ]}
+  session={session}
+>
+  <div class="dash-view is-active" id="agreement-builder-view">
+    <!-- Header banner -->
+    <div class="dash-welcome-card" style="margin-bottom: 1.5rem;">
+      <div class="welcome-copy">
+        <p class="eyebrow">Document Generator · Indian Law Standard</p>
+        <h1 class="display welcome-title">Professional Service <em>Agreement Generator</em></h1>
+        <p class="welcome-desc">
+          Configure corporate client information, scope of work, sprint milestones, pricing terms, and 25 customizable legal clauses. Preview in real-time with official corporate branding and execute via secure client link.
+        </p>
+      </div>
+
+      <div class="welcome-actions">
+        <button type="button" class="btn btn-ghost" id="btn-toggle-preview">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          <span id="preview-toggle-text">Toggle Document Preview</span>
+        </button>
+        <a href="/admin/agreements" class="btn btn-ghost">
+          Cancel
+        </a>
+      </div>
+    </div>
+
+    <!-- Mode Selector: Wizard Form vs Live Document Preview -->
+    <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
+      <button type="button" class="tab-pill is-on" id="tab-btn-form" data-pane="form">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+        </svg>
+        <span>Agreement Editor</span>
+      </button>
+
+      <button type="button" class="tab-pill" id="tab-btn-preview" data-pane="preview">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+        </svg>
+        <span>Live Document Preview</span>
+      </button>
+    </div>
+
+    <!-- Form Container -->
+    <div id="pane-form">
+      <form id="agreement-form" class="business-form">
+        <!-- STEPPER TABS -->
+        <div class="stepper-nav">
+          <button type="button" class="step-item is-active" data-step="1">
+            <span class="step-num">1</span>
+            <span>Client & Entity</span>
+          </button>
+          <button type="button" class="step-item" data-step="2">
+            <span class="step-num">2</span>
+            <span>Project & SOW</span>
+          </button>
+          <button type="button" class="step-item" data-step="3">
+            <span class="step-num">3</span>
+            <span>Commercials & Milestones</span>
+          </button>
+          <button type="button" class="step-item" data-step="4">
+            <span class="step-num">4</span>
+            <span>Legal Clauses (25 Sections)</span>
+          </button>
+          <button type="button" class="step-item" data-step="5">
+            <span class="step-num">5</span>
+            <span>Branding & Execution</span>
+          </button>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- STEP 1: CLIENT & ENTITY -->
+        <!-- ============================================================== -->
+        <div class="card-panel step-pane is-active" data-step-content="1">
+          <div class="panel-header">
+            <div>
+              <span class="eyebrow">Step 01</span>
+              <h2 class="display h3">Client & Contracting Entity</h2>
+              <p class="panel-subtitle">Select an existing registered client or enter new company information</p>
+            </div>
+
+            <!-- Optional: Link Existing Client -->
+            <div style="min-width: 240px;">
+              <select id="select-registered-client" class="field-select">
+                <option value="">-- Quick Load Client Profile --</option>
+                {registeredUsers.map((u) => (
+                  <option value={u.id} data-name={u.fullName || ''} data-email={u.email}>
+                    {u.fullName || u.email} ({u.email})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="field">
+              <span class="mono">Client Signatory Full Legal Name *</span>
+              <input type="text" id="clientName" name="clientName" required placeholder="e.g. Rahul Sharma" />
+            </label>
+            <label class="field">
+              <span class="mono">Client Official Email Address *</span>
+              <input type="email" id="clientEmail" name="clientEmail" required placeholder="rahul@company.com" />
+            </label>
+          </div>
+
+          <div class="form-row">
+            <label class="field">
+              <span class="mono">Client Company / Legal Entity Name</span>
+              <input type="text" id="clientCompany" name="clientCompany" placeholder="e.g. Apex Retail Technologies Pvt Ltd" />
+            </label>
+            <label class="field">
+              <span class="mono">Official Phone Number</span>
+              <input type="text" id="clientPhone" name="clientPhone" placeholder="+91 98765 43210" />
+            </label>
+          </div>
+
+          <label class="field">
+            <span class="mono">Principal Place of Business / Registered Address</span>
+            <textarea id="clientAddress" name="clientAddress" rows="2" placeholder="Suite 401, Tech Park, Indiranagar"></textarea>
+          </label>
+
+          <div class="form-row-3">
+            <label class="field">
+              <span class="mono">City</span>
+              <input type="text" id="clientCity" name="clientCity" placeholder="Bengaluru" />
+            </label>
+            <label class="field">
+              <span class="mono">State</span>
+              <input type="text" id="clientState" name="clientState" placeholder="Karnataka" />
+            </label>
+            <label class="field">
+              <span class="mono">Country</span>
+              <input type="text" id="clientCountry" name="clientCountry" value="India" />
+            </label>
+          </div>
+
+          <div class="form-row">
+            <label class="field">
+              <span class="mono">Client GSTIN / Tax Identification (Optional)</span>
+              <input type="text" id="clientGstin" name="clientGstin" placeholder="29ABCDE1234F1Z5" />
+            </label>
+            <label class="field">
+              <span class="mono">Link Existing Quotation (Optional)</span>
+              <select id="quotationId" name="quotationId">
+                <option value="">-- No linked quotation --</option>
+                {approvedQuotations.map((q) => (
+                  <option value={q.id} data-amount={q.finalQuotationAmount} data-title={q.projectTitle}>
+                    {q.quotationNumber} - {q.projectTitle} ({q.currency} {Number(q.finalQuotationAmount).toLocaleString()})
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <div class="form-footer" style="display: flex; justify-content: flex-end;">
+            <button type="button" class="btn btn-primary" data-next-step="2">
+              <span>Next: Project & Scope</span>
+              <span class="arrow">→</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- STEP 2: PROJECT & SCOPE OF WORK -->
+        <!-- ============================================================== -->
+        <div class="card-panel step-pane" data-step-content="2" style="display: none;">
+          <div class="panel-header">
+            <div>
+              <span class="eyebrow">Step 02</span>
+              <h2 class="display h3">Project Name & Statement of Work</h2>
+              <p class="panel-subtitle">Define the technical architecture, scope boundaries, and core deliverables</p>
+            </div>
+          </div>
+
+          <div class="field">
+            <span class="mono">Project Name / Reference Title *</span>
+            <input type="text" id="projectName" name="projectName" required placeholder="e.g. Next-Generation Cloud Application & AI Workflow Engine" />
+          </div>
+
+          <div class="field">
+            <span class="mono">Project Overview & Business Objectives</span>
+            <textarea id="projectDescription" name="projectDescription" rows="3" placeholder="Comprehensive digital platform build engineered to automate multi-channel customer workflows, streamline compliance reporting, and provide unified customer visibility across 3 operating layers..."></textarea>
+          </div>
+
+          <div class="field">
+            <span class="mono">Detailed Scope of Work (SOW)</span>
+            <textarea id="scopeOfWork" name="scopeOfWork" rows="5" placeholder="1. Frontend UI Architecture with responsive React/Astro design system&#10;2. Cloudflare serverless edge worker backend and RESTful APIs&#10;3. Neon PostgreSQL database modeling, schema indexes, and automated migrations&#10;4. Autonomous AI agent integration for automated customer inquiry routing&#10;5. End-to-end user acceptance testing, performance optimization, and production deployment"></textarea>
+          </div>
+
+          <!-- Dynamic Deliverables -->
+          <div class="field">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <span class="mono">Key Deliverables Catalogue</span>
+              <button type="button" class="btn btn-sm btn-ghost" id="btn-add-deliverable">
+                + Add Deliverable
+              </button>
+            </div>
+            <div id="deliverables-container" style="display: grid; gap: 0.5rem;">
+              <div class="deliverable-row" style="display: flex; gap: 0.5rem; align-items: center;">
+                <input type="text" class="deliv-title" placeholder="Deliverable name (e.g. Production Web Application Source Code)" style="flex: 1;" value="Production Web & Mobile Application Source Code" />
+                <button type="button" class="btn-remove-deliv btn-sm btn-ghost" style="color: #ef4444;">✕</button>
+              </div>
+              <div class="deliverable-row" style="display: flex; gap: 0.5rem; align-items: center;">
+                <input type="text" class="deliv-title" placeholder="Deliverable name" style="flex: 1;" value="Modular API Endpoints & Neon PostgreSQL Database Schema" />
+                <button type="button" class="btn-remove-deliv btn-sm btn-ghost" style="color: #ef4444;">✕</button>
+              </div>
+              <div class="deliverable-row" style="display: flex; gap: 0.5rem; align-items: center;">
+                <input type="text" class="deliv-title" placeholder="Deliverable name" style="flex: 1;" value="Deployment Scripts, Architectural Documentation & Admin Secrets Handover" />
+                <button type="button" class="btn-remove-deliv btn-sm btn-ghost" style="color: #ef4444;">✕</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-footer" style="display: flex; justify-content: space-between;">
+            <button type="button" class="btn btn-ghost" data-prev-step="1">
+              ← Back
+            </button>
+            <button type="button" class="btn btn-primary" data-next-step="3">
+              <span>Next: Commercials & Milestones</span>
+              <span class="arrow">→</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- STEP 3: COMMERCIALS & MILESTONES -->
+        <!-- ============================================================== -->
+        <div class="card-panel step-pane" data-step-content="3" style="display: none;">
+          <div class="panel-header">
+            <div>
+              <span class="eyebrow">Step 03</span>
+              <h2 class="display h3">Commercials, Pricing & Timeline</h2>
+              <p class="panel-subtitle">Configure contract valuation, advance mobilization, and milestone release schedules</p>
+            </div>
+          </div>
+
+          <div class="form-row-3">
+            <label class="field">
+              <span class="mono">Contract Currency</span>
+              <select id="currency" name="currency">
+                <option value="INR" selected>₹ INR (Indian Rupee)</option>
+                <option value="USD">$ USD (US Dollar)</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span class="mono">Total Contract Value *</span>
+              <input type="number" id="totalAmount" name="totalAmount" required min="0" step="0.01" value="150000" />
+            </label>
+
+            <label class="field">
+              <span class="mono">Advance Payment %</span>
+              <input type="number" id="advancePercentage" name="advancePercentage" min="0" max="100" value="50" />
+            </label>
+          </div>
+
+          <div class="form-row">
+            <label class="field">
+              <span class="mono">Advance Amount (Auto-Calculated)</span>
+              <input type="number" id="advanceAmount" name="advanceAmount" readonly class="input-disabled" value="75000" />
+            </label>
+
+            <label class="field">
+              <span class="mono">Estimated Project Duration</span>
+              <input type="text" id="timeline" name="timeline" value="6 Weeks from Advance Receipt & Sprint Kickoff" />
+            </label>
+          </div>
+
+          <div class="field">
+            <span class="mono">Payment Schedule Terms</span>
+            <textarea id="paymentSchedule" name="paymentSchedule" rows="3">1. Mobilization Advance (50%): Payable upon contract execution prior to sprint kickoff.
+2. Core Milestone Delivery (30%): Payable upon functional demo of core backend and frontend modules.
+3. Final Acceptance & Handover (20%): Payable upon completion of UAT testing and production handover.</textarea>
+          </div>
+
+          <!-- Milestones Timeline Box -->
+          <div class="field">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <span class="mono">Milestone Roadmap</span>
+              <button type="button" class="btn btn-sm btn-ghost" id="btn-add-milestone">
+                + Add Milestone
+              </button>
+            </div>
+
+            <div id="milestones-container" style="display: grid; gap: 0.75rem;">
+              <div class="milestone-row card-panel" style="padding: 0.85rem; display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 0.5rem; align-items: center;">
+                <input type="text" class="ms-title" placeholder="Milestone Title" value="Sprint 01: Architecture, Wireframes & Database" />
+                <input type="text" class="ms-duration" placeholder="Duration" value="Weeks 1-2" />
+                <input type="text" class="ms-amount" placeholder="Disbursement" value="50% Advance" />
+                <button type="button" class="btn-remove-ms btn-sm btn-ghost" style="color: #ef4444;">✕</button>
+              </div>
+
+              <div class="milestone-row card-panel" style="padding: 0.85rem; display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 0.5rem; align-items: center;">
+                <input type="text" class="ms-title" placeholder="Milestone Title" value="Sprint 02: Core Engine, APIs & Integration" />
+                <input type="text" class="ms-duration" placeholder="Duration" value="Weeks 3-4" />
+                <input type="text" class="ms-amount" placeholder="Disbursement" value="30% Milestone" />
+                <button type="button" class="btn-remove-ms btn-sm btn-ghost" style="color: #ef4444;">✕</button>
+              </div>
+
+              <div class="milestone-row card-panel" style="padding: 0.85rem; display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 0.5rem; align-items: center;">
+                <input type="text" class="ms-title" placeholder="Milestone Title" value="Sprint 03: Final QA, Security Audit & Go-Live" />
+                <input type="text" class="ms-duration" placeholder="Duration" value="Weeks 5-6" />
+                <input type="text" class="ms-amount" placeholder="Disbursement" value="20% Final" />
+                <button type="button" class="btn-remove-ms btn-sm btn-ghost" style="color: #ef4444;">✕</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-footer" style="display: flex; justify-content: space-between;">
+            <button type="button" class="btn btn-ghost" data-prev-step="2">
+              ← Back
+            </button>
+            <button type="button" class="btn btn-primary" data-next-step="4">
+              <span>Next: Legal Clauses (25 Sections)</span>
+              <span class="arrow">→</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- STEP 4: 25 CUSTOMIZABLE LEGAL CLAUSES -->
+        <!-- ============================================================== -->
+        <div class="card-panel step-pane" data-step-content="4" style="display: none;">
+          <div class="panel-header">
+            <div>
+              <span class="eyebrow">Step 04</span>
+              <h2 class="display h3">25 Agreement Sections & Legal Clauses</h2>
+              <p class="panel-subtitle">Select an agreement template or customize, add, remove, and reorder all 25 sections</p>
+            </div>
+
+            <!-- Template Switcher -->
+            <div style="min-width: 280px;">
+              <select id="select-agreement-template" class="field-select">
+                {templatesList.map((tpl) => (
+                  <option value={tpl.code}>
+                    Template: {tpl.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <!-- Clause Toolbar -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div style="display: flex; gap: 0.5rem;">
+              <button type="button" class="btn btn-sm btn-ghost" id="btn-expand-all-clauses">
+                Expand All (25)
+              </button>
+              <button type="button" class="btn btn-sm btn-ghost" id="btn-collapse-all-clauses">
+                Collapse All
+              </button>
+              <button type="button" class="btn btn-sm btn-ghost" id="btn-reset-default-clauses">
+                Reset to Standard Clauses
+              </button>
+            </div>
+            <button type="button" class="btn btn-sm btn-primary" id="btn-add-custom-clause">
+              + Add Custom Clause
+            </button>
+          </div>
+
+          <!-- Dynamic Accordion of 25 Clauses -->
+          <div id="clauses-container" class="clause-list-container">
+            <!-- Populated via Client Script with all 25 sections -->
+          </div>
+
+          <div class="form-footer" style="display: flex; justify-content: space-between; margin-top: 1.5rem;">
+            <button type="button" class="btn btn-ghost" data-prev-step="3">
+              ← Back
+            </button>
+            <button type="button" class="btn btn-primary" data-next-step="5">
+              <span>Next: Branding & Signatory</span>
+              <span class="arrow">→</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- STEP 5: BRANDING & EXECUTION SETTINGS -->
+        <!-- ============================================================== -->
+        <div class="card-panel step-pane" data-step-content="5" style="display: none;">
+          <div class="panel-header">
+            <div>
+              <span class="eyebrow">Step 05</span>
+              <h2 class="display h3">Company Branding & Signatory Verification</h2>
+              <p class="panel-subtitle">Review document header branding, optional GSTIN, and authorized signatory</p>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="field">
+              <span class="mono">Company Legal Entity</span>
+              <input type="text" id="providerName" value={companyInfo.legalName} readonly class="input-disabled" />
+            </label>
+            <label class="field">
+              <span class="mono">Official Brand Name</span>
+              <input type="text" id="providerBrand" value={companyInfo.brandName} readonly class="input-disabled" />
+            </label>
+          </div>
+
+          <label class="field">
+            <span class="mono">Registered Office Address</span>
+            <input type="text" id="providerAddress" value={companyInfo.address} readonly class="input-disabled" />
+          </label>
+
+          <div class="form-row-3">
+            <label class="field">
+              <span class="mono">Legal Notice Email</span>
+              <input type="text" id="providerEmail" value={companyInfo.email} readonly class="input-disabled" />
+            </label>
+            <label class="field">
+              <span class="mono">Official Contact Phone</span>
+              <input type="text" id="providerPhone" value={companyInfo.phone} readonly class="input-disabled" />
+            </label>
+            <label class="field">
+              <span class="mono">Company Logo Asset</span>
+              <input type="text" id="providerLogo" value={companyInfo.logoUrl} readonly class="mono input-disabled" />
+            </label>
+          </div>
+
+          <!-- GSTIN Options -->
+          <div class="card-panel" style="background: #f8fafc; border: 1px solid #e2e8f0; margin-bottom: 1.5rem;">
+            <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; user-select: none;">
+              <input type="checkbox" id="providerGstinEnabled" name="providerGstinEnabled" checked={companyInfo.gstinEnabled} style="width: 18px; height: 18px; cursor: pointer;" />
+              <div>
+                <strong style="color: var(--ink);">Display GSTIN on this Agreement</strong>
+                <p class="text-muted text-xs" style="margin: 2px 0 0;">
+                  GSTIN is optional and will be completely omitted from the document header unless explicitly enabled here.
+                </p>
+              </div>
+            </label>
+
+            <div id="gstin-input-wrapper" style={`margin-top: 0.85rem; ${companyInfo.gstinEnabled ? '' : 'display: none;'}`}>
+              <label class="field">
+                <span class="mono">Service Provider GSTIN</span>
+                <input type="text" id="providerGstin" name="providerGstin" value={companyInfo.gstin} placeholder="19AAAAA0000A1Z5" />
+              </label>
+            </div>
+          </div>
+
+          <!-- Signatory Settings -->
+          <div class="form-row">
+            <label class="field">
+              <span class="mono">Authorized Signatory Name</span>
+              <input type="text" id="providerSignatoryName" name="providerSignatoryName" value={companyInfo.signatoryName} />
+            </label>
+            <label class="field">
+              <span class="mono">Signatory Designation / Title</span>
+              <input type="text" id="providerSignatoryTitle" name="providerSignatoryTitle" value={companyInfo.signatoryTitle} />
+            </label>
+          </div>
+
+          <div class="form-row">
+            <label class="field">
+              <span class="mono">Agreement Validity Period</span>
+              <input type="date" id="validUntil" name="validUntil" />
+            </label>
+            <label class="field">
+              <span class="mono">Initial Status</span>
+              <select id="agreementStatus" name="status">
+                <option value="draft" selected>Save as Draft (Private)</option>
+                <option value="pending_review">Pending Internal Review</option>
+                <option value="sent">Finalize & Mark as Sent to Client</option>
+              </select>
+            </label>
+          </div>
+
+          <!-- Final Submission Buttons -->
+          <div class="form-footer" style="display: flex; justify-content: space-between; align-items: center; padding-top: 1.5rem; border-top: 1px solid var(--line);">
+            <button type="button" class="btn btn-ghost" data-prev-step="4">
+              ← Back to Clauses
+            </button>
+
+            <div style="display: flex; gap: 0.75rem;">
+              <button type="button" class="btn btn-ghost" id="btn-save-draft">
+                Save as Draft
+              </button>
+              <button type="submit" class="btn btn-primary" id="btn-submit-agreement">
+                <span>Create Agreement</span>
+                <span class="arrow">→</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- LIVE DOCUMENT PREVIEW PANE -->
+    <!-- ============================================================== -->
+    <div id="pane-preview" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <span class="mono text-muted text-xs">Live rendered preview reflecting all current form inputs and 25 legal clauses</span>
+        <div style="display: flex; gap: 0.5rem;">
+          <button type="button" class="btn btn-sm btn-ghost" id="btn-refresh-preview">
+            Refresh Preview
+          </button>
+          <button type="button" class="btn btn-sm btn-primary" id="btn-preview-create">
+            Create Agreement
+          </button>
+        </div>
+      </div>
+
+      <div class="agreement-paper-container">
+        <article class="agreement-paper" id="rendered-paper">
+          <!-- Live Document Header -->
+          <header class="doc-header">
+            <div class="doc-brand">
+              <div class="doc-brand-logo">
+                <svg width="48" height="48" viewBox="0 0 100 100" aria-hidden="true">
+                  <path d="M50 6 L66 38 L34 38 Z" fill="#94BCE3"></path>
+                  <path d="M32 42 L68 42 L70 46 L80 66 L60 66 L50 46 L40 66 L20 66 L30 46 Z" fill="#5980A6"></path>
+                  <path d="M18 70 L38 70 L26 94 L6 94 Z M82 70 L62 70 L74 94 L94 94 Z" fill="#1D2D3D"></path>
+                </svg>
+              </div>
+              <div class="doc-brand-info">
+                <h2 id="prev-brand-name">{companyInfo.legalName}</h2>
+                <p id="prev-brand-address">{companyInfo.address}</p>
+                <p style="font-size: 0.75rem; color: #64748b; margin-top: 2px;">
+                  <span>Email: {companyInfo.email}</span> · <span>Phone: {companyInfo.phone}</span>
+                  <span id="prev-gstin-line" style="display: none;"> · <strong id="prev-gstin-val"></strong></span>
+                </p>
+              </div>
+            </div>
+
+            <div class="doc-meta-box">
+              <span class="doc-number" id="prev-doc-number">PSA-2026-DRAFT</span>
+              <span class="doc-date" id="prev-doc-date">Date: {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+              <span class="mono" style="font-size: 0.72rem; color: #64748b;">Jurisdiction: India</span>
+            </div>
+          </header>
+
+          <div class="doc-title-banner">
+            <h1>PROFESSIONAL SERVICE AGREEMENT</h1>
+            <p class="mono text-muted text-xs" style="margin-top: 4px;">EXECUTED UNDER SECTION 10A OF THE INFORMATION TECHNOLOGY ACT, 2000</p>
+          </div>
+
+          <!-- Contracting Parties Summary -->
+          <div class="doc-parties-grid">
+            <div class="doc-party-col">
+              <h4>SERVICE PROVIDER</h4>
+              <strong id="prev-provider-title">{companyInfo.legalName}</strong>
+              <p id="prev-provider-desc">{companyInfo.address}</p>
+              <p style="font-size: 0.78rem; margin-top: 4px;">Authorized Signatory: {companyInfo.signatoryName} ({companyInfo.signatoryTitle})</p>
+            </div>
+
+            <div class="doc-party-col">
+              <h4>CLIENT / CUSTOMER</h4>
+              <strong id="prev-client-title">Client Name</strong>
+              <p id="prev-client-company">Company</p>
+              <p id="prev-client-address">Address</p>
+              <p style="font-size: 0.78rem; margin-top: 4px;" id="prev-client-contact">Email & Phone</p>
+            </div>
+          </div>
+
+          <!-- Commercials Summary Box -->
+          <div class="card-panel" style="background: #f1f5f9; padding: 1.25rem; border-radius: 6px; margin-bottom: 2rem;">
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+              <div>
+                <span class="mono text-muted text-xs">PROJECT NAME</span>
+                <strong style="display: block; font-size: 1rem; color: var(--ink);" id="prev-project-title">Project Name</strong>
+              </div>
+              <div>
+                <span class="mono text-muted text-xs">TOTAL INVESTMENT</span>
+                <strong style="display: block; font-size: 1.15rem; color: var(--accent);" id="prev-total-amount">₹0</strong>
+              </div>
+              <div>
+                <span class="mono text-muted text-xs">ADVANCE DEPOSIT</span>
+                <strong style="display: block; font-size: 1rem; color: var(--ink);" id="prev-advance-amount">₹0 (50%)</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- 25 Sections Container -->
+          <div id="prev-clauses-container">
+            <!-- Dynamic Preview Clauses -->
+          </div>
+
+          <!-- Signature Blocks -->
+          <div class="doc-signatures-wrap">
+            <h3 class="display" style="font-size: 1.15rem; margin-bottom: 1.25rem;">IN WITNESS WHEREOF, THE PARTIES HERETO EXECUTE THIS AGREEMENT</h3>
+            <div class="doc-signatures-grid">
+              <div class="sig-box">
+                <span class="sig-box-title">SERVICE PROVIDER SIGNATURE</span>
+                <div class="sig-display-area">
+                  <span class="sig-pending-placeholder">Pending Provider Countersignature</span>
+                </div>
+                <div>
+                  <strong style="display: block; font-size: 0.88rem;">{companyInfo.legalName}</strong>
+                  <span class="sig-meta-line">By: {companyInfo.signatoryName}</span>
+                  <span class="sig-meta-line">Title: {companyInfo.signatoryTitle}</span>
+                </div>
+              </div>
+
+              <div class="sig-box">
+                <span class="sig-box-title">CLIENT / AUTHORIZED SIGNATORY</span>
+                <div class="sig-display-area">
+                  <span class="sig-pending-placeholder">Awaiting Client Electronic Signature</span>
+                </div>
+                <div>
+                  <strong style="display: block; font-size: 0.88rem;" id="prev-sig-client-name">Authorized Signatory</strong>
+                  <span class="sig-meta-line" id="prev-sig-client-company">Client Organization</span>
+                  <span class="sig-meta-line">Execution: IT Act, 2000 Electronic Verification</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Hub -->
+  <div class="toast-hub" id="toast-hub" aria-live="polite"></div>
+</AdminLayout>
+
+<script is:inline define:vars={{ standardClauses: STANDARD_25_CLAUSES, presetTemplates: PRESET_TEMPLATES }}>
+  // Dynamic Agreement Builder Client Script
+  let activeClauses = JSON.parse(JSON.stringify(standardClauses));
+
+  function showToast(message, type = 'success') {
+    const hub = document.getElementById('toast-hub');
+    if (!hub) return;
+    const toast = document.createElement('div');
+    toast.className = `toast-item toast-${type}`;
+    toast.innerHTML = `<span>${message}</span>`;
+    hub.appendChild(toast);
+    setTimeout(() => {
+      toast.classList.add('fade-out');
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
+
+  // Render Clauses Editor
+  function renderClausesEditor() {
+    const container = document.getElementById('clauses-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    activeClauses.forEach((clause, index) => {
+      const card = document.createElement('div');
+      card.className = 'clause-card';
+      card.setAttribute('data-index', index);
+      card.innerHTML = `
+        <div class="clause-card-header" data-toggle-clause="${index}">
+          <div class="clause-card-title">
+            <span class="clause-num-tag mono">Section ${String(clause.sectionNumber || index + 1).padStart(2, '0')}</span>
+            <span>${clause.title}</span>
+          </div>
+          <div class="clause-actions" onclick="event.stopPropagation();">
+            <button type="button" class="clause-icon-btn" data-action="move-up" data-index="${index}" title="Move Up" ${index === 0 ? 'disabled style="opacity:0.4;"' : ''}>↑</button>
+            <button type="button" class="clause-icon-btn" data-action="move-down" data-index="${index}" title="Move Down" ${index === activeClauses.length - 1 ? 'disabled style="opacity:0.4;"' : ''}>↓</button>
+            <button type="button" class="clause-icon-btn btn-remove" data-action="remove-clause" data-index="${index}" title="Delete Clause">✕</button>
+          </div>
+        </div>
+        <div class="clause-card-body" id="clause-body-${index}" style="${index === 0 ? '' : 'display: none;'}">
+          <label class="field">
+            <span class="mono">Section Title</span>
+            <input type="text" class="clause-title-input" data-index="${index}" value="${clause.title.replace(/"/g, '&quot;')}" />
+          </label>
+          <label class="field">
+            <span class="mono">Legal Clause Text (Supports {{client_name}}, {{project_name}}, {{total_amount}}, etc.)</span>
+            <textarea class="clause-content-input" data-index="${index}" rows="5">${clause.content}</textarea>
+          </label>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+
+    // Event listeners for clause card headers
+    container.querySelectorAll('[data-toggle-clause]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const idx = btn.getAttribute('data-toggle-clause');
+        const body = document.getElementById(`clause-body-${idx}`);
+        if (body) {
+          body.style.display = body.style.display === 'none' ? 'grid' : 'none';
+        }
+      });
+    });
+
+    // Inputs update activeClauses
+    container.querySelectorAll('.clause-title-input').forEach((input) => {
+      input.addEventListener('input', (e) => {
+        const idx = parseInt(e.target.getAttribute('data-index'), 10);
+        activeClauses[idx].title = e.target.value;
+      });
+    });
+
+    container.querySelectorAll('.clause-content-input').forEach((input) => {
+      input.addEventListener('input', (e) => {
+        const idx = parseInt(e.target.getAttribute('data-index'), 10);
+        activeClauses[idx].content = e.target.value;
+      });
+    });
+
+    // Reorder & Delete Handlers
+    container.querySelectorAll('[data-action="move-up"]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.getAttribute('data-index'), 10);
+        if (idx > 0) {
+          const temp = activeClauses[idx];
+          activeClauses[idx] = activeClauses[idx - 1];
+          activeClauses[idx - 1] = temp;
+          activeClauses.forEach((c, i) => (c.sectionNumber = i + 1));
+          renderClausesEditor();
+        }
+      });
+    });
+
+    container.querySelectorAll('[data-action="move-down"]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.getAttribute('data-index'), 10);
+        if (idx < activeClauses.length - 1) {
+          const temp = activeClauses[idx];
+          activeClauses[idx] = activeClauses[idx + 1];
+          activeClauses[idx + 1] = temp;
+          activeClauses.forEach((c, i) => (c.sectionNumber = i + 1));
+          renderClausesEditor();
+        }
+      });
+    });
+
+    container.querySelectorAll('[data-action="remove-clause"]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.getAttribute('data-index'), 10);
+        if (confirm(`Remove Section ${idx + 1}: "${activeClauses[idx].title}"?`)) {
+          activeClauses.splice(idx, 1);
+          activeClauses.forEach((c, i) => (c.sectionNumber = i + 1));
+          renderClausesEditor();
+          showToast('Clause removed');
+        }
+      });
+    });
+  }
+
+  // Expand / Collapse all
+  document.getElementById('btn-expand-all-clauses')?.addEventListener('click', () => {
+    document.querySelectorAll('.clause-card-body').forEach((b) => (b.style.display = 'grid'));
+  });
+  document.getElementById('btn-collapse-all-clauses')?.addEventListener('click', () => {
+    document.querySelectorAll('.clause-card-body').forEach((b) => (b.style.display = 'none'));
+  });
+  document.getElementById('btn-reset-default-clauses')?.addEventListener('click', () => {
+    if (confirm('Reset all clauses to the standard 25 sections? Any custom text changes will be overwritten.')) {
+      activeClauses = JSON.parse(JSON.stringify(standardClauses));
+      renderClausesEditor();
+      showToast('Reset to standard 25 legal clauses');
+    }
+  });
+
+  // Add Custom Clause
+  document.getElementById('btn-add-custom-clause')?.addEventListener('click', () => {
+    const newNum = activeClauses.length + 1;
+    activeClauses.push({
+      id: `clause-custom-${Date.now()}`,
+      sectionNumber: newNum,
+      title: `Additional Term ${newNum}`,
+      category: 'operations',
+      content: 'Enter the specific terms, conditions, or SLA covenants for this section...',
+      isMandatory: false,
+      isCustomizable: true,
+    });
+    renderClausesEditor();
+    showToast(`Added Section ${newNum}`);
+    // Open the new clause
+    const newBody = document.getElementById(`clause-body-${newNum - 1}`);
+    if (newBody) newBody.style.display = 'grid';
+  });
+
+  // Template Selector
+  document.getElementById('select-agreement-template')?.addEventListener('change', (e) => {
+    const code = e.target.value;
+    const found = presetTemplates.find((t) => t.code === code);
+    if (found && found.clauses) {
+      activeClauses = JSON.parse(JSON.stringify(found.clauses));
+      renderClausesEditor();
+      showToast(`Loaded template: ${found.name}`);
+    }
+  });
+
+  // GSTIN Checkbox toggle
+  document.getElementById('providerGstinEnabled')?.addEventListener('change', (e) => {
+    const wrap = document.getElementById('gstin-input-wrapper');
+    if (wrap) wrap.style.display = e.target.checked ? 'block' : 'none';
+  });
+
+  // Stepper Tabs Navigation
+  document.querySelectorAll('[data-step]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const step = btn.getAttribute('data-step');
+      switchStep(step);
+    });
+  });
+
+  document.querySelectorAll('[data-next-step]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const step = btn.getAttribute('data-next-step');
+      switchStep(step);
+    });
+  });
+
+  document.querySelectorAll('[data-prev-step]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const step = btn.getAttribute('data-prev-step');
+      switchStep(step);
+    });
+  });
+
+  function switchStep(step) {
+    document.querySelectorAll('.step-item').forEach((item) => {
+      item.classList.toggle('is-active', item.getAttribute('data-step') === step);
+    });
+    document.querySelectorAll('.step-pane').forEach((pane) => {
+      pane.style.display = pane.getAttribute('data-step-content') === step ? 'block' : 'none';
+    });
+    window.scrollTo({ top: 120, behavior: 'smooth' });
+  }
+
+  // Advance Calculation
+  const totalInput = document.getElementById('totalAmount');
+  const pctInput = document.getElementById('advancePercentage');
+  const advInput = document.getElementById('advanceAmount');
+
+  function updateAdvance() {
+    const total = parseFloat(totalInput?.value || '0');
+    const pct = parseFloat(pctInput?.value || '0');
+    if (advInput) {
+      advInput.value = ((total * pct) / 100).toFixed(2);
+    }
+  }
+  totalInput?.addEventListener('input', updateAdvance);
+  pctInput?.addEventListener('input', updateAdvance);
+
+  // Quick Client Select
+  document.getElementById('select-registered-client')?.addEventListener('change', (e) => {
+    const opt = e.target.selectedOptions[0];
+    if (opt && opt.value) {
+      const name = opt.getAttribute('data-name');
+      const email = opt.getAttribute('data-email');
+      const nameInput = document.getElementById('clientName');
+      const emailInput = document.getElementById('clientEmail');
+      if (nameInput) nameInput.value = name;
+      if (emailInput) emailInput.value = email;
+      showToast(`Selected client: ${name || email}`);
+    }
+  });
+
+  // Quotation Select
+  document.getElementById('quotationId')?.addEventListener('change', (e) => {
+    const opt = e.target.selectedOptions[0];
+    if (opt && opt.value) {
+      const amount = opt.getAttribute('data-amount');
+      const title = opt.getAttribute('data-title');
+      if (title && !document.getElementById('projectName').value) {
+        document.getElementById('projectName').value = title;
+      }
+      if (amount && totalInput) {
+        totalInput.value = amount;
+        updateAdvance();
+      }
+      showToast('Loaded parameters from quotation');
+    }
+  });
+
+  // Deliverables add/remove
+  document.getElementById('btn-add-deliverable')?.addEventListener('click', () => {
+    const container = document.getElementById('deliverables-container');
+    const row = document.createElement('div');
+    row.className = 'deliverable-row';
+    row.style.cssText = 'display: flex; gap: 0.5rem; align-items: center;';
+    row.innerHTML = `
+      <input type="text" class="deliv-title" placeholder="Deliverable name..." style="flex: 1;" />
+      <button type="button" class="btn-remove-deliv btn-sm btn-ghost" style="color: #ef4444;">✕</button>
+    `;
+    container.appendChild(row);
+  });
+
+  document.getElementById('deliverables-container')?.addEventListener('click', (e) => {
+    if (e.target.classList.contains('btn-remove-deliv')) {
+      e.target.closest('.deliverable-row')?.remove();
+    }
+  });
+
+  // Milestones add/remove
+  document.getElementById('btn-add-milestone')?.addEventListener('click', () => {
+    const container = document.getElementById('milestones-container');
+    const row = document.createElement('div');
+    row.className = 'milestone-row card-panel';
+    row.style.cssText = 'padding: 0.85rem; display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 0.5rem; align-items: center;';
+    row.innerHTML = `
+      <input type="text" class="ms-title" placeholder="Milestone Title" />
+      <input type="text" class="ms-duration" placeholder="Duration (e.g. Weeks 2-4)" />
+      <input type="text" class="ms-amount" placeholder="Disbursement (e.g. 25%)" />
+      <button type="button" class="btn-remove-ms btn-sm btn-ghost" style="color: #ef4444;">✕</button>
+    `;
+    container.appendChild(row);
+  });
+
+  document.getElementById('milestones-container')?.addEventListener('click', (e) => {
+    if (e.target.classList.contains('btn-remove-ms')) {
+      e.target.closest('.milestone-row')?.remove();
+    }
+  });
+
+  // Switch between Form and Live Preview
+  const tabForm = document.getElementById('tab-btn-form');
+  const tabPreview = document.getElementById('tab-btn-preview');
+  const paneForm = document.getElementById('pane-form');
+  const panePreview = document.getElementById('pane-preview');
+
+  function showPane(pane) {
+    if (pane === 'preview') {
+      tabForm?.classList.remove('is-on');
+      tabPreview?.classList.add('is-on');
+      paneForm.style.display = 'none';
+      panePreview.style.display = 'block';
+      renderLivePreview();
+    } else {
+      tabPreview?.classList.remove('is-on');
+      tabForm?.classList.add('is-on');
+      panePreview.style.display = 'none';
+      paneForm.style.display = 'block';
+    }
+  }
+
+  tabForm?.addEventListener('click', () => showPane('form'));
+  tabPreview?.addEventListener('click', () => showPane('preview'));
+  document.getElementById('btn-toggle-preview')?.addEventListener('click', () => {
+    showPane(panePreview.style.display === 'none' ? 'preview' : 'form');
+  });
+  document.getElementById('btn-refresh-preview')?.addEventListener('click', renderLivePreview);
+
+  // Live Preview Rendering
+  function renderLivePreview() {
+    const clientName = document.getElementById('clientName')?.value || 'Client Name';
+    const clientEmail = document.getElementById('clientEmail')?.value || 'email@company.com';
+    const clientCompany = document.getElementById('clientCompany')?.value || 'Client Entity';
+    const clientAddress = document.getElementById('clientAddress')?.value || 'Principal Office Address';
+    const clientCity = document.getElementById('clientCity')?.value || '';
+    const clientState = document.getElementById('clientState')?.value || '';
+    const clientPhone = document.getElementById('clientPhone')?.value || '';
+    const projectName = document.getElementById('projectName')?.value || 'Custom Growth Stack';
+    const totalAmount = document.getElementById('totalAmount')?.value || '0';
+    const currency = document.getElementById('currency')?.value || 'INR';
+    const advPercentage = document.getElementById('advancePercentage')?.value || '50';
+    const advAmount = document.getElementById('advanceAmount')?.value || '0';
+    const gstinEnabled = document.getElementById('providerGstinEnabled')?.checked || false;
+    const gstinVal = document.getElementById('providerGstin')?.value || '';
+
+    // Update Preview Header & Details
+    const currSym = currency === 'USD' ? '$' : '₹';
+    document.getElementById('prev-client-title').textContent = clientName;
+    document.getElementById('prev-client-company').textContent = clientCompany;
+    document.getElementById('prev-client-address').textContent = `${clientAddress}${clientCity ? `, ${clientCity}` : ''}${clientState ? `, ${clientState}` : ''}`;
+    document.getElementById('prev-client-contact').textContent = `${clientEmail} · ${clientPhone}`;
+
+    document.getElementById('prev-project-title').textContent = projectName;
+    document.getElementById('prev-total-amount').textContent = `${currSym}${parseFloat(totalAmount || '0').toLocaleString('en-IN')}`;
+    document.getElementById('prev-advance-amount').textContent = `${currSym}${parseFloat(advAmount || '0').toLocaleString('en-IN')} (${advPercentage}%)`;
+
+    document.getElementById('prev-sig-client-name').textContent = clientName;
+    document.getElementById('prev-sig-client-company').textContent = clientCompany;
+
+    const gstinLine = document.getElementById('prev-gstin-line');
+    if (gstinLine) {
+      if (gstinEnabled && gstinVal) {
+        gstinLine.style.display = 'inline';
+        document.getElementById('prev-gstin-val').textContent = `GSTIN: ${gstinVal}`;
+      } else {
+        gstinLine.style.display = 'none';
+      }
+    }
+
+    // Render Preview Clauses with variable replacement
+    const clausesBox = document.getElementById('prev-clauses-container');
+    if (!clausesBox) return;
+    clausesBox.innerHTML = '';
+
+    const replaceVars = (str) => {
+      return str
+        .replace(/{{client_name}}/g, clientName)
+        .replace(/{{client_company}}/g, clientCompany)
+        .replace(/{{client_email}}/g, clientEmail)
+        .replace(/{{client_phone}}/g, clientPhone)
+        .replace(/{{client_address}}/g, clientAddress)
+        .replace(/{{client_city}}/g, clientCity || 'City')
+        .replace(/{{client_state}}/g, clientState || 'State')
+        .replace(/{{client_country}}/g, 'India')
+        .replace(/{{project_name}}/g, projectName)
+        .replace(/{{project_description}}/g, document.getElementById('projectDescription')?.value || '')
+        .replace(/{{scope_of_work}}/g, document.getElementById('scopeOfWork')?.value || '')
+        .replace(/{{currency}}/g, currSym)
+        .replace(/{{total_amount}}/g, parseFloat(totalAmount || '0').toLocaleString('en-IN'))
+        .replace(/{{total_amount_words}}/g, `${parseFloat(totalAmount || '0').toLocaleString('en-IN')} ${currency}`)
+        .replace(/{{advance_amount}}/g, parseFloat(advAmount || '0').toLocaleString('en-IN'))
+        .replace(/{{advance_percentage}}/g, advPercentage)
+        .replace(/{{project_timeline}}/g, document.getElementById('timeline')?.value || '')
+        .replace(/{{payment_schedule}}/g, document.getElementById('paymentSchedule')?.value || '');
+    };
+
+    activeClauses.forEach((c) => {
+      const sec = document.createElement('section');
+      sec.className = 'doc-section';
+      sec.innerHTML = `
+        <h3 class="doc-sec-title">
+          <span class="sec-num">Section ${String(c.sectionNumber).padStart(2, '0')}.</span>
+          <span>${c.title}</span>
+        </h3>
+        <p class="doc-sec-content">${replaceVars(c.content)}</p>
+      `;
+      clausesBox.appendChild(sec);
+    });
+  }
+
+  // Form Submit Handler
+  async function submitAgreement(statusOverride) {
+    const form = document.getElementById('agreement-form');
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    const submitBtn = document.getElementById('btn-submit-agreement');
+    const draftBtn = document.getElementById('btn-save-draft');
+    if (submitBtn) submitBtn.disabled = true;
+    if (draftBtn) draftBtn.disabled = true;
+
+    // Collect Deliverables
+    const deliverables = [];
+    document.querySelectorAll('.deliv-title').forEach((inp) => {
+      if (inp.value.trim()) deliverables.push({ title: inp.value.trim() });
+    });
+
+    // Collect Milestones
+    const milestones = [];
+    document.querySelectorAll('.milestone-row').forEach((row) => {
+      const title = row.querySelector('.ms-title')?.value.trim();
+      const duration = row.querySelector('.ms-duration')?.value.trim();
+      const amount = row.querySelector('.ms-amount')?.value.trim();
+      if (title) milestones.push({ title, duration, amount });
+    });
+
+    const payload = {
+      title: 'PROFESSIONAL SERVICE AGREEMENT',
+      clientName: document.getElementById('clientName')?.value.trim(),
+      clientEmail: document.getElementById('clientEmail')?.value.trim(),
+      clientCompany: document.getElementById('clientCompany')?.value.trim() || null,
+      clientAddress: document.getElementById('clientAddress')?.value.trim() || null,
+      clientCity: document.getElementById('clientCity')?.value.trim() || null,
+      clientState: document.getElementById('clientState')?.value.trim() || null,
+      clientCountry: document.getElementById('clientCountry')?.value.trim() || 'India',
+      clientPhone: document.getElementById('clientPhone')?.value.trim() || null,
+      clientGstin: document.getElementById('clientGstin')?.value.trim() || null,
+
+      projectName: document.getElementById('projectName')?.value.trim(),
+      projectDescription: document.getElementById('projectDescription')?.value.trim() || null,
+      scopeOfWork: document.getElementById('scopeOfWork')?.value.trim() || null,
+      deliverables,
+      timeline: document.getElementById('timeline')?.value.trim() || null,
+      milestones,
+
+      currency: document.getElementById('currency')?.value || 'INR',
+      totalAmount: parseFloat(document.getElementById('totalAmount')?.value || '0'),
+      advancePercentage: parseInt(document.getElementById('advancePercentage')?.value || '50', 10),
+      advanceAmount: parseFloat(document.getElementById('advanceAmount')?.value || '0'),
+      paymentSchedule: document.getElementById('paymentSchedule')?.value.trim() || null,
+
+      clauses: activeClauses,
+
+      status: statusOverride || document.getElementById('agreementStatus')?.value || 'draft',
+      validUntil: document.getElementById('validUntil')?.value ? new Date(document.getElementById('validUntil').value).toISOString() : null,
+
+      providerGstinEnabled: document.getElementById('providerGstinEnabled')?.checked || false,
+      providerGstin: document.getElementById('providerGstin')?.value.trim() || null,
+
+      quotationId: document.getElementById('quotationId')?.value || null,
+      userId: document.getElementById('select-registered-client')?.value || null,
+    };
+
+    try {
+      const res = await fetch('/api/admin/agreements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to create agreement');
+      }
+
+      showToast(`Agreement ${data.agreement.agreementNumber} created successfully!`);
+      setTimeout(() => {
+        window.location.href = `/admin/agreements/${data.agreement.id}`;
+      }, 1000);
+    } catch (err) {
+      alert(`Error creating agreement: ${err.message}`);
+      if (submitBtn) submitBtn.disabled = false;
+      if (draftBtn) draftBtn.disabled = false;
+    }
+  }
+
+  document.getElementById('agreement-form')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    submitAgreement();
+  });
+
+  document.getElementById('btn-save-draft')?.addEventListener('click', () => {
+    submitAgreement('draft');
+  });
+
+  document.getElementById('btn-preview-create')?.addEventListener('click', () => {
+    submitAgreement();
+  });
+
+  // Initialize
+  renderClausesEditor();
+</script>

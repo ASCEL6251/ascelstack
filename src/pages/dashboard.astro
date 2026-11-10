@@ -4,8 +4,8 @@ export const prerender = false;
 import { UserButton, SignOutButton } from '@clerk/astro/components';
 import Logo from '../components/Logo.astro';
 import { getAuthenticatedUser } from '../lib/auth';
-import { db, services, serviceRequests, businesses, activityLogs, quotations } from '../db';
-import { eq, desc, asc } from 'drizzle-orm';
+import { db, services, serviceRequests, businesses, activityLogs, quotations, agreements } from '../db';
+import { eq, desc, asc, or } from 'drizzle-orm';
 import { getPricing, cardPrice, formatINR } from '../lib/pricing';
 import rawPricing from '../data/pricing.json';
 import '../styles/global.css';
@@ -92,6 +92,36 @@ const customerQuotations = await db
   .where(eq(quotations.userId, user.id))
   .orderBy(desc(quotations.createdAt));
 
+// 3c. Fetch all client agreements for customer
+const customerAgreements = await db
+  .select({
+    id: agreements.id,
+    agreementNumber: agreements.agreementNumber,
+    secureToken: agreements.secureToken,
+    title: agreements.title,
+    projectName: agreements.projectName,
+    status: agreements.status,
+    version: agreements.version,
+    isImmutable: agreements.isImmutable,
+    currency: agreements.currency,
+    totalAmount: agreements.totalAmount,
+    advanceAmount: agreements.advanceAmount,
+    advancePercentage: agreements.advancePercentage,
+    clientSignedAt: agreements.clientSignedAt,
+    providerSignedAt: agreements.providerSignedAt,
+    signedAt: agreements.signedAt,
+    createdAt: agreements.createdAt,
+  })
+  .from(agreements)
+  .where(
+    or(
+      eq(agreements.userId, user.id),
+      eq(agreements.clientEmail, user.email),
+      business ? eq(agreements.businessId, business.id) : undefined
+    )
+  )
+  .orderBy(desc(agreements.createdAt));
+
 // 4. Fetch all catalog services for exploration and the estimation planner
 const allServices = await db
   .select()
@@ -152,6 +182,7 @@ const initialData = {
   },
   requests: customerRequests,
   quotations: customerQuotations,
+  agreements: customerAgreements,
   activities: recentActivities,
   allServices,
   pricing: rawPricing,
@@ -246,6 +277,18 @@ const initialData = {
             </svg>
             <span>Quotations</span>
             <span class="badge-pill" data-bind-quotes-badge>{customerQuotations.length}</span>
+          </button>
+
+          <button class="nav-item" data-tab="agreements">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+              <polyline points="10 9 9 9 8 9" />
+            </svg>
+            <span>Agreements</span>
+            <span class="badge-pill" data-bind-agreements-badge>{customerAgreements.length}</span>
           </button>
 
           <button class="nav-item" data-tab="explore">
@@ -1130,6 +1173,103 @@ const initialData = {
                 </div>
               )}
               </div>
+            </div>
+          </section>
+
+          <!-- ============================================================== -->
+          <!-- VIEW: CLIENT AGREEMENTS -->
+          <!-- ============================================================== -->
+          <section class="dash-view" id="view-agreements" data-view="agreements">
+            <div class="card-panel">
+              <div class="panel-header-flex">
+                <div>
+                  <span class="eyebrow">Legal Contracts & SOWs</span>
+                  <h2 class="display h3">Client Agreements</h2>
+                  <p class="panel-subtitle">Review, sign, and download your executed Professional Service Agreements</p>
+                </div>
+                <a href="/agreements" class="btn btn-ghost">
+                  <span>Browse Legal Framework</span>
+                  <span class="arrow">→</span>
+                </a>
+              </div>
+
+              {customerAgreements.length === 0 ? (
+                <div class="empty-state">
+                  <div class="empty-icon">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                      <line x1="16" y1="13" x2="8" y2="13"></line>
+                      <line x1="16" y1="17" x2="8" y2="17"></line>
+                    </svg>
+                  </div>
+                  <h3 class="display empty-title">No client agreements issued yet</h3>
+                  <p class="empty-desc">
+                    When your project scope and budget are approved, your dedicated team will prepare a formal Professional Service Agreement for digital execution.
+                  </p>
+                  <button class="btn btn-primary" data-action="go-planner">
+                    <span>Open Estimation Planner</span>
+                    <span class="arrow">→</span>
+                  </button>
+                </div>
+              ) : (
+                <div class="customer-quotes-grid">
+                  {customerAgreements.map((agr) => {
+                    const clientSigned = Boolean(agr.clientSignedAt);
+                    const providerSigned = Boolean(agr.providerSignedAt);
+                    return (
+                      <div class="cust-quote-card">
+                        <div class="cust-qc-top">
+                          <div>
+                            <span class="mono cust-qc-num">{agr.agreementNumber}</span>
+                            <h3 class="display cust-qc-title">{agr.projectName}</h3>
+                          </div>
+                          <span class={`status-tag status-${agr.status}`}>
+                            {agr.status === 'signed' ? 'Executed' : agr.status}
+                          </span>
+                        </div>
+
+                        <div style="margin: 0.75rem 0; font-size: 0.82rem; color: #64748b; display: flex; gap: 0.75rem;">
+                          <span>{providerSigned ? '✓ Ascelstack Signed' : '○ Pending Ascelstack'}</span>
+                          <span>·</span>
+                          <span>{clientSigned ? '✓ You Signed' : '○ Signature Required'}</span>
+                        </div>
+
+                        <div class="cust-qc-footer">
+                          <div>
+                            <span class="mono text-xs text-muted">Contract Value:</span>
+                            <div class="mono cust-qc-amount">
+                              {agr.currency} {parseFloat(String(agr.totalAmount)).toLocaleString()}
+                            </div>
+                          </div>
+                          <span class="mono text-xs text-muted">
+                            Created: {new Date(agr.createdAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </span>
+                        </div>
+
+                        <div class="cust-qc-actions">
+                          <a
+                            href={`/agreements/${agr.secureToken}`}
+                            class="btn-sm btn-primary"
+                            style="text-align: center; justify-content: center; text-decoration: none;"
+                          >
+                            {clientSigned ? 'View Agreement' : 'Review & Sign →'}
+                          </a>
+                          <a
+                            href={`/agreements/${agr.secureToken}/print`}
+                            target="_blank"
+                            rel="noreferrer"
+                            class="btn-sm btn-ghost"
+                            style="text-align: center; justify-content: center; text-decoration: none;"
+                          >
+                            Download PDF
+                          </a>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </section>
 

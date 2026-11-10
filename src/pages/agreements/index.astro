@@ -1,0 +1,271 @@
+---
+export const prerender = false;
+
+import Base from '../../layouts/Base.astro';
+import Logo from '../../components/Logo.astro';
+import { getAuthenticatedUser } from '../../lib/auth';
+import { isAuthorizedAdminEmail } from '../../lib/admin-auth';
+import { db, agreements } from '../../db';
+import { eq, or, desc } from 'drizzle-orm';
+
+const authUser = await getAuthenticatedUser(Astro);
+const user = authUser?.user;
+const isAdmin = user ? isAuthorizedAdminEmail(user.email, Astro) : false;
+
+let userAgreements: any[] = [];
+if (user) {
+  userAgreements = await db
+    .select({
+      id: agreements.id,
+      agreementNumber: agreements.agreementNumber,
+      secureToken: agreements.secureToken,
+      title: agreements.title,
+      status: agreements.status,
+      version: agreements.version,
+      projectName: agreements.projectName,
+      currency: agreements.currency,
+      totalAmount: agreements.totalAmount,
+      advanceAmount: agreements.advanceAmount,
+      clientSignedAt: agreements.clientSignedAt,
+      providerSignedAt: agreements.providerSignedAt,
+      signedAt: agreements.signedAt,
+      createdAt: agreements.createdAt,
+    })
+    .from(agreements)
+    .where(
+      or(
+        eq(agreements.userId, user.id),
+        eq(agreements.clientEmail, user.email),
+        authUser.business ? eq(agreements.businessId, authUser.business.id) : undefined
+      )
+    )
+    .orderBy(desc(agreements.createdAt));
+}
+
+function formatCurrency(amount: string | number, curr = 'INR') {
+  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+  if (isNaN(num)) return '₹0';
+  if (curr === 'USD') return `$${num.toLocaleString('en-US')}`;
+  return `₹${num.toLocaleString('en-IN')}`;
+}
+
+const statusLabels: Record<string, string> = {
+  draft: 'Draft',
+  pending_review: 'Under Review',
+  sent: 'Sent for Signature',
+  viewed: 'Viewed by Client',
+  pending_signature: 'Action Required',
+  partially_signed: 'Partially Signed',
+  signed: 'Executed & Active',
+  rejected: 'Rejected',
+  expired: 'Expired',
+  cancelled: 'Cancelled',
+};
+---
+
+<Base
+  title="Client Agreements & Contract Verification"
+  description="Ascelstack Professional Service Agreement framework. Verify, review, and execute legally binding engineering contracts under Section 10A of the Information Technology Act, 2000."
+>
+  <!-- Hero Header -->
+  <header class="legal-hero" style="padding-top: calc(var(--nav-h) + 4rem); padding-bottom: 4rem; background: radial-gradient(50% 60% at 50% 0%, rgba(148, 188, 227, 0.25), transparent 75%), var(--paper); border-bottom: 1px solid var(--line);">
+    <div class="wrap">
+      <div style="max-width: 820px; margin: 0 auto; text-align: center;">
+        <p class="eyebrow" style="justify-content: center; margin-bottom: 1rem;">Ascelstack Contract Management</p>
+        <h1 class="display h1" style="font-size: clamp(2.5rem, 5vw, 4.5rem); margin-bottom: 1.25rem;">
+          Client <em>Agreements</em>
+        </h1>
+        <p class="lead" style="color: var(--text-muted); font-size: 1.15rem; line-height: 1.6;">
+          Execute, verify, and manage your engineering contracts with transparent milestones, intellectual property protections, and electronic signing under Section 10A of the Information Technology Act, 2000.
+        </p>
+
+        <!-- Search / Lookup Box -->
+        <div style="margin-top: 2.5rem; max-width: 580px; margin-inline: auto;">
+          <form id="token-lookup-form" class="card-panel" style="padding: 0.5rem 0.5rem 0.5rem 1.25rem; display: flex; align-items: center; gap: 0.5rem; border-radius: 999px; background: #ffffff; box-shadow: 0 10px 30px -10px rgba(29, 45, 61, 0.15);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent); flex-shrink: 0;">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+            <input
+              type="text"
+              id="agreementTokenInput"
+              placeholder="Enter secure agreement token or link..."
+              style="border: 0; outline: none; background: transparent; flex: 1; font-size: 0.95rem; color: var(--ink);"
+              required
+            />
+            <button type="submit" class="btn btn-primary" style="border-radius: 999px; padding: 0.65rem 1.4rem;">
+              <span>Open Agreement</span>
+              <span class="arrow">→</span>
+            </button>
+          </form>
+        </div>
+
+        {isAdmin && (
+          <div style="margin-top: 1.5rem;">
+            <a href="/admin/agreements" class="btn btn-sm btn-ghost" style="border-radius: 999px;">
+              <span>Go to Admin Agreements Management Console</span>
+              <span class="arrow">→</span>
+            </a>
+          </div>
+        )}
+      </div>
+    </div>
+  </header>
+
+  <!-- Authenticated User Agreements Section -->
+  {user && (
+    <section class="section" style="padding-top: 3.5rem; padding-bottom: 3.5rem; background: var(--paper-raised); border-bottom: 1px solid var(--line);">
+      <div class="wrap">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <span class="eyebrow">Your Contract Portfolio</span>
+            <h2 class="display h2" style="font-size: 2rem;">Agreements for <em>{user.fullName || user.email}</em></h2>
+            <p class="text-muted" style="font-size: 0.95rem; margin-top: 0.25rem;">
+              Manage your executed and pending Professional Service Agreements
+            </p>
+          </div>
+          <a href="/dashboard#agreements" class="btn btn-ghost btn-sm">
+            View in Customer Dashboard →
+          </a>
+        </div>
+
+        {userAgreements.length === 0 ? (
+          <div class="card-panel" style="text-align: center; padding: 3rem 1.5rem;">
+            <h3 class="display h3">No agreements associated with this account yet</h3>
+            <p class="text-muted" style="max-width: 48ch; margin: 0.5rem auto 1.5rem;">
+              When your project specifications or custom quotation are formalized into a contract, your signed agreements will appear here.
+            </p>
+            <a href="/contact" class="btn btn-primary">
+              Start a Project with Us →
+            </a>
+          </div>
+        ) : (
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
+            {userAgreements.map((agr) => {
+              const clientSigned = Boolean(agr.clientSignedAt);
+              const providerSigned = Boolean(agr.providerSignedAt);
+              return (
+                <article class="card-panel" style="display: flex; flex-direction: column; justify-content: space-between; border-radius: var(--radius); transition: transform 0.2s, box-shadow 0.2s;">
+                  <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                      <span class="mono" style="font-weight: 700; color: var(--accent);">{agr.agreementNumber}</span>
+                      <span class={`status-tag status-${agr.status}`}>
+                        {statusLabels[agr.status] || agr.status}
+                      </span>
+                    </div>
+
+                    <h3 class="display" style="font-size: 1.25rem; color: var(--ink); margin-bottom: 0.5rem;">
+                      {agr.projectName}
+                    </h3>
+
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--line);">
+                      <span class="mono text-muted text-xs">VALUATION:</span>
+                      <strong class="mono" style="font-size: 1.15rem; color: var(--ink);">
+                        {formatCurrency(agr.totalAmount, agr.currency)}
+                      </strong>
+                    </div>
+
+                    <div style="font-size: 0.78rem; color: #64748b; margin-top: 0.5rem;">
+                      <span>{providerSigned ? '✓ Ascelstack Signed' : '○ Awaiting Ascelstack'}</span> ·{' '}
+                      <span>{clientSigned ? '✓ Client Signed' : '○ Signature Required'}</span>
+                    </div>
+                  </div>
+
+                  <div style="display: flex; gap: 0.5rem; margin-top: 1.5rem;">
+                    <a
+                      href={`/agreements/${agr.secureToken}`}
+                      class="btn btn-sm btn-primary"
+                      style="flex: 1; text-align: center; justify-content: center;"
+                    >
+                      {clientSigned ? 'View Agreement' : 'Review & Sign →'}
+                    </a>
+                    <a
+                      href={`/agreements/${agr.secureToken}/print`}
+                      target="_blank"
+                      rel="noreferrer"
+                      class="btn btn-sm btn-ghost"
+                      title="Download PDF"
+                    >
+                      PDF
+                    </a>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </section>
+  )}
+
+  <!-- Framework Principles Section -->
+  <section class="section" style="padding-block: 5rem;">
+    <div class="wrap">
+      <div style="text-align: center; max-width: 680px; margin: 0 auto 3.5rem;">
+        <span class="eyebrow" style="justify-content: center;">Legal Compliance & Trust</span>
+        <h2 class="display h2" style="font-size: clamp(2rem, 3.5vw, 3rem);">Structured under <em>Indian Law</em></h2>
+        <p class="text-muted" style="margin-top: 0.75rem;">
+          Our Professional Service Agreements provide rigorous protections for both service provider and customer, strictly aligning with Indian statutory frameworks.
+        </p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
+        <div class="card-panel" style="padding: 2rem;">
+          <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(89, 128, 166, 0.15); display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem; color: var(--accent);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+          </div>
+          <h3 class="display" style="font-size: 1.35rem; margin-bottom: 0.5rem;">IT Act, 2000 Compliance</h3>
+          <p class="text-muted" style="font-size: 0.92rem; line-height: 1.6;">
+            Executed pursuant to Section 10A of the Information Technology Act, 2000 regarding validity of contracts formed through electronic means and digital records.
+          </p>
+        </div>
+
+        <div class="card-panel" style="padding: 2rem;">
+          <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(89, 128, 166, 0.15); display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem; color: var(--accent);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+            </svg>
+          </div>
+          <h3 class="display" style="font-size: 1.35rem; margin-bottom: 0.5rem;">Full Source Code Transfer</h3>
+          <p class="text-muted" style="font-size: 0.92rem; line-height: 1.6;">
+            Unambiguous ownership guarantees. Complete repository, branches, secrets, and environment handover upon clearance of contracted sprint milestone fees.
+          </p>
+        </div>
+
+        <div class="card-panel" style="padding: 2rem;">
+          <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(89, 128, 166, 0.15); display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem; color: var(--accent);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+          <h3 class="display" style="font-size: 1.35rem; margin-bottom: 0.5rem;">Arbitration & Jurisdiction</h3>
+          <p class="text-muted" style="font-size: 0.92rem; line-height: 1.6;">
+            Binding, time-limited arbitration under the Arbitration and Conciliation Act, 1996 with seat and jurisdiction in Kolkata or Bengaluru, India.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  // Lookup Form Handler
+  document.getElementById('token-lookup-form')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const input = document.getElementById('agreementTokenInput') as HTMLInputElement;
+    let val = input?.value.trim();
+    if (!val) return;
+
+    // Handle full URL pasted or bare token
+    if (val.includes('/agreements/')) {
+      const parts = val.split('/agreements/');
+      val = parts[parts.length - 1].replace(/\/print$/, '').replace(/\/$/, '');
+    }
+
+    window.location.href = `/agreements/${encodeURIComponent(val)}`;
+  });
+</script>

@@ -35,3 +35,101 @@ export const serviceRequestCancelSchema = z.object({
   requestId: z.string().uuid('Valid request ID required'),
   reason: z.string().trim().max(500).optional(),
 });
+
+// Agreement Validation Schemas
+export const agreementClauseSchema = z.object({
+  id: z.string(),
+  sectionNumber: z.number().int().min(1).max(100),
+  title: z.string().trim().min(1, 'Clause title is required').max(255),
+  category: z.string().optional(),
+  content: z.string().trim().min(1, 'Clause content cannot be empty'),
+  customNotes: z.string().optional().nullable(),
+  isMandatory: z.boolean().default(false),
+  isCustomizable: z.boolean().default(true),
+});
+
+export const agreementCreateSchema = z.object({
+  title: z.string().trim().min(2, 'Title required').max(255).default('PROFESSIONAL SERVICE AGREEMENT'),
+  templateId: z.string().uuid().optional().nullable(),
+  userId: z.string().uuid().optional().nullable(),
+  businessId: z.string().uuid().optional().nullable(),
+  quotationId: z.string().uuid().optional().nullable(),
+
+  // Client Details
+  clientName: z.string().trim().min(2, 'Client name is required').max(255),
+  clientEmail: z.string().trim().email('Valid client email required').max(255),
+  clientCompany: z.string().trim().max(255).optional().nullable(),
+  clientAddress: z.string().trim().optional().nullable(),
+  clientCity: z.string().trim().max(100).optional().nullable(),
+  clientState: z.string().trim().max(100).optional().nullable(),
+  clientCountry: z.string().trim().max(100).default('India').optional().nullable(),
+  clientPhone: z.string().trim().max(50).optional().nullable(),
+  clientGstin: z.string().trim().max(50).optional().nullable(),
+
+  // Project Details
+  projectName: z.string().trim().min(2, 'Project name is required').max(255),
+  projectDescription: z.string().trim().optional().nullable(),
+  scopeOfWork: z.string().trim().optional().nullable(),
+  deliverables: z.array(z.any()).optional().nullable(),
+  timeline: z.string().trim().optional().nullable(),
+  milestones: z.array(z.any()).optional().nullable(),
+
+  // Commercials
+  currency: z.string().trim().max(10).default('INR'),
+  totalAmount: z.number().nonnegative('Total amount cannot be negative').default(0),
+  advanceAmount: z.number().nonnegative('Advance amount cannot be negative').default(0),
+  advancePercentage: z.number().int().min(0).max(100).default(50),
+  paymentSchedule: z.string().trim().optional().nullable(),
+  taxPercentage: z.number().nonnegative().max(100).default(0),
+  taxAmount: z.number().nonnegative().default(0),
+
+  // Clauses
+  clauses: z.array(agreementClauseSchema).min(1, 'At least one agreement clause is required'),
+
+  // Status & Provider Override
+  status: z.enum([
+    'draft',
+    'pending_review',
+    'sent',
+    'viewed',
+    'pending_signature',
+    'partially_signed',
+    'signed',
+    'rejected',
+    'expired',
+    'cancelled',
+  ]).default('draft'),
+  validUntil: z.string().datetime().optional().nullable(),
+  providerGstinEnabled: z.boolean().default(false),
+  providerGstin: z.string().trim().max(50).optional().nullable(),
+});
+
+export const agreementUpdateSchema = agreementCreateSchema.partial().extend({
+  id: z.string().uuid(),
+});
+
+export const agreementSignSchema = z.object({
+  signerName: z.string().trim().min(2, 'Full legal name required').max(255),
+  signerEmail: z.string().trim().email('Valid email required').max(255),
+  signerTitle: z.string().trim().max(255).optional().nullable(),
+  signatureType: z.enum(['typed', 'drawn']).default('typed'),
+  signatureData: z.string().trim().min(5, 'Valid signature data required'),
+  consentChecked: z.literal(true, {
+    errorMap: () => ({ message: 'You must explicitly accept and agree to the agreement terms' }),
+  }),
+});
+
+export const companySettingsSchema = z.object({
+  companyLegalName: z.string().trim().min(2).max(255),
+  companyBrandName: z.string().trim().min(2).max(255),
+  registeredAddress: z.string().trim().min(5),
+  legalEmail: z.string().trim().email(),
+  supportEmail: z.string().trim().email(),
+  contactPhone: z.string().trim().max(100),
+  gstin: z.string().trim().max(50).optional().nullable(),
+  gstinEnabled: z.boolean().default(false),
+  logoUrl: z.string().trim().min(1),
+  signatoryName: z.string().trim().min(2).max(255),
+  signatoryTitle: z.string().trim().min(2).max(255),
+  defaultCurrency: z.string().trim().max(10).default('INR'),
+});

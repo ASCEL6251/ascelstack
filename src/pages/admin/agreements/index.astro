@@ -1,0 +1,440 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getAdminSession } from '../../../lib/admin-auth';
+import { db, agreements, users, businesses } from '../../../db';
+import { sql, desc, asc, ilike, or, eq, and } from 'drizzle-orm';
+
+// Strict Server-Side Session Check
+const session = await getAdminSession(Astro);
+if (!session) {
+  return Astro.redirect('/admin/login');
+}
+
+const url = Astro.url;
+const search = url.searchParams.get('q')?.trim() || '';
+const statusFilter = url.searchParams.get('status')?.trim() || '';
+const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
+const limit = 15;
+const offset = (page - 1) * limit;
+
+const conditions = [];
+
+if (search) {
+  conditions.push(
+    or(
+      ilike(agreements.agreementNumber, `%${search}%`),
+      ilike(agreements.title, `%${search}%`),
+      ilike(agreements.projectName, `%${search}%`),
+      ilike(agreements.clientName, `%${search}%`),
+      ilike(agreements.clientEmail, `%${search}%`),
+      ilike(agreements.clientCompany, `%${search}%`)
+    )
+  );
+}
+
+if (statusFilter && statusFilter !== 'all') {
+  conditions.push(eq(agreements.status, statusFilter));
+}
+
+const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+// Total matching count
+const [{ totalCount }] = await db
+  .select({ totalCount: sql<number>`count(*)::int` })
+  .from(agreements)
+  .where(whereClause);
+
+// Metric counts across all agreements
+const allAgreements = await db
+  .select({
+    status: agreements.status,
+  })
+  .from(agreements);
+
+const totalAgreements = allAgreements.length;
+const pendingSignatureCount = allAgreements.filter((a) =>
+  ['sent', 'viewed', 'pending_signature'].includes(a.status)
+).length;
+const partiallySignedCount = allAgreements.filter((a) => a.status === 'partially_signed').length;
+const fullySignedCount = allAgreements.filter((a) => a.status === 'signed').length;
+const draftCount = allAgreements.filter((a) => ['draft', 'pending_review'].includes(a.status)).length;
+
+const agreementList = await db
+  .select({
+    id: agreements.id,
+    agreementNumber: agreements.agreementNumber,
+    secureToken: agreements.secureToken,
+    title: agreements.title,
+    status: agreements.status,
+    version: agreements.version,
+    isImmutable: agreements.isImmutable,
+    clientName: agreements.clientName,
+    clientEmail: agreements.clientEmail,
+    clientCompany: agreements.clientCompany,
+    projectName: agreements.projectName,
+    currency: agreements.currency,
+    totalAmount: agreements.totalAmount,
+    advanceAmount: agreements.advanceAmount,
+    clientSignedAt: agreements.clientSignedAt,
+    providerSignedAt: agreements.providerSignedAt,
+    signedAt: agreements.signedAt,
+    createdAt: agreements.createdAt,
+    updatedAt: agreements.updatedAt,
+  })
+  .from(agreements)
+  .where(whereClause)
+  .orderBy(desc(agreements.createdAt))
+  .limit(limit)
+  .offset(offset);
+
+const totalPages = Math.ceil(totalCount / limit);
+
+function formatCurrency(amount: string | number, curr = 'INR') {
+  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+  if (isNaN(num)) return '₹0';
+  if (curr === 'USD') return `$${num.toLocaleString('en-US')}`;
+  return `₹${num.toLocaleString('en-IN')}`;
+}
+
+const statusLabels: Record<string, string> = {
+  draft: 'Draft',
+  pending_review: 'Pending Review',
+  sent: 'Sent to Client',
+  viewed: 'Viewed by Client',
+  pending_signature: 'Pending Signature',
+  partially_signed: 'Partially Signed',
+  signed: 'Signed & Active',
+  rejected: 'Rejected',
+  expired: 'Expired',
+  cancelled: 'Cancelled',
+};
+---
+
+<AdminLayout
+  title="Client Agreements"
+  activeNav="agreements"
+  breadcrumbs={[{ label: 'Agreements' }]}
+  session={session}
+>
+  <div class="dash-view is-active">
+    <!-- Header banner -->
+    <div class="dash-welcome-card" style="margin-bottom: 2rem;">
+      <div class="welcome-copy">
+        <p class="eyebrow">Legal Operations · Contract Management</p>
+        <h1 class="display welcome-title">Client <em>Agreements</em></h1>
+        <p class="welcome-desc">
+          Generate, customize, and manage legally structured Professional Service Agreements (PSAs) compliant with Indian contract and IT laws. Track secure electronic signatures, enforce immutability, and generate corporate branded PDFs.
+        </p>
+      </div>
+      <div class="welcome-actions">
+        <a href="/admin/agreements/new" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>Create Agreement</span>
+        </a>
+        <a href="/admin/agreements/settings" class="btn btn-ghost">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          <span>Company Branding & GSTIN</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- 4 KPI Metrics -->
+    <div class="metrics-grid">
+      <div class="metric-card metric-card--total">
+        <div class="metric-meta">
+          <span class="mono metric-label">TOTAL AGREEMENTS</span>
+          <span class="metric-dot"></span>
+        </div>
+        <div class="metric-value">{totalAgreements}</div>
+        <span class="metric-hint">All created contracts</span>
+      </div>
+
+      <div class="metric-card metric-card--pending">
+        <div class="metric-meta">
+          <span class="mono metric-label">AWAITING CLIENT SIGNATURE</span>
+          <span class="metric-dot dot-warn"></span>
+        </div>
+        <div class="metric-value text-warn">{pendingSignatureCount}</div>
+        <span class="metric-hint">Sent or viewed by client</span>
+      </div>
+
+      <div class="metric-card" style="border-left: 3px solid #a855f7;">
+        <div class="metric-meta">
+          <span class="mono metric-label">PARTIALLY SIGNED</span>
+          <span class="metric-dot" style="background: #a855f7;"></span>
+        </div>
+        <div class="metric-value" style="color: #7e22ce;">{partiallySignedCount}</div>
+        <span class="metric-hint">One party signature affixed</span>
+      </div>
+
+      <div class="metric-card metric-card--completed">
+        <div class="metric-meta">
+          <span class="mono metric-label">FULLY SIGNED & IMMUTABLE</span>
+          <span class="metric-dot dot-success"></span>
+        </div>
+        <div class="metric-value text-success">{fullySignedCount}</div>
+        <span class="metric-hint">Legally executed contracts</span>
+      </div>
+    </div>
+
+    <!-- Main Panel -->
+    <div class="card-panel">
+      <!-- Toolbar: Search & Filters -->
+      <div class="matrix-filter-bar" style="margin-bottom: 1.25rem;">
+        <form method="get" class="matrix-search" style="flex: 1; max-width: 480px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path>
+          </svg>
+          <input
+            type="search"
+            name="q"
+            value={search}
+            placeholder="Search by agreement #, client, email, project..."
+          />
+          {statusFilter && <input type="hidden" name="status" value={statusFilter} />}
+        </form>
+
+        <!-- Status Filter Pills -->
+        <div class="matrix-layer-pills" style="overflow-x: auto; padding-bottom: 4px;">
+          <a
+            href={`/admin/agreements?status=all${search ? `&q=${encodeURIComponent(search)}` : ''}`}
+            class:list={['mlp-btn', { 'is-on': !statusFilter || statusFilter === 'all' }]}
+          >
+            All ({totalAgreements})
+          </a>
+          <a
+            href={`/admin/agreements?status=draft${search ? `&q=${encodeURIComponent(search)}` : ''}`}
+            class:list={['mlp-btn', { 'is-on': statusFilter === 'draft' }]}
+          >
+            Drafts ({draftCount})
+          </a>
+          <a
+            href={`/admin/agreements?status=sent${search ? `&q=${encodeURIComponent(search)}` : ''}`}
+            class:list={['mlp-btn', { 'is-on': statusFilter === 'sent' }]}
+          >
+            Sent
+          </a>
+          <a
+            href={`/admin/agreements?status=partially_signed${search ? `&q=${encodeURIComponent(search)}` : ''}`}
+            class:list={['mlp-btn', { 'is-on': statusFilter === 'partially_signed' }]}
+          >
+            Partially Signed ({partiallySignedCount})
+          </a>
+          <a
+            href={`/admin/agreements?status=signed${search ? `&q=${encodeURIComponent(search)}` : ''}`}
+            class:list={['mlp-btn', { 'is-on': statusFilter === 'signed' }]}
+          >
+            Signed ({fullySignedCount})
+          </a>
+        </div>
+      </div>
+
+      <!-- Agreements Table -->
+      <div class="table-wrap">
+        {agreementList.length === 0 ? (
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
+            </div>
+            <h3 class="display empty-title">No client agreements found</h3>
+            <p class="empty-desc">
+              {search || statusFilter ? 'Try clearing your search query or status filter.' : 'Generate your first corporate client agreement using pre-loaded legal templates.'}
+            </p>
+            <div class="empty-actions">
+              <a href="/admin/agreements/new" class="btn btn-primary">
+                <span>Create New Agreement</span>
+                <span class="arrow">→</span>
+              </a>
+            </div>
+          </div>
+        ) : (
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Agreement Details</th>
+                <th>Client / Entity</th>
+                <th>Project Scope</th>
+                <th>Commercials</th>
+                <th>Status</th>
+                <th>Signatures</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {agreementList.map((agr) => {
+                const clientSigned = Boolean(agr.clientSignedAt);
+                const providerSigned = Boolean(agr.providerSignedAt);
+                return (
+                  <tr>
+                    <td>
+                      <a href={`/admin/agreements/${agr.id}`} class="table-service-name" style="text-decoration: none;">
+                        <strong class="mono" style="color: var(--ink);">{agr.agreementNumber}</strong>
+                        <div style="font-size: 0.78rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.4rem; margin-top: 2px;">
+                          <span>v{agr.version}</span>
+                          <span>·</span>
+                          <span>{new Date(agr.createdAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                        </div>
+                      </a>
+                    </td>
+
+                    <td>
+                      <strong>{agr.clientName}</strong>
+                      {agr.clientCompany && <span class="text-muted text-xs" style="display: block;">{agr.clientCompany}</span>}
+                      <span class="mono text-muted text-xs" style="display: block;">{agr.clientEmail}</span>
+                    </td>
+
+                    <td>
+                      <strong style="color: var(--ink);">{agr.projectName}</strong>
+                    </td>
+
+                    <td>
+                      <span class="mono" style="font-weight: 700; color: var(--ink);">
+                        {formatCurrency(agr.totalAmount, agr.currency)}
+                      </span>
+                      {Number(agr.advanceAmount) > 0 && (
+                        <span class="text-muted text-xs mono" style="display: block;">
+                          Advance: {formatCurrency(agr.advanceAmount, agr.currency)} ({agr.advancePercentage}%)
+                        </span>
+                      )}
+                    </td>
+
+                    <td>
+                      <span class={`status-tag status-${agr.status}`}>
+                        {statusLabels[agr.status] || agr.status}
+                      </span>
+                      {agr.isImmutable && (
+                        <span class="mono" style="display: block; font-size: 0.65rem; color: #047857; margin-top: 2px;">
+                          LOCKED (IMMUTABLE)
+                        </span>
+                      )}
+                    </td>
+
+                    <td>
+                      <div style="display: flex; flex-direction: column; gap: 3px; font-size: 0.75rem;">
+                        <span style={providerSigned ? 'color: #047857; font-weight: 600;' : 'color: #94a3b8;'}>
+                          {providerSigned ? '✓ Ascelstack Signed' : '○ Awaiting Ascelstack'}
+                        </span>
+                        <span style={clientSigned ? 'color: #047857; font-weight: 600;' : 'color: #94a3b8;'}>
+                          {clientSigned ? '✓ Client Signed' : '○ Awaiting Client'}
+                        </span>
+                      </div>
+                    </td>
+
+                    <td style="text-align: right;">
+                      <div style="display: inline-flex; align-items: center; gap: 0.4rem;">
+                        <a
+                          href={`/admin/agreements/${agr.id}`}
+                          class="btn btn-sm btn-ghost"
+                          title="Manage Agreement"
+                        >
+                          Manage
+                        </a>
+
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-ghost"
+                          data-action="copy-link"
+                          data-token={agr.secureToken}
+                          title="Copy Client Signing Link"
+                        >
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                          </svg>
+                        </button>
+
+                        <a
+                          href={`/agreements/${agr.secureToken}/print`}
+                          target="_blank"
+                          rel="noreferrer"
+                          class="btn btn-sm btn-ghost"
+                          title="Download / Print PDF"
+                        >
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                          </svg>
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      <!-- Pagination -->
+      {totalPages > 1 && (
+        <div class="pagination-bar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--line);">
+          <span class="mono text-muted text-xs">
+            Showing Page {page} of {totalPages} ({totalCount} agreements)
+          </span>
+          <div style="display: flex; gap: 0.5rem;">
+            {page > 1 && (
+              <a
+                href={`/admin/agreements?page=${page - 1}${statusFilter ? `&status=${statusFilter}` : ''}${search ? `&q=${encodeURIComponent(search)}` : ''}`}
+                class="btn btn-sm btn-ghost"
+              >
+                ← Previous
+              </a>
+            )}
+            {page < totalPages && (
+              <a
+                href={`/admin/agreements?page=${page + 1}${statusFilter ? `&status=${statusFilter}` : ''}${search ? `&q=${encodeURIComponent(search)}` : ''}`}
+                class="btn btn-sm btn-ghost"
+              >
+                Next →
+              </a>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+
+  <!-- Toast Notification Hub -->
+  <div class="toast-hub" id="toast-hub" aria-live="polite"></div>
+</AdminLayout>
+
+<script>
+  function showToast(message: string, type: 'success' | 'error' = 'success') {
+    const hub = document.getElementById('toast-hub');
+    if (!hub) return;
+    const toast = document.createElement('div');
+    toast.className = `toast-item toast-${type}`;
+    toast.innerHTML = `<span>${message}</span>`;
+    hub.appendChild(toast);
+    setTimeout(() => {
+      toast.classList.add('fade-out');
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
+
+  // Copy Link Handlers
+  document.querySelectorAll('[data-action="copy-link"]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const token = btn.getAttribute('data-token');
+      if (!token) return;
+      const fullUrl = `${window.location.origin}/agreements/${token}`;
+      try {
+        await navigator.clipboard.writeText(fullUrl);
+        showToast('Secure signing link copied to clipboard!');
+      } catch {
+        prompt('Copy secure signing link:', fullUrl);
+      }
+    });
+  });
+</script>

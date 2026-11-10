@@ -1,0 +1,493 @@
+---
+export const prerender = false;
+
+import { db, agreements, agreementSignatures } from '../../../db';
+import { eq } from 'drizzle-orm';
+
+const { token } = Astro.params;
+if (!token) {
+  return Astro.redirect('/agreements');
+}
+
+const [agreement] = await db
+  .select()
+  .from(agreements)
+  .where(eq(agreements.secureToken, token))
+  .limit(1);
+
+if (!agreement) {
+  return Astro.redirect('/404');
+}
+
+const signatures = await db
+  .select()
+  .from(agreementSignatures)
+  .where(eq(agreementSignatures.agreementId, agreement.id));
+
+const providerSig = signatures.find((s) => s.signerRole === 'provider');
+const clientSig = signatures.find((s) => s.signerRole === 'client');
+
+function formatCurrency(amount: string | number, curr = 'INR') {
+  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+  if (isNaN(num)) return '₹0';
+  if (curr === 'USD') return `$${num.toLocaleString('en-US')}`;
+  return `₹${num.toLocaleString('en-IN')}`;
+}
+
+const clauses = (agreement.clauses as any[]) || [];
+const isFullySigned = Boolean(providerSig && clientSig);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{agreement.agreementNumber} · Professional Service Agreement</title>
+    <link rel="icon" type="image/svg+xml" href="/brand/mark.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bacasime+Antique&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --ink: #1d2d3d;
+        --accent: #5980a6;
+        --tint: #94bce3;
+        --paper: #ffffff;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        padding: 0;
+        background: #e2e8f0;
+        font-family: 'Inter Tight', -apple-system, sans-serif;
+        color: #111827;
+        line-height: 1.6;
+        font-size: 10pt;
+      }
+
+      /* Screen Toolbar */
+      .no-print-bar {
+        position: sticky;
+        top: 0;
+        background: #1e293b;
+        color: #ffffff;
+        padding: 0.75rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 50;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      }
+      .no-print-btn {
+        background: #3b82f6;
+        color: #ffffff;
+        border: 0;
+        padding: 0.5rem 1.25rem;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .no-print-btn:hover { background: #2563eb; }
+
+      .print-container {
+        max-width: 800px;
+        margin: 2rem auto;
+        background: #ffffff;
+        padding: 40px 48px;
+        box-shadow: 0 4px 25px rgba(0,0,0,0.1);
+        border-radius: 4px;
+      }
+
+      /* PDF Document Header */
+      .header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 2pt solid #1d2d3d;
+        padding-bottom: 14pt;
+        margin-bottom: 16pt;
+      }
+      .brand-lockup {
+        display: flex;
+        align-items: center;
+        gap: 12pt;
+      }
+      .brand-title {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 15pt;
+        font-weight: 700;
+        color: #1d2d3d;
+        margin: 0;
+      }
+      .brand-sub {
+        font-size: 8pt;
+        color: #4b5563;
+        margin: 2pt 0 0;
+        max-width: 320pt;
+      }
+      .doc-meta {
+        text-align: right;
+        font-size: 8pt;
+        color: #4b5563;
+      }
+      .doc-id {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11pt;
+        font-weight: 700;
+        color: #5980a6;
+        display: block;
+      }
+
+      .title-banner {
+        text-align: center;
+        margin: 16pt 0;
+        padding-bottom: 12pt;
+        border-bottom: 0.75pt solid #e5e7eb;
+      }
+      .doc-h1 {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 16pt;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: #1d2d3d;
+        margin: 0;
+      }
+      .doc-h1-sub {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 7pt;
+        color: #6b7280;
+        margin-top: 4pt;
+      }
+
+      .parties-box {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16pt;
+        background: #f9fafb;
+        border: 0.75pt solid #e5e7eb;
+        padding: 10pt 12pt;
+        margin-bottom: 16pt;
+        border-radius: 4pt;
+      }
+      .party-col h4 {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 7.5pt;
+        text-transform: uppercase;
+        color: #5980a6;
+        margin: 0 0 3pt;
+      }
+      .party-col strong {
+        font-size: 9.5pt;
+        color: #111827;
+        display: block;
+      }
+      .party-col p {
+        font-size: 8pt;
+        color: #4b5563;
+        margin: 1pt 0 0;
+      }
+
+      .commercials-box {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10pt;
+        background: #f3f4f6;
+        border: 0.75pt solid #e5e7eb;
+        padding: 8pt 12pt;
+        margin-bottom: 18pt;
+        border-radius: 4pt;
+      }
+      .comm-col span {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 7pt;
+        color: #6b7280;
+        display: block;
+      }
+      .comm-col strong {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 10pt;
+        color: #1d2d3d;
+      }
+
+      /* Legal Clauses */
+      .clause-block {
+        margin-bottom: 14pt;
+        break-inside: avoid;
+      }
+      .clause-h3 {
+        font-size: 10pt;
+        font-weight: 700;
+        color: #1d2d3d;
+        margin: 0 0 3pt;
+      }
+      .clause-h3 span {
+        font-family: 'JetBrains Mono', monospace;
+        color: #5980a6;
+        font-size: 8.5pt;
+      }
+      .clause-text {
+        font-size: 8.5pt;
+        line-height: 1.55;
+        color: #374151;
+        margin: 0;
+        white-space: pre-line;
+        text-align: justify;
+      }
+
+      /* Signatures Section */
+      .signatures-section {
+        margin-top: 24pt;
+        padding-top: 14pt;
+        border-top: 1.5pt solid #1d2d3d;
+        break-inside: avoid;
+      }
+      .sig-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20pt;
+      }
+      .sig-card {
+        border: 0.75pt solid #d1d5db;
+        border-radius: 4pt;
+        padding: 10pt;
+        background: #f9fafb;
+      }
+      .sig-card h5 {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 7.5pt;
+        text-transform: uppercase;
+        color: #5980a6;
+        margin: 0 0 6pt;
+      }
+      .sig-slot {
+        min-height: 44pt;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-bottom: 0.5pt dashed #9ca3af;
+        margin-bottom: 6pt;
+        padding-bottom: 4pt;
+      }
+      .sig-cursive {
+        font-family: 'Brush Script MT', cursive;
+        font-size: 18pt;
+        color: #111827;
+      }
+      .sig-img {
+        max-height: 38pt;
+        max-width: 100%;
+      }
+      .sig-detail {
+        font-size: 7.5pt;
+        color: #4b5563;
+        line-height: 1.4;
+      }
+
+      /* Running Page Footer */
+      .print-footer {
+        margin-top: 24pt;
+        padding-top: 8pt;
+        border-top: 0.5pt solid #d1d5db;
+        display: flex;
+        justify-content: space-between;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 6.5pt;
+        color: #9ca3af;
+      }
+
+      /* Print CSS Rules */
+      @media print {
+        body {
+          background: #ffffff !important;
+          color: #000000 !important;
+        }
+        .no-print-bar {
+          display: none !important;
+        }
+        .print-container {
+          box-shadow: none !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          max-width: 100% !important;
+          width: 100% !important;
+        }
+        @page {
+          size: A4 portrait;
+          margin: 15mm 12mm 15mm 12mm;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Top Action Bar for screen viewing -->
+    <div class="no-print-bar">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <span style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #94bce3;">
+          {agreement.agreementNumber}
+        </span>
+        <span style="font-size: 0.8rem; opacity: 0.8;">
+          {isFullySigned ? '✓ Fully Executed & Binding' : 'Pending Signature'}
+        </span>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem;">
+        <button type="button" class="no-print-btn" onclick="window.print();">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect x="6" y="14" width="12" height="8"></rect>
+          </svg>
+          <span>Print / Save as PDF</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- PRINT CONTAINER -->
+    <main class="print-container">
+      <!-- Branded Header -->
+      <header class="header-row">
+        <div class="brand-lockup">
+          <svg width="44" height="44" viewBox="0 0 100 100" aria-hidden="true">
+            <path d="M50 6 L66 38 L34 38 Z" fill="#94BCE3"></path>
+            <path d="M32 42 L68 42 L70 46 L80 66 L60 66 L50 46 L40 66 L20 66 L30 46 Z" fill="#5980A6"></path>
+            <path d="M18 70 L38 70 L26 94 L6 94 Z M82 70 L62 70 L74 94 L94 94 Z" fill="#1D2D3D"></path>
+          </svg>
+          <div>
+            <h2 class="brand-title">{agreement.providerName}</h2>
+            <p class="brand-sub">{agreement.providerAddress}</p>
+            <p class="brand-sub" style="margin-top: 1pt;">
+              Email: {agreement.providerEmail} · Phone: {agreement.providerPhone}
+              {agreement.providerGstinEnabled && agreement.providerGstin && (
+                <span> · GSTIN: {agreement.providerGstin}</span>
+              )}
+            </p>
+          </div>
+        </div>
+
+        <div class="doc-meta">
+          <span class="doc-id">{agreement.agreementNumber}</span>
+          <span>Version {agreement.version}</span><br />
+          <span>Date: {new Date(agreement.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span><br />
+          <span>IT Act, 2000 § 10A</span>
+        </div>
+      </header>
+
+      <!-- Title -->
+      <div class="title-banner">
+        <h1 class="doc-h1">PROFESSIONAL SERVICE AGREEMENT</h1>
+        <p class="doc-h1-sub">
+          LEGALLY BINDING SPECIFICATIONS & SERVICE CONTRACT · REPUBLIC OF INDIA
+        </p>
+      </div>
+
+      <!-- Contracting Parties -->
+      <div class="parties-box">
+        <div class="party-col">
+          <h4>SERVICE PROVIDER</h4>
+          <strong>{agreement.providerName}</strong>
+          <p>{agreement.providerAddress}</p>
+          <p>Signatory: {agreement.providerSignatoryName} ({agreement.providerSignatoryTitle})</p>
+        </div>
+
+        <div class="party-col">
+          <h4>CLIENT / CUSTOMER</h4>
+          <strong>{agreement.clientName}</strong>
+          {agreement.clientCompany && <p style="font-weight: 600;">{agreement.clientCompany}</p>}
+          <p>{agreement.clientAddress || 'Address on record'}</p>
+          <p>Contact: {agreement.clientEmail} {agreement.clientPhone ? `· ${agreement.clientPhone}` : ''}</p>
+        </div>
+      </div>
+
+      <!-- Commercials Summary -->
+      <div class="commercials-box">
+        <div class="comm-col">
+          <span>PROJECT SPECIFICATION</span>
+          <strong>{agreement.projectName}</strong>
+        </div>
+        <div class="comm-col">
+          <span>TOTAL CONTRACT VALUE</span>
+          <strong>{formatCurrency(agreement.totalAmount, agreement.currency)}</strong>
+        </div>
+        <div class="comm-col">
+          <span>MOBILIZATION ADVANCE</span>
+          <strong>{formatCurrency(agreement.advanceAmount, agreement.currency)} ({agreement.advancePercentage}%)</strong>
+        </div>
+      </div>
+
+      <!-- All 25 Clauses -->
+      <div class="clauses-container">
+        {clauses.map((c: any) => (
+          <div class="clause-block">
+            <h3 class="clause-h3">
+              <span>Section {String(c.sectionNumber).padStart(2, '0')}.</span> {c.title}
+            </h3>
+            <p class="clause-text">{c.content}</p>
+          </div>
+        ))}
+      </div>
+
+      <!-- Signatures Block -->
+      <div class="signatures-section">
+        <div class="sig-grid">
+          <!-- Provider -->
+          <div class="sig-card">
+            <h5>FOR SERVICE PROVIDER</h5>
+            <div class="sig-slot">
+              {providerSig ? (
+                providerSig.signatureType === 'drawn' ? (
+                  <img src={providerSig.signatureData} alt="Provider Signature" class="sig-img" />
+                ) : (
+                  <span class="sig-cursive">{providerSig.signatureData}</span>
+                )
+              ) : (
+                <span style="font-style: italic; color: #9ca3af; font-size: 7.5pt;">Pending Countersignature</span>
+              )}
+            </div>
+            <div class="sig-detail">
+              <strong>{agreement.providerName}</strong><br />
+              <span>By: {providerSig ? providerSig.signerName : agreement.providerSignatoryName}</span><br />
+              <span>Title: {providerSig ? providerSig.signerTitle : agreement.providerSignatoryTitle}</span><br />
+              {providerSig && <span>Signed: {new Date(providerSig.signedAt).toLocaleDateString('en-IN')}</span>}
+            </div>
+          </div>
+
+          <!-- Client -->
+          <div class="sig-card">
+            <h5>FOR CLIENT / CUSTOMER</h5>
+            <div class="sig-slot">
+              {clientSig ? (
+                clientSig.signatureType === 'drawn' ? (
+                  <img src={clientSig.signatureData} alt="Client Signature" class="sig-img" />
+                ) : (
+                  <span class="sig-cursive">{clientSig.signatureData}</span>
+                )
+              ) : (
+                <span style="font-style: italic; color: #9ca3af; font-size: 7.5pt;">Signature Required</span>
+              )}
+            </div>
+            <div class="sig-detail">
+              <strong>{agreement.clientName}</strong><br />
+              <span>Entity: {agreement.clientCompany || 'Client Organization'}</span><br />
+              <span>Email: {agreement.clientEmail}</span><br />
+              {clientSig && <span>Signed: {new Date(clientSig.signedAt).toLocaleDateString('en-IN')}</span>}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Running Footer -->
+      <footer class="print-footer">
+        <span>Ascelstack Technologies Private Limited · {agreement.agreementNumber} · IT Act, 2000 Section 10A</span>
+        <span>Corporate Verified Document</span>
+      </footer>
+    </main>
+  </body>
+</html>

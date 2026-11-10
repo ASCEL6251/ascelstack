@@ -236,12 +236,185 @@ export const adminActivityLogs = pgTable(
   ]
 );
 
+// 9. Agreement Templates Table
+export const agreementTemplates = pgTable(
+  'agreement_templates',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    code: varchar('code', { length: 50 }).notNull().unique(), // e.g. AGT-WEB-DEV
+    name: varchar('name', { length: 255 }).notNull(),
+    category: varchar('100', { length: 100 }).notNull(),
+    description: text('description'),
+    clauses: jsonb('clauses').notNull(), // array of AgreementClause
+    isActive: boolean('is_active').default(true).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex('agreement_templates_code_uidx').on(table.code),
+    index('agreement_templates_category_idx').on(table.category),
+  ]
+);
+
+// 10. Company Settings Table (Document branding & GSTIN settings)
+export const companySettings = pgTable(
+  'company_settings',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    companyLegalName: varchar('company_legal_name', { length: 255 }).default('Ascelstack Technologies Private Limited').notNull(),
+    companyBrandName: varchar('company_brand_name', { length: 255 }).default('Ascelstack').notNull(),
+    registeredAddress: text('registered_address').default('Sector V, Bidhannagar, Salt Lake, Kolkata, West Bengal 700091, India').notNull(),
+    legalEmail: varchar('legal_email', { length: 255 }).default('legal@ascelstack.com').notNull(),
+    supportEmail: varchar('support_email', { length: 255 }).default('support@ascelstack.com').notNull(),
+    contactPhone: varchar('contact_phone', { length: 100 }).default('+91 89428 41651').notNull(),
+    gstin: varchar('gstin', { length: 50 }),
+    gstinEnabled: boolean('gstin_enabled').default(false).notNull(),
+    logoUrl: text('logo_url').default('/brand/mark.svg').notNull(),
+    signatoryName: varchar('signatory_name', { length: 255 }).default('Authorized Signatory').notNull(),
+    signatoryTitle: varchar('signatory_title', { length: 255 }).default('Director / Legal Counsel').notNull(),
+    defaultCurrency: varchar('default_currency', { length: 10 }).default('INR').notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  }
+);
+
+// 11. Agreements Table
+export const agreements = pgTable(
+  'agreements',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    agreementNumber: varchar('agreement_number', { length: 100 }).notNull().unique(), // e.g. PSA-2026-0001
+    secureToken: varchar('secure_token', { length: 255 }).notNull().unique(), // Cryptographic token for secure signing link
+    title: varchar('title', { length: 255 }).default('PROFESSIONAL SERVICE AGREEMENT').notNull(),
+    status: varchar('status', { length: 50 }).default('draft').notNull(),
+    // draft | pending_review | sent | viewed | pending_signature | partially_signed | signed | rejected | expired | cancelled
+
+    userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+    businessId: uuid('business_id').references(() => businesses.id, { onDelete: 'set null' }),
+    quotationId: uuid('quotation_id').references(() => quotations.id, { onDelete: 'set null' }),
+    templateId: uuid('template_id').references(() => agreementTemplates.id, { onDelete: 'set null' }),
+
+    version: integer('version').default(1).notNull(),
+    isImmutable: boolean('is_immutable').default(false).notNull(),
+
+    // Service Provider Information Snapshot
+    providerName: varchar('provider_name', { length: 255 }).notNull(),
+    providerLogo: text('provider_logo').default('/brand/mark.svg').notNull(),
+    providerAddress: text('provider_address').notNull(),
+    providerEmail: varchar('provider_email', { length: 255 }).notNull(),
+    providerPhone: varchar('provider_phone', { length: 100 }).notNull(),
+    providerGstin: varchar('provider_gstin', { length: 50 }),
+    providerGstinEnabled: boolean('provider_gstin_enabled').default(false).notNull(),
+    providerSignatoryName: varchar('provider_signatory_name', { length: 255 }).default('Authorized Signatory').notNull(),
+    providerSignatoryTitle: varchar('provider_signatory_title', { length: 255 }).default('Director / Legal Counsel').notNull(),
+
+    // Client Information
+    clientName: varchar('client_name', { length: 255 }).notNull(),
+    clientEmail: varchar('client_email', { length: 255 }).notNull(),
+    clientCompany: varchar('client_company', { length: 255 }),
+    clientAddress: text('client_address'),
+    clientCity: varchar('client_city', { length: 100 }),
+    clientState: varchar('client_state', { length: 100 }),
+    clientCountry: varchar('client_country', { length: 100 }).default('India'),
+    clientPhone: varchar('client_phone', { length: 50 }),
+    clientGstin: varchar('client_gstin', { length: 50 }),
+
+    // Project Details & Scope
+    projectName: varchar('project_name', { length: 255 }).notNull(),
+    projectDescription: text('project_description'),
+    scopeOfWork: text('scope_of_work'),
+    deliverables: jsonb('deliverables'), // array of { title, description }
+    timeline: text('timeline'),
+    milestones: jsonb('milestones'), // array of { title, duration, amount, description }
+
+    // Commercials
+    currency: varchar('currency', { length: 10 }).default('INR').notNull(),
+    totalAmount: numeric('total_amount', { precision: 12, scale: 2 }).default('0.00').notNull(),
+    advanceAmount: numeric('advance_amount', { precision: 12, scale: 2 }).default('0.00'),
+    advancePercentage: integer('advance_percentage').default(50),
+    paymentSchedule: text('payment_schedule'),
+    taxPercentage: numeric('tax_percentage', { precision: 5, scale: 2 }).default('0.00'),
+    taxAmount: numeric('tax_amount', { precision: 12, scale: 2 }).default('0.00'),
+
+    // All 25 customizable clauses stored as snapshot
+    clauses: jsonb('clauses').notNull(),
+
+    // Timestamps
+    validUntil: timestamp('valid_until', { withTimezone: true }),
+    sentAt: timestamp('sent_at', { withTimezone: true }),
+    viewedAt: timestamp('viewed_at', { withTimezone: true }),
+    clientSignedAt: timestamp('client_signed_at', { withTimezone: true }),
+    providerSignedAt: timestamp('provider_signed_at', { withTimezone: true }),
+    signedAt: timestamp('signed_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex('agreements_number_uidx').on(table.agreementNumber),
+    uniqueIndex('agreements_token_uidx').on(table.secureToken),
+    index('agreements_status_idx').on(table.status),
+    index('agreements_user_id_idx').on(table.userId),
+    index('agreements_business_id_idx').on(table.businessId),
+    index('agreements_quotation_id_idx').on(table.quotationId),
+    index('agreements_created_at_idx').on(table.createdAt),
+  ]
+);
+
+// 12. Agreement Signatures Table
+export const agreementSignatures = pgTable(
+  'agreement_signatures',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    agreementId: uuid('agreement_id')
+      .notNull()
+      .references(() => agreements.id, { onDelete: 'cascade' }),
+    signerRole: varchar('signer_role', { length: 50 }).notNull(), // client | provider
+    signerName: varchar('signer_name', { length: 255 }).notNull(),
+    signerEmail: varchar('signer_email', { length: 255 }).notNull(),
+    signerTitle: varchar('signer_title', { length: 255 }),
+    signatureType: varchar('signature_type', { length: 50 }).default('typed').notNull(), // typed | drawn
+    signatureData: text('signature_data').notNull(), // SVG / Base64 / Font representation
+    ipAddress: varchar('ip_address', { length: 100 }),
+    userAgent: text('user_agent'),
+    consentChecked: boolean('consent_checked').default(true).notNull(),
+    signedAt: timestamp('signed_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('agreement_signatures_agreement_id_idx').on(table.agreementId),
+    index('agreement_signatures_signer_role_idx').on(table.signerRole),
+  ]
+);
+
+// 13. Agreement Audit Logs Table
+export const agreementAuditLogs = pgTable(
+  'agreement_audit_logs',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    agreementId: uuid('agreement_id')
+      .notNull()
+      .references(() => agreements.id, { onDelete: 'cascade' }),
+    action: varchar('action', { length: 100 }).notNull(),
+    // created | updated | sent | viewed | client_signed | provider_signed | fully_signed | rejected | pdf_downloaded | cancelled
+    performedBy: varchar('performed_by', { length: 255 }).notNull(),
+    role: varchar('role', { length: 50 }).notNull(), // admin | client | system
+    description: text('description').notNull(),
+    details: jsonb('details'),
+    ipAddress: varchar('ip_address', { length: 100 }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('agreement_audit_logs_agreement_id_idx').on(table.agreementId),
+    index('agreement_audit_logs_action_idx').on(table.action),
+    index('agreement_audit_logs_created_at_idx').on(table.createdAt),
+  ]
+);
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   businesses: many(businesses),
   quotations: many(quotations),
   serviceRequests: many(serviceRequests),
   activityLogs: many(activityLogs),
+  agreements: many(agreements),
 }));
 
 export const businessesRelations = relations(businesses, ({ one, many }) => ({
@@ -252,6 +425,7 @@ export const businessesRelations = relations(businesses, ({ one, many }) => ({
   quotations: many(quotations),
   serviceRequests: many(serviceRequests),
   activityLogs: many(activityLogs),
+  agreements: many(agreements),
 }));
 
 export const servicesRelations = relations(services, ({ one, many }) => ({
@@ -280,6 +454,7 @@ export const quotationsRelations = relations(quotations, ({ one, many }) => ({
   }),
   serviceRequests: many(serviceRequests),
   history: many(quotationHistory),
+  agreements: many(agreements),
 }));
 
 export const serviceRequestsRelations = relations(serviceRequests, ({ one }) => ({
@@ -323,6 +498,45 @@ export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
   }),
 }));
 
+export const agreementsRelations = relations(agreements, ({ one, many }) => ({
+  user: one(users, {
+    fields: [agreements.userId],
+    references: [users.id],
+  }),
+  business: one(businesses, {
+    fields: [agreements.businessId],
+    references: [businesses.id],
+  }),
+  quotation: one(quotations, {
+    fields: [agreements.quotationId],
+    references: [quotations.id],
+  }),
+  template: one(agreementTemplates, {
+    fields: [agreements.templateId],
+    references: [agreementTemplates.id],
+  }),
+  signatures: many(agreementSignatures),
+  auditLogs: many(agreementAuditLogs),
+}));
+
+export const agreementTemplatesRelations = relations(agreementTemplates, ({ many }) => ({
+  agreements: many(agreements),
+}));
+
+export const agreementSignaturesRelations = relations(agreementSignatures, ({ one }) => ({
+  agreement: one(agreements, {
+    fields: [agreementSignatures.agreementId],
+    references: [agreements.id],
+  }),
+}));
+
+export const agreementAuditLogsRelations = relations(agreementAuditLogs, ({ one }) => ({
+  agreement: one(agreements, {
+    fields: [agreementAuditLogs.agreementId],
+    references: [agreements.id],
+  }),
+}));
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Business = typeof businesses.$inferSelect;
@@ -341,3 +555,13 @@ export type ActivityLog = typeof activityLogs.$inferSelect;
 export type NewActivityLog = typeof activityLogs.$inferInsert;
 export type AdminActivityLog = typeof adminActivityLogs.$inferSelect;
 export type NewAdminActivityLog = typeof adminActivityLogs.$inferInsert;
+export type AgreementTemplateModel = typeof agreementTemplates.$inferSelect;
+export type NewAgreementTemplateModel = typeof agreementTemplates.$inferInsert;
+export type CompanySettingsModel = typeof companySettings.$inferSelect;
+export type NewCompanySettingsModel = typeof companySettings.$inferInsert;
+export type Agreement = typeof agreements.$inferSelect;
+export type NewAgreement = typeof agreements.$inferInsert;
+export type AgreementSignature = typeof agreementSignatures.$inferSelect;
+export type NewAgreementSignature = typeof agreementSignatures.$inferInsert;
+export type AgreementAuditLog = typeof agreementAuditLogs.$inferSelect;
+export type NewAgreementAuditLog = typeof agreementAuditLogs.$inferInsert;

@@ -8,10 +8,11 @@ interface Props {
   tone?: 'light' | 'dark';
 }
 
-// Order: Logo · Services · Automation · About · Industries · Process · CTA
+// Order: Logo · Services · Automation · Client Agreements · About · Industries · Process · CTA
 const links = [
   { href: '/services', label: 'Services' },
   { href: '/automation', label: 'Automation' },
+  { href: '/agreements', label: 'Client Agreements' },
   { href: '/about', label: 'About' },
   { href: '/#industries', label: 'Industries' },
   { href: '/#process', label: 'Process' },
@@ -36,6 +37,7 @@ const menu: { label: string; href: string; sub?: Sub[]; all?: string }[] = [
     })),
   },
   { label: 'Automation', href: '/automation' },
+  { label: 'Client Agreements', href: '/agreements' },
   { label: 'About', href: '/about' },
   {
     label: 'Industries',

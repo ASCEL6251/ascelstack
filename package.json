@@ -16,8 +16,9 @@
     "test:workflows": "node scripts/test-workflows.mjs",
     "test:admin": "node scripts/test-admin-panel.mjs",
     "test:pricing": "node --experimental-strip-types scripts/test-pricing-feature.mjs",
+    "test:agreements": "node scripts/test-agreements-e2e.mjs",
     "test:e2e": "node scripts/test-portals-e2e.mjs",
-    "test": "node scripts/test-portals-e2e.mjs && node scripts/test-admin-panel.mjs"
+    "test": "node scripts/test-portals-e2e.mjs && node scripts/test-admin-panel.mjs && node scripts/test-agreements-e2e.mjs"
   },
   "dependencies": {
     "@clerk/astro": "^4.1.22",

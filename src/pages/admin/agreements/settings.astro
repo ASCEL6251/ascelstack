@@ -1,0 +1,361 @@
+---
+export const prerender = false;
+
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getAdminSession } from '../../../lib/admin-auth';
+import { db, companySettings } from '../../../db';
+import { DEFAULT_COMPANY_INFO } from '../../../lib/agreement-clauses';
+
+// Strict Server-Side Session Check
+const session = await getAdminSession(Astro);
+if (!session) {
+  return Astro.redirect('/admin/login');
+}
+
+let [settings] = await db.select().from(companySettings).limit(1);
+const company = settings || DEFAULT_COMPANY_INFO;
+---
+
+<AdminLayout
+  title="Company Branding & Document Settings"
+  activeNav="agreements"
+  breadcrumbs={[
+    { label: 'Agreements', href: '/admin/agreements' },
+    { label: 'Company Settings' },
+  ]}
+  session={session}
+>
+  <div class="dash-view is-active">
+    <div class="dash-welcome-card" style="margin-bottom: 2rem;">
+      <div class="welcome-copy">
+        <p class="eyebrow">Document Branding & Corporate Identity</p>
+        <h1 class="display welcome-title">Agreement Branding & <em>Company Settings</em></h1>
+        <p class="welcome-desc">
+          Manage the official corporate information, registered address, logo asset, and signatory credentials dynamically stamped across all generated Professional Service Agreements. GSTIN is optional and will only be displayed when explicitly enabled.
+        </p>
+      </div>
+
+      <div class="welcome-actions">
+        <a href="/admin/agreements" class="btn btn-ghost">
+          ← Back to Agreements
+        </a>
+      </div>
+    </div>
+
+    <div class="planner-workspace-grid">
+      <!-- Left Column: Settings Form -->
+      <div class="planner-left-pane">
+        <div class="card-panel">
+          <div class="panel-header">
+            <div>
+              <span class="eyebrow">Corporate Profile</span>
+              <h3 class="display h3">Legal Entity Specifications</h3>
+            </div>
+          </div>
+
+          <form id="company-settings-form" class="business-form">
+            <div class="form-row">
+              <label class="field">
+                <span class="mono">Full Corporate Legal Name *</span>
+                <input
+                  type="text"
+                  id="companyLegalName"
+                  name="companyLegalName"
+                  value={company.companyLegalName || DEFAULT_COMPANY_INFO.legalName}
+                  required
+                />
+              </label>
+
+              <label class="field">
+                <span class="mono">Brand / Trade Name *</span>
+                <input
+                  type="text"
+                  id="companyBrandName"
+                  name="companyBrandName"
+                  value={company.companyBrandName || DEFAULT_COMPANY_INFO.brandName}
+                  required
+                />
+              </label>
+            </div>
+
+            <label class="field">
+              <span class="mono">Official Registered Office Address *</span>
+              <textarea
+                id="registeredAddress"
+                name="registeredAddress"
+                rows="2"
+                required
+              >{company.registeredAddress || DEFAULT_COMPANY_INFO.address}</textarea>
+            </label>
+
+            <div class="form-row">
+              <label class="field">
+                <span class="mono">Formal Legal Notices Email *</span>
+                <input
+                  type="email"
+                  id="legalEmail"
+                  name="legalEmail"
+                  value={company.legalEmail || DEFAULT_COMPANY_INFO.email}
+                  required
+                />
+              </label>
+
+              <label class="field">
+                <span class="mono">Support / Operations Email *</span>
+                <input
+                  type="email"
+                  id="supportEmail"
+                  name="supportEmail"
+                  value={company.supportEmail || DEFAULT_COMPANY_INFO.supportEmail}
+                  required
+                />
+              </label>
+            </div>
+
+            <div class="form-row">
+              <label class="field">
+                <span class="mono">Official Telephone Lines *</span>
+                <input
+                  type="text"
+                  id="contactPhone"
+                  name="contactPhone"
+                  value={company.contactPhone || DEFAULT_COMPANY_INFO.phone}
+                  required
+                />
+              </label>
+
+              <label class="field">
+                <span class="mono">Company Logo Asset Path *</span>
+                <input
+                  type="text"
+                  id="logoUrl"
+                  name="logoUrl"
+                  value={company.logoUrl || DEFAULT_COMPANY_INFO.logoUrl}
+                  required
+                />
+              </label>
+            </div>
+
+            <!-- GSTIN Optional Configuration -->
+            <div class="card-panel" style="background: #f8fafc; border: 1px solid #e2e8f0; margin: 1rem 0;">
+              <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; user-select: none;">
+                <input
+                  type="checkbox"
+                  id="gstinEnabled"
+                  name="gstinEnabled"
+                  checked={company.gstinEnabled}
+                  style="width: 18px; height: 18px; cursor: pointer;"
+                />
+                <div>
+                  <strong style="color: var(--ink);">Display GSTIN on Generated Agreements</strong>
+                  <p class="text-muted text-xs" style="margin: 2px 0 0;">
+                    GSTIN is optional. Keep unchecked if your company does not display GST on client agreements or operates below exemption limits.
+                  </p>
+                </div>
+              </label>
+
+              <div id="gstin-field-box" style={`margin-top: 0.85rem; ${company.gstinEnabled ? '' : 'display: none;'}`}>
+                <label class="field">
+                  <span class="mono">Goods and Services Tax Identification Number (GSTIN)</span>
+                  <input
+                    type="text"
+                    id="gstin"
+                    name="gstin"
+                    value={company.gstin || ''}
+                    placeholder="19AAAAA0000A1Z5"
+                  />
+                </label>
+              </div>
+            </div>
+
+            <!-- Signatory Details -->
+            <div class="form-row">
+              <label class="field">
+                <span class="mono">Authorized Signatory Name *</span>
+                <input
+                  type="text"
+                  id="signatoryName"
+                  name="signatoryName"
+                  value={company.signatoryName || DEFAULT_COMPANY_INFO.signatoryName}
+                  required
+                />
+              </label>
+
+              <label class="field">
+                <span class="mono">Signatory Designation / Title *</span>
+                <input
+                  type="text"
+                  id="signatoryTitle"
+                  name="signatoryTitle"
+                  value={company.signatoryTitle || DEFAULT_COMPANY_INFO.signatoryTitle}
+                  required
+                />
+              </label>
+            </div>
+
+            <div class="form-footer" style="display: flex; justify-content: flex-end; margin-top: 1.5rem;">
+              <button type="submit" class="btn btn-primary" id="btn-save-settings">
+                <span>Save Company Branding</span>
+                <span class="arrow">✓</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Right Column: Live Document Header Preview -->
+      <div class="planner-right-pane">
+        <div class="card-panel">
+          <div class="panel-header" style="margin-bottom: 1rem;">
+            <div>
+              <span class="eyebrow">Document Preview</span>
+              <h3 class="display h3" style="font-size: 1.25rem;">Live Agreement Header</h3>
+            </div>
+          </div>
+
+          <div style="background: #ffffff; padding: 1.5rem; border: 1px solid rgba(29, 45, 61, 0.12); border-radius: 6px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);">
+            <div class="doc-header" style="border-bottom: 2px solid var(--ink); padding-bottom: 1.25rem; margin-bottom: 1.25rem; display: flex; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 0.85rem;">
+                <svg width="44" height="44" viewBox="0 0 100 100" aria-hidden="true">
+                  <path d="M50 6 L66 38 L34 38 Z" fill="#94BCE3"></path>
+                  <path d="M32 42 L68 42 L70 46 L80 66 L60 66 L50 46 L40 66 L20 66 L30 46 Z" fill="#5980A6"></path>
+                  <path d="M18 70 L38 70 L26 94 L6 94 Z M82 70 L62 70 L74 94 L94 94 Z" fill="#1D2D3D"></path>
+                </svg>
+                <div>
+                  <strong style="font-family: Georgia, serif; font-size: 1.2rem; color: var(--ink); display: block;" id="live-prev-name">
+                    {company.companyLegalName || DEFAULT_COMPANY_INFO.legalName}
+                  </strong>
+                  <p style="font-size: 0.75rem; color: #555; margin: 2px 0 0;" id="live-prev-addr">
+                    {company.registeredAddress || DEFAULT_COMPANY_INFO.address}
+                  </p>
+                  <p style="font-size: 0.72rem; color: #64748b; margin: 2px 0 0;">
+                    <span id="live-prev-email">{company.legalEmail || DEFAULT_COMPANY_INFO.email}</span> · <span id="live-prev-phone">{company.contactPhone || DEFAULT_COMPANY_INFO.phone}</span>
+                    <span id="live-prev-gstin-box" style={company.gstinEnabled && company.gstin ? 'display:inline;' : 'display:none;'}>
+                      · <strong id="live-prev-gstin-text">GSTIN: {company.gstin}</strong>
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div style="text-align: center; padding: 1rem 0; border-bottom: 1px solid #e2e8f0;">
+              <span class="mono" style="font-size: 0.8rem; font-weight: 700; color: var(--ink); letter-spacing: 0.05em;">
+                PROFESSIONAL SERVICE AGREEMENT
+              </span>
+            </div>
+
+            <div style="margin-top: 1rem; font-size: 0.8rem; color: #64748b; line-height: 1.5;">
+              <span class="mono text-muted text-xs" style="display: block; margin-bottom: 4px;">DEFAULT SIGNATORY CREDENTIALS:</span>
+              <p style="margin: 0;">
+                By: <strong id="live-prev-sign-name" style="color: var(--ink);">{company.signatoryName || DEFAULT_COMPANY_INFO.signatoryName}</strong> (<span id="live-prev-sign-title">{company.signatoryTitle || DEFAULT_COMPANY_INFO.signatoryTitle}</span>)
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-hub" id="toast-hub" aria-live="polite"></div>
+</AdminLayout>
+
+<script>
+  function showToast(message: string, type: 'success' | 'error' = 'success') {
+    const hub = document.getElementById('toast-hub');
+    if (!hub) return;
+    const toast = document.createElement('div');
+    toast.className = `toast-item toast-${type}`;
+    toast.innerHTML = `<span>${message}</span>`;
+    hub.appendChild(toast);
+    setTimeout(() => {
+      toast.classList.add('fade-out');
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
+
+  const gstinCheckbox = document.getElementById('gstinEnabled') as HTMLInputElement;
+  const gstinBox = document.getElementById('gstin-field-box');
+  const gstinInput = document.getElementById('gstin') as HTMLInputElement;
+  const livePrevGstinBox = document.getElementById('live-prev-gstin-box');
+  const livePrevGstinText = document.getElementById('live-prev-gstin-text');
+
+  function updateLiveGstin() {
+    if (gstinCheckbox?.checked && gstinInput?.value.trim()) {
+      if (livePrevGstinBox) livePrevGstinBox.style.display = 'inline';
+      if (livePrevGstinText) livePrevGstinText.textContent = `GSTIN: ${gstinInput.value.trim()}`;
+    } else {
+      if (livePrevGstinBox) livePrevGstinBox.style.display = 'none';
+    }
+  }
+
+  gstinCheckbox?.addEventListener('change', () => {
+    if (gstinBox) gstinBox.style.display = gstinCheckbox.checked ? 'block' : 'none';
+    updateLiveGstin();
+  });
+  gstinInput?.addEventListener('input', updateLiveGstin);
+
+  // Live input syncing
+  document.getElementById('companyLegalName')?.addEventListener('input', (e) => {
+    const el = document.getElementById('live-prev-name');
+    if (el) el.textContent = (e.target as HTMLInputElement).value || 'Ascelstack Technologies Private Limited';
+  });
+  document.getElementById('registeredAddress')?.addEventListener('input', (e) => {
+    const el = document.getElementById('live-prev-addr');
+    if (el) el.textContent = (e.target as HTMLTextAreaElement).value || '';
+  });
+  document.getElementById('legalEmail')?.addEventListener('input', (e) => {
+    const el = document.getElementById('live-prev-email');
+    if (el) el.textContent = (e.target as HTMLInputElement).value || '';
+  });
+  document.getElementById('contactPhone')?.addEventListener('input', (e) => {
+    const el = document.getElementById('live-prev-phone');
+    if (el) el.textContent = (e.target as HTMLInputElement).value || '';
+  });
+  document.getElementById('signatoryName')?.addEventListener('input', (e) => {
+    const el = document.getElementById('live-prev-sign-name');
+    if (el) el.textContent = (e.target as HTMLInputElement).value || '';
+  });
+  document.getElementById('signatoryTitle')?.addEventListener('input', (e) => {
+    const el = document.getElementById('live-prev-sign-title');
+    if (el) el.textContent = (e.target as HTMLInputElement).value || '';
+  });
+
+  // Submit Handler
+  document.getElementById('company-settings-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btn-save-settings') as HTMLButtonElement;
+    if (btn) btn.disabled = true;
+
+    const payload = {
+      companyLegalName: (document.getElementById('companyLegalName') as HTMLInputElement)?.value.trim(),
+      companyBrandName: (document.getElementById('companyBrandName') as HTMLInputElement)?.value.trim(),
+      registeredAddress: (document.getElementById('registeredAddress') as HTMLTextAreaElement)?.value.trim(),
+      legalEmail: (document.getElementById('legalEmail') as HTMLInputElement)?.value.trim(),
+      supportEmail: (document.getElementById('supportEmail') as HTMLInputElement)?.value.trim(),
+      contactPhone: (document.getElementById('contactPhone') as HTMLInputElement)?.value.trim(),
+      gstin: (document.getElementById('gstin') as HTMLInputElement)?.value.trim() || null,
+      gstinEnabled: gstinCheckbox?.checked || false,
+      logoUrl: (document.getElementById('logoUrl') as HTMLInputElement)?.value.trim() || '/brand/mark.svg',
+      signatoryName: (document.getElementById('signatoryName') as HTMLInputElement)?.value.trim(),
+      signatoryTitle: (document.getElementById('signatoryTitle') as HTMLInputElement)?.value.trim(),
+      defaultCurrency: 'INR',
+    };
+
+    try {
+      const res = await fetch('/api/admin/company-settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update company settings');
+
+      showToast('Company settings & document branding updated successfully!');
+    } catch (err: any) {
+      alert(`Error updating settings: ${err.message}`);
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  });
+</script>
