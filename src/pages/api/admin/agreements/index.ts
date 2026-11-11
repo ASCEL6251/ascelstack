@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { eq, desc, asc, ilike, or, and, sql } from 'drizzle-orm';
-import { db, agreements, users, businesses, companySettings, agreementAuditLogs } from '../../../../db';
+import { db, agreements, users, businesses, companySettings, agreementAuditLogs, agreementTemplates, quotations } from '../../../../db';
 import { getAdminSession } from '../../../../lib/admin-auth';
 import { agreementCreateSchema } from '../../../../lib/validations';
 import { DEFAULT_COMPANY_INFO } from '../../../../lib/agreement-clauses';

@@ -104,6 +104,174 @@ try {
   ]}
   session={session}
 >
+  <style>
+    /* Scoped styling to guarantee pixel-perfect match with the main UI */
+    .form-row {
+      display: grid !important;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 1.25rem !important;
+      margin-bottom: 1.25rem !important;
+      align-items: start !important;
+    }
+    .form-row-3 {
+      display: grid !important;
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      gap: 1.25rem !important;
+      margin-bottom: 1.25rem !important;
+      align-items: start !important;
+    }
+    @media (max-width: 768px) {
+      .form-row, .form-row-3 {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+      }
+    }
+    .field {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 0.45rem !important;
+      margin-bottom: 1.25rem !important;
+      min-width: 0 !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    .field > .mono, .field span.mono {
+      font-family: var(--font-mono, monospace) !important;
+      font-size: 0.72rem !important;
+      font-weight: 600 !important;
+      color: var(--text-muted, #5d5d60) !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.06em !important;
+      display: block !important;
+      margin-bottom: 0.15rem !important;
+    }
+    .field input, .field select, .field textarea, .field-select, .deliverable-row input, .milestone-row input {
+      width: 100% !important;
+      padding: 0.75rem 1rem !important;
+      background: #ffffff !important;
+      color: var(--ink, #1d2d3d) !important;
+      border: 1px solid var(--line, rgba(29, 45, 61, 0.18)) !important;
+      border-radius: var(--radius-s, 6px) !important;
+      font-family: var(--font-body, inherit) !important;
+      font-size: 0.92rem !important;
+      line-height: 1.5 !important;
+      box-sizing: border-box !important;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease !important;
+    }
+    .field textarea {
+      resize: vertical !important;
+      min-height: 80px !important;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus, .field-select:focus,
+    .deliverable-row input:focus, .milestone-row input:focus {
+      outline: none !important;
+      border-color: var(--accent, #5980a6) !important;
+      box-shadow: 0 0 0 3px rgba(89, 128, 166, 0.2) !important;
+      background: #ffffff !important;
+    }
+    .field input.input-disabled, .field input:read-only, .field textarea:read-only {
+      background: var(--paper-sunk, #e8e8ea) !important;
+      color: var(--text-muted, #5d5d60) !important;
+      border-color: rgba(29, 45, 61, 0.12) !important;
+      cursor: not-allowed !important;
+    }
+    .field input.is-invalid, .field select.is-invalid, .field textarea.is-invalid {
+      border-color: #ef4444 !important;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+    }
+    .tab-pill {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 0.5rem !important;
+      padding: 0.6rem 1.15rem !important;
+      border-radius: var(--radius-s, 6px) !important;
+      background: var(--paper-raised, #fafafb) !important;
+      border: 1px solid var(--line, rgba(29, 45, 61, 0.14)) !important;
+      color: var(--text-muted, #5d5d60) !important;
+      font-size: 0.86rem !important;
+      font-weight: 500 !important;
+      cursor: pointer !important;
+      transition: all 0.2s ease !important;
+    }
+    .tab-pill:hover {
+      border-color: var(--accent, #5980a6) !important;
+      color: var(--ink, #1d2d3d) !important;
+    }
+    .tab-pill.is-on {
+      background: var(--ink, #1d2d3d) !important;
+      color: #ffffff !important;
+      border-color: var(--ink, #1d2d3d) !important;
+      font-weight: 600 !important;
+      box-shadow: 0 2px 8px rgba(29, 45, 61, 0.12) !important;
+    }
+    .stepper-nav {
+      display: flex !important;
+      align-items: center !important;
+      gap: 0.5rem !important;
+      overflow-x: auto !important;
+      padding: 0.5rem 0 1.25rem !important;
+      margin-bottom: 1.5rem !important;
+      border-bottom: 1px solid var(--line, rgba(29, 45, 61, 0.14)) !important;
+    }
+    .step-item {
+      display: flex !important;
+      align-items: center !important;
+      gap: 0.6rem !important;
+      padding: 0.65rem 1.15rem !important;
+      border-radius: var(--radius-s, 6px) !important;
+      background: #ffffff !important;
+      border: 1px solid var(--line, rgba(29, 45, 61, 0.14)) !important;
+      color: var(--text-muted, #5d5d60) !important;
+      cursor: pointer !important;
+      font-size: 0.84rem !important;
+      font-weight: 600 !important;
+      white-space: nowrap !important;
+      transition: all 0.2s ease !important;
+    }
+    .step-item:hover {
+      border-color: var(--accent, #5980a6) !important;
+      color: var(--ink, #1d2d3d) !important;
+    }
+    .step-item.is-active {
+      background: var(--ink, #1d2d3d) !important;
+      color: #ffffff !important;
+      border-color: var(--ink, #1d2d3d) !important;
+      box-shadow: 0 4px 12px rgba(29, 45, 61, 0.15) !important;
+    }
+    .step-item .step-num {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      width: 22px !important;
+      height: 22px !important;
+      border-radius: 50% !important;
+      background: var(--paper-sunk, #e8e8ea) !important;
+      color: var(--ink, #1d2d3d) !important;
+      font-family: var(--font-mono, monospace) !important;
+      font-size: 0.72rem !important;
+      font-weight: 700 !important;
+    }
+    .step-item.is-active .step-num {
+      background: var(--accent, #5980a6) !important;
+      color: #ffffff !important;
+    }
+    .admin-alert-banner {
+      display: flex !important;
+      align-items: flex-start !important;
+      gap: 0.75rem !important;
+      padding: 1rem 1.25rem !important;
+      border-radius: var(--radius-s, 6px) !important;
+      font-size: 0.88rem !important;
+      line-height: 1.5 !important;
+      margin-bottom: 1.5rem !important;
+    }
+    .admin-alert-error {
+      background: #fef2f2 !important;
+      border: 1px solid #fecaca !important;
+      color: #991b1b !important;
+    }
+  </style>
+
   <div class="dash-view is-active" id="agreement-builder-view">
     <!-- Header banner -->
     <div class="dash-welcome-card" style="margin-bottom: 1.5rem;">
@@ -150,7 +318,7 @@ try {
 
     <!-- Form Container -->
     <div id="pane-form">
-      <form id="agreement-form" class="business-form">
+      <form id="agreement-form" class="business-form" novalidate>
         <!-- STEPPER TABS -->
         <div class="stepper-nav">
           <button type="button" class="step-item is-active" data-step="1">
@@ -179,16 +347,16 @@ try {
         <!-- STEP 1: CLIENT & ENTITY -->
         <!-- ============================================================== -->
         <div class="card-panel step-pane is-active" data-step-content="1">
-          <div class="panel-header">
+          <div class="panel-header" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
             <div>
               <span class="eyebrow">Step 01</span>
               <h2 class="display h3">Client & Contracting Entity</h2>
               <p class="panel-subtitle">Select an existing registered client or enter new company information</p>
             </div>
 
-            <!-- Optional: Link Existing Client -->
-            <div style="min-width: 240px;">
-              <select id="select-registered-client" class="field-select">
+            <!-- Optional: Link Existing Client & Quick Fill -->
+            <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
+              <select id="select-registered-client" class="field-select" style="min-width: 220px;">
                 <option value="">-- Quick Load Client Profile --</option>
                 {(registeredUsers || []).map((u) => (
                   <option value={u.id} data-name={u.fullName || ''} data-email={u.email}>
@@ -196,57 +364,60 @@ try {
                   </option>
                 ))}
               </select>
+              <button type="button" class="btn btn-sm btn-ghost" id="btn-fill-demo-client" title="Autofill sample corporate client details for fast testing" style="white-space: nowrap;">
+                ⚡ Autofill Sample Client
+              </button>
             </div>
           </div>
 
-          <div class="form-row">
-            <label class="field">
+          <div class="form-row" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; margin-bottom: 1.25rem;">
+            <div class="field" style="display: flex; flex-direction: column; gap: 0.45rem; width: 100%;">
               <span class="mono">Client Signatory Full Legal Name *</span>
               <input type="text" id="clientName" name="clientName" required placeholder="e.g. Rahul Sharma" />
-            </label>
-            <label class="field">
+            </div>
+            <div class="field" style="display: flex; flex-direction: column; gap: 0.45rem; width: 100%;">
               <span class="mono">Client Official Email Address *</span>
               <input type="email" id="clientEmail" name="clientEmail" required placeholder="rahul@company.com" />
-            </label>
+            </div>
           </div>
 
-          <div class="form-row">
-            <label class="field">
+          <div class="form-row" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; margin-bottom: 1.25rem;">
+            <div class="field" style="display: flex; flex-direction: column; gap: 0.45rem; width: 100%;">
               <span class="mono">Client Company / Legal Entity Name</span>
               <input type="text" id="clientCompany" name="clientCompany" placeholder="e.g. Apex Retail Technologies Pvt Ltd" />
-            </label>
-            <label class="field">
+            </div>
+            <div class="field" style="display: flex; flex-direction: column; gap: 0.45rem; width: 100%;">
               <span class="mono">Official Phone Number</span>
               <input type="text" id="clientPhone" name="clientPhone" placeholder="+91 98765 43210" />
-            </label>
+            </div>
           </div>
 
-          <label class="field">
+          <div class="field" style="display: flex; flex-direction: column; gap: 0.45rem; width: 100%; margin-bottom: 1.25rem;">
             <span class="mono">Principal Place of Business / Registered Address</span>
             <textarea id="clientAddress" name="clientAddress" rows="2" placeholder="Suite 401, Tech Park, Indiranagar"></textarea>
-          </label>
-
-          <div class="form-row-3">
-            <label class="field">
-              <span class="mono">City</span>
-              <input type="text" id="clientCity" name="clientCity" placeholder="Bengaluru" />
-            </label>
-            <label class="field">
-              <span class="mono">State</span>
-              <input type="text" id="clientState" name="clientState" placeholder="Karnataka" />
-            </label>
-            <label class="field">
-              <span class="mono">Country</span>
-              <input type="text" id="clientCountry" name="clientCountry" value="India" />
-            </label>
           </div>
 
-          <div class="form-row">
-            <label class="field">
+          <div class="form-row-3" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; margin-bottom: 1.25rem;">
+            <div class="field" style="display: flex; flex-direction: column; gap: 0.45rem; width: 100%;">
+              <span class="mono">City</span>
+              <input type="text" id="clientCity" name="clientCity" placeholder="Bengaluru" />
+            </div>
+            <div class="field" style="display: flex; flex-direction: column; gap: 0.45rem; width: 100%;">
+              <span class="mono">State</span>
+              <input type="text" id="clientState" name="clientState" placeholder="Karnataka" />
+            </div>
+            <div class="field" style="display: flex; flex-direction: column; gap: 0.45rem; width: 100%;">
+              <span class="mono">Country</span>
+              <input type="text" id="clientCountry" name="clientCountry" value="India" />
+            </div>
+          </div>
+
+          <div class="form-row" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; margin-bottom: 1.25rem;">
+            <div class="field" style="display: flex; flex-direction: column; gap: 0.45rem; width: 100%;">
               <span class="mono">Client GSTIN / Tax Identification (Optional)</span>
               <input type="text" id="clientGstin" name="clientGstin" placeholder="29ABCDE1234F1Z5" />
-            </label>
-            <label class="field">
+            </div>
+            <div class="field" style="display: flex; flex-direction: column; gap: 0.45rem; width: 100%;">
               <span class="mono">Link Existing Quotation (Optional)</span>
               <select id="quotationId" name="quotationId">
                 <option value="">-- No linked quotation --</option>
@@ -256,7 +427,7 @@ try {
                   </option>
                 ))}
               </select>
-            </label>
+            </div>
           </div>
 
           <div class="form-footer" style="display: flex; justify-content: flex-end;">
@@ -281,7 +452,7 @@ try {
 
           <div class="field">
             <span class="mono">Project Name / Reference Title *</span>
-            <input type="text" id="projectName" name="projectName" required placeholder="e.g. Next-Generation Cloud Application & AI Workflow Engine" />
+            <input type="text" id="projectName" name="projectName" required value="Enterprise Cloud Architecture & AI Automation Pipeline" placeholder="e.g. Next-Generation Cloud Application & AI Workflow Engine" />
           </div>
 
           <div class="field">
@@ -341,36 +512,36 @@ try {
             </div>
           </div>
 
-          <div class="form-row-3">
-            <label class="field">
+          <div class="form-row-3" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; margin-bottom: 1.25rem;">
+            <div class="field" style="display: flex; flex-direction: column; gap: 0.45rem; width: 100%;">
               <span class="mono">Contract Currency</span>
               <select id="currency" name="currency">
                 <option value="INR" selected>₹ INR (Indian Rupee)</option>
                 <option value="USD">$ USD (US Dollar)</option>
               </select>
-            </label>
+            </div>
 
-            <label class="field">
+            <div class="field" style="display: flex; flex-direction: column; gap: 0.45rem; width: 100%;">
               <span class="mono">Total Contract Value *</span>
               <input type="number" id="totalAmount" name="totalAmount" required min="0" step="0.01" value="150000" />
-            </label>
+            </div>
 
-            <label class="field">
+            <div class="field" style="display: flex; flex-direction: column; gap: 0.45rem; width: 100%;">
               <span class="mono">Advance Payment %</span>
               <input type="number" id="advancePercentage" name="advancePercentage" min="0" max="100" value="50" />
-            </label>
+            </div>
           </div>
 
-          <div class="form-row">
-            <label class="field">
+          <div class="form-row" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; margin-bottom: 1.25rem;">
+            <div class="field" style="display: flex; flex-direction: column; gap: 0.45rem; width: 100%;">
               <span class="mono">Advance Amount (Auto-Calculated)</span>
               <input type="number" id="advanceAmount" name="advanceAmount" readonly class="input-disabled" value="75000" />
-            </label>
+            </div>
 
-            <label class="field">
+            <div class="field" style="display: flex; flex-direction: column; gap: 0.45rem; width: 100%;">
               <span class="mono">Estimated Project Duration</span>
               <input type="text" id="timeline" name="timeline" value="6 Weeks from Advance Receipt & Sprint Kickoff" />
-            </label>
+            </div>
           </div>
 
           <div class="field">
@@ -493,35 +664,35 @@ try {
             </div>
           </div>
 
-          <div class="form-row">
-            <label class="field">
-              <span class="mono">Company Legal Entity</span>
-              <input type="text" id="providerName" value={companyInfo.legalName} readonly class="input-disabled" />
-            </label>
-            <label class="field">
-              <span class="mono">Official Brand Name</span>
-              <input type="text" id="providerBrand" value={companyInfo.brandName} readonly class="input-disabled" />
-            </label>
+          <div class="form-row" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; margin-bottom: 1.25rem;">
+            <div class="field" style="display: flex; flex-direction: column; gap: 0.45rem; width: 100%;">
+              <span class="mono" style="display: block; font-family: var(--font-mono, monospace); font-size: 0.72rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Company Legal Entity</span>
+              <input type="text" id="providerName" value={companyInfo.legalName} readonly class="input-disabled" style="width: 100%; padding: 0.75rem 1rem; background: var(--paper-sunk); color: var(--text-muted); border: 1px solid var(--line); border-radius: var(--radius-s);" />
+            </div>
+            <div class="field" style="display: flex; flex-direction: column; gap: 0.45rem; width: 100%;">
+              <span class="mono" style="display: block; font-family: var(--font-mono, monospace); font-size: 0.72rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Official Brand Name</span>
+              <input type="text" id="providerBrand" value={companyInfo.brandName} readonly class="input-disabled" style="width: 100%; padding: 0.75rem 1rem; background: var(--paper-sunk); color: var(--text-muted); border: 1px solid var(--line); border-radius: var(--radius-s);" />
+            </div>
           </div>
 
-          <label class="field">
-            <span class="mono">Registered Office Address</span>
-            <input type="text" id="providerAddress" value={companyInfo.address} readonly class="input-disabled" />
-          </label>
+          <div class="field" style="display: flex; flex-direction: column; gap: 0.45rem; width: 100%; margin-bottom: 1.25rem;">
+            <span class="mono" style="display: block; font-family: var(--font-mono, monospace); font-size: 0.72rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Registered Office Address</span>
+            <input type="text" id="providerAddress" value={companyInfo.address} readonly class="input-disabled" style="width: 100%; padding: 0.75rem 1rem; background: var(--paper-sunk); color: var(--text-muted); border: 1px solid var(--line); border-radius: var(--radius-s);" />
+          </div>
 
-          <div class="form-row-3">
-            <label class="field">
-              <span class="mono">Legal Notice Email</span>
-              <input type="text" id="providerEmail" value={companyInfo.email} readonly class="input-disabled" />
-            </label>
-            <label class="field">
-              <span class="mono">Official Contact Phone</span>
-              <input type="text" id="providerPhone" value={companyInfo.phone} readonly class="input-disabled" />
-            </label>
-            <label class="field">
-              <span class="mono">Company Logo Asset</span>
-              <input type="text" id="providerLogo" value={companyInfo.logoUrl} readonly class="mono input-disabled" />
-            </label>
+          <div class="form-row-3" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; margin-bottom: 1.25rem;">
+            <div class="field" style="display: flex; flex-direction: column; gap: 0.45rem; width: 100%;">
+              <span class="mono" style="display: block; font-family: var(--font-mono, monospace); font-size: 0.72rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Legal Notice Email</span>
+              <input type="text" id="providerEmail" value={companyInfo.email} readonly class="input-disabled" style="width: 100%; padding: 0.75rem 1rem; background: var(--paper-sunk); color: var(--text-muted); border: 1px solid var(--line); border-radius: var(--radius-s);" />
+            </div>
+            <div class="field" style="display: flex; flex-direction: column; gap: 0.45rem; width: 100%;">
+              <span class="mono" style="display: block; font-family: var(--font-mono, monospace); font-size: 0.72rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Official Contact Phone</span>
+              <input type="text" id="providerPhone" value={companyInfo.phone} readonly class="input-disabled" style="width: 100%; padding: 0.75rem 1rem; background: var(--paper-sunk); color: var(--text-muted); border: 1px solid var(--line); border-radius: var(--radius-s);" />
+            </div>
+            <div class="field" style="display: flex; flex-direction: column; gap: 0.45rem; width: 100%;">
+              <span class="mono" style="display: block; font-family: var(--font-mono, monospace); font-size: 0.72rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Company Logo Asset</span>
+              <input type="text" id="providerLogo" value={companyInfo.logoUrl} readonly class="mono input-disabled" style="width: 100%; padding: 0.75rem 1rem; background: var(--paper-sunk); color: var(--text-muted); border: 1px solid var(--line); border-radius: var(--radius-s);" />
+            </div>
           </div>
 
           <!-- GSTIN Options -->
@@ -537,52 +708,52 @@ try {
             </label>
 
             <div id="gstin-input-wrapper" style={`margin-top: 0.85rem; ${companyInfo.gstinEnabled ? '' : 'display: none;'}`}>
-              <label class="field" style="margin-bottom: 0;">
-                <span class="mono">Service Provider GSTIN</span>
-                <input type="text" id="providerGstin" name="providerGstin" value={companyInfo.gstin} placeholder="19AAAAA0000A1Z5" />
-              </label>
+              <div class="field" style="margin-bottom: 0; display: flex; flex-direction: column; gap: 0.45rem;">
+                <span class="mono" style="display: block; font-family: var(--font-mono, monospace); font-size: 0.72rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Service Provider GSTIN</span>
+                <input type="text" id="providerGstin" name="providerGstin" value={companyInfo.gstin} placeholder="19AAAAA0000A1Z5" style="width: 100%; padding: 0.75rem 1rem; background: #fff; color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius-s);" />
+              </div>
             </div>
           </div>
 
           <!-- Signatory Settings -->
-          <div class="form-row">
-            <label class="field">
-              <span class="mono">Authorized Signatory Name</span>
-              <input type="text" id="providerSignatoryName" name="providerSignatoryName" value={companyInfo.signatoryName} />
-            </label>
-            <label class="field">
-              <span class="mono">Signatory Designation / Title</span>
-              <input type="text" id="providerSignatoryTitle" name="providerSignatoryTitle" value={companyInfo.signatoryTitle} />
-            </label>
+          <div class="form-row" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; margin-bottom: 1.25rem;">
+            <div class="field" style="display: flex; flex-direction: column; gap: 0.45rem; width: 100%;">
+              <span class="mono" style="display: block; font-family: var(--font-mono, monospace); font-size: 0.72rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Authorized Signatory Name</span>
+              <input type="text" id="providerSignatoryName" name="providerSignatoryName" value={companyInfo.signatoryName} style="width: 100%; padding: 0.75rem 1rem; background: #fff; color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius-s);" />
+            </div>
+            <div class="field" style="display: flex; flex-direction: column; gap: 0.45rem; width: 100%;">
+              <span class="mono" style="display: block; font-family: var(--font-mono, monospace); font-size: 0.72rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Signatory Designation / Title</span>
+              <input type="text" id="providerSignatoryTitle" name="providerSignatoryTitle" value={companyInfo.signatoryTitle} style="width: 100%; padding: 0.75rem 1rem; background: #fff; color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius-s);" />
+            </div>
           </div>
 
-          <div class="form-row">
-            <label class="field">
-              <span class="mono">Agreement Validity Period</span>
-              <input type="date" id="validUntil" name="validUntil" />
-            </label>
-            <label class="field">
-              <span class="mono">Initial Status</span>
-              <select id="agreementStatus" name="status">
+          <div class="form-row" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; margin-bottom: 1.25rem;">
+            <div class="field" style="display: flex; flex-direction: column; gap: 0.45rem; width: 100%;">
+              <span class="mono" style="display: block; font-family: var(--font-mono, monospace); font-size: 0.72rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Agreement Validity Period</span>
+              <input type="date" id="validUntil" name="validUntil" style="width: 100%; padding: 0.75rem 1rem; background: #fff; color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius-s);" />
+            </div>
+            <div class="field" style="display: flex; flex-direction: column; gap: 0.45rem; width: 100%;">
+              <span class="mono" style="display: block; font-family: var(--font-mono, monospace); font-size: 0.72rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Initial Status</span>
+              <select id="agreementStatus" name="status" style="width: 100%; padding: 0.75rem 1rem; background: #fff; color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius-s);">
                 <option value="draft" selected>Save as Draft (Private)</option>
                 <option value="pending_review">Pending Internal Review</option>
                 <option value="sent">Finalize & Mark as Sent to Client</option>
               </select>
-            </label>
+            </div>
           </div>
 
           <!-- Final Submission Buttons -->
-          <div class="form-footer" style="display: flex; justify-content: space-between; align-items: center; padding-top: 1.5rem; border-top: 1px solid var(--line);">
+          <div class="form-footer" style="display: flex; justify-content: space-between; align-items: center; padding-top: 1.5rem; border-top: 1px solid var(--line); margin-top: 1.5rem;">
             <button type="button" class="btn btn-ghost" data-prev-step="4">
               ← Back to Clauses
             </button>
 
-            <div style="display: flex; gap: 0.75rem;">
+            <div style="display: flex; gap: 0.75rem; align-items: center;">
               <button type="button" class="btn btn-ghost" id="btn-save-draft">
                 Save as Draft
               </button>
-              <button type="submit" class="btn btn-primary" id="btn-submit-agreement">
-                <span>Create Agreement</span>
+              <button type="button" class="btn btn-primary" id="btn-submit-agreement" style="background: var(--ink); color: #fff; font-weight: 600; padding: 0.75rem 1.75rem; border-radius: var(--radius-s); display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                <span id="btn-submit-label">Create Agreement</span>
                 <span class="arrow">→</span>
               </button>
             </div>
@@ -950,6 +1121,26 @@ try {
     }
   });
 
+  // Autofill Sample Client Details for Quick Testing
+  document.getElementById('btn-fill-demo-client')?.addEventListener('click', () => {
+    const fields = {
+      clientName: 'Rahul Sharma',
+      clientEmail: 'rahul.sharma@apexenterprise.in',
+      clientCompany: 'Apex Enterprise Solutions Pvt Ltd',
+      clientPhone: '+91 98450 12345',
+      clientAddress: 'Tower B, 7th Floor, Prestige Tech Park, Marathahalli-Sarjapur Outer Ring Rd',
+      clientCity: 'Bengaluru',
+      clientState: 'Karnataka',
+      clientCountry: 'India',
+      clientGstin: '29AABCA1234A1Z5',
+    };
+    Object.entries(fields).forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if (el) el.value = val;
+    });
+    showToast('Autofilled sample client information', 'success');
+  });
+
   // Quotation Select
   document.getElementById('quotationId')?.addEventListener('change', (e) => {
     const opt = e.target.selectedOptions[0];
@@ -1117,18 +1308,109 @@ try {
     });
   }
 
-  // Form Submit Handler
+  // Programmatic Multi-Step Form Submission Handler
   async function submitAgreement(statusOverride) {
-    const form = document.getElementById('agreement-form');
-    if (!form.checkValidity()) {
-      form.reportValidity();
+    // 1. Clear previous errors
+    document.querySelectorAll('.is-invalid').forEach((el) => el.classList.remove('is-invalid'));
+    const prevBanner = document.getElementById('agreement-form-error-banner');
+    if (prevBanner) prevBanner.remove();
+
+    function showFormError(msg) {
+      if (typeof window.showAdminToast === 'function') {
+        window.showAdminToast(msg, 'error');
+      } else {
+        showToast(msg, 'error');
+      }
+      let errBox = document.getElementById('agreement-form-error-banner');
+      if (!errBox) {
+        errBox = document.createElement('div');
+        errBox.id = 'agreement-form-error-banner';
+        errBox.className = 'admin-alert-banner admin-alert-error';
+        const form = document.getElementById('agreement-form');
+        form?.insertBefore(errBox, form.firstChild);
+      }
+      errBox.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0; margin-top:2px;">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <div>
+          <strong style="display: block; font-size: 0.95rem;">Please review required fields:</strong>
+          <div style="margin-top: 4px; font-size: 0.88rem;">${msg}</div>
+        </div>
+      `;
+      errBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // 2. Step 1 Validation (Client Name & Email)
+    const clientNameInput = document.getElementById('clientName');
+    const clientName = clientNameInput?.value.trim() || '';
+    if (!clientName) {
+      switchStep('1');
+      clientNameInput?.classList.add('is-invalid');
+      clientNameInput?.focus();
+      showFormError('Client Signatory Full Legal Name is required in Step 1.');
       return;
     }
 
+    const clientEmailInput = document.getElementById('clientEmail');
+    const clientEmail = clientEmailInput?.value.trim() || '';
+    if (!clientEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clientEmail)) {
+      switchStep('1');
+      clientEmailInput?.classList.add('is-invalid');
+      clientEmailInput?.focus();
+      showFormError('A valid Client Official Email Address is required in Step 1.');
+      return;
+    }
+
+    // 3. Step 2 Validation (Project Name)
+    const projectNameInput = document.getElementById('projectName');
+    const projectName = projectNameInput?.value.trim() || '';
+    if (!projectName) {
+      switchStep('2');
+      projectNameInput?.classList.add('is-invalid');
+      projectNameInput?.focus();
+      showFormError('Project Name / Reference Title is required in Step 2.');
+      return;
+    }
+
+    // 4. Step 3 Validation (Total Amount)
+    const totalAmountInput = document.getElementById('totalAmount');
+    const totalAmountVal = parseFloat(totalAmountInput?.value || '0');
+    if (isNaN(totalAmountVal) || totalAmountVal < 0) {
+      switchStep('3');
+      totalAmountInput?.classList.add('is-invalid');
+      totalAmountInput?.focus();
+      showFormError('Please enter a valid Total Contract Value in Step 3.');
+      return;
+    }
+
+    // 5. Step 4 Validation (Clauses)
+    if (!activeClauses || activeClauses.length === 0) {
+      switchStep('4');
+      showFormError('At least one legal clause is required in Step 4. Click "Reset to Standard Clauses".');
+      return;
+    }
+
+    // UI Loading State
     const submitBtn = document.getElementById('btn-submit-agreement');
     const draftBtn = document.getElementById('btn-save-draft');
-    if (submitBtn) submitBtn.disabled = true;
-    if (draftBtn) draftBtn.disabled = true;
+    const prevCreateBtn = document.getElementById('btn-preview-create');
+    const submitLabel = document.getElementById('btn-submit-label');
+
+    function setSubmitting(isSubmitting, labelText) {
+      if (submitBtn) {
+        submitBtn.disabled = isSubmitting;
+        submitBtn.style.opacity = isSubmitting ? '0.7' : '1';
+        submitBtn.style.cursor = isSubmitting ? 'not-allowed' : 'pointer';
+      }
+      if (draftBtn) draftBtn.disabled = isSubmitting;
+      if (prevCreateBtn) prevCreateBtn.disabled = isSubmitting;
+      if (submitLabel && labelText) submitLabel.textContent = labelText;
+    }
+
+    setSubmitting(true, statusOverride === 'draft' ? 'Saving Draft...' : 'Creating Agreement...');
 
     // Collect Deliverables
     const deliverables = [];
@@ -1147,8 +1429,8 @@ try {
 
     const payload = {
       title: 'PROFESSIONAL SERVICE AGREEMENT',
-      clientName: document.getElementById('clientName')?.value.trim(),
-      clientEmail: document.getElementById('clientEmail')?.value.trim(),
+      clientName,
+      clientEmail,
       clientCompany: document.getElementById('clientCompany')?.value.trim() || null,
       clientAddress: document.getElementById('clientAddress')?.value.trim() || null,
       clientCity: document.getElementById('clientCity')?.value.trim() || null,
@@ -1157,7 +1439,7 @@ try {
       clientPhone: document.getElementById('clientPhone')?.value.trim() || null,
       clientGstin: document.getElementById('clientGstin')?.value.trim() || null,
 
-      projectName: document.getElementById('projectName')?.value.trim(),
+      projectName,
       projectDescription: document.getElementById('projectDescription')?.value.trim() || null,
       scopeOfWork: document.getElementById('scopeOfWork')?.value.trim() || null,
       deliverables,
@@ -1165,7 +1447,7 @@ try {
       milestones,
 
       currency: document.getElementById('currency')?.value || 'INR',
-      totalAmount: parseFloat(document.getElementById('totalAmount')?.value || '0'),
+      totalAmount: totalAmountVal,
       advancePercentage: parseInt(document.getElementById('advancePercentage')?.value || '50', 10),
       advanceAmount: parseFloat(document.getElementById('advanceAmount')?.value || '0'),
       paymentSchedule: document.getElementById('paymentSchedule')?.value.trim() || null,
@@ -1184,49 +1466,7 @@ try {
       businessId: null,
     };
 
-    function showToast(msg, type = 'success') {
-      if (typeof window.showAdminToast === 'function') {
-        window.showAdminToast(msg, type);
-      } else {
-        const hub = document.getElementById('admin-toast-hub');
-        if (hub) {
-          const toast = document.createElement('div');
-          toast.className = `toast-item toast-${type}`;
-          toast.textContent = msg;
-          hub.appendChild(toast);
-          setTimeout(() => toast.remove(), 4000);
-        }
-      }
-    }
-
-    function showFormError(msg) {
-      showToast(msg, 'error');
-      let errBox = document.getElementById('agreement-form-error-banner');
-      if (!errBox) {
-        errBox = document.createElement('div');
-        errBox.id = 'agreement-form-error-banner';
-        errBox.className = 'admin-alert-banner admin-alert-error';
-        const form = document.getElementById('agreement-form');
-        form?.insertBefore(errBox, form.firstChild);
-      }
-      errBox.innerHTML = `
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0; margin-top:2px;">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="8" x2="12" y2="12"></line>
-          <line x1="12" y1="16" x2="12.01" y2="16"></line>
-        </svg>
-        <div>
-          <strong>Validation / Save Error:</strong>
-          <div style="margin-top: 4px;">${msg}</div>
-        </div>
-      `;
-      errBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-
     try {
-      const existingErr = document.getElementById('agreement-form-error-banner');
-      if (existingErr) existingErr.remove();
-
       const res = await fetch('/api/admin/agreements', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1249,26 +1489,37 @@ try {
       }
 
       showToast(`Agreement ${data.agreement.agreementNumber} created successfully!`, 'success');
+      if (typeof window.showAdminToast === 'function') {
+        window.showAdminToast(`Agreement ${data.agreement.agreementNumber} created successfully!`, 'success');
+      }
+      if (submitLabel) submitLabel.textContent = 'Redirecting...';
       setTimeout(() => {
         window.location.href = `/admin/agreements/${data.agreement.id}`;
-      }, 1000);
+      }, 700);
     } catch (err) {
       showFormError(err.message || 'Error creating agreement');
-      if (submitBtn) submitBtn.disabled = false;
-      if (draftBtn) draftBtn.disabled = false;
+      setSubmitting(false, 'Create Agreement');
     }
   }
 
-  document.getElementById('agreement-form')?.addEventListener('submit', (e) => {
+  // Explicit Button Event Handlers
+  document.getElementById('btn-submit-agreement')?.addEventListener('click', (e) => {
     e.preventDefault();
     submitAgreement();
   });
 
-  document.getElementById('btn-save-draft')?.addEventListener('click', () => {
+  document.getElementById('btn-save-draft')?.addEventListener('click', (e) => {
+    e.preventDefault();
     submitAgreement('draft');
   });
 
-  document.getElementById('btn-preview-create')?.addEventListener('click', () => {
+  document.getElementById('btn-preview-create')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    submitAgreement();
+  });
+
+  document.getElementById('agreement-form')?.addEventListener('submit', (e) => {
+    e.preventDefault();
     submitAgreement();
   });
 
