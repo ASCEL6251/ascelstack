@@ -40,18 +40,31 @@ if (statusFilter && statusFilter !== 'all') {
 
 const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-// Total matching count
-const [{ totalCount }] = await db
-  .select({ totalCount: sql<number>`count(*)::int` })
-  .from(agreements)
-  .where(whereClause);
+// Safe Total matching count
+let totalCount = 0;
+try {
+  const countResult = await db
+    .select({ totalCount: sql<number>`count(*)::int` })
+    .from(agreements)
+    .where(whereClause);
+  totalCount = Number((countResult[0] as any)?.totalCount ?? (countResult[0] as any)?.count ?? 0);
+} catch (err) {
+  console.warn('[Admin/Agreements/index] Error counting agreements:', err);
+  totalCount = 0;
+}
 
-// Metric counts across all agreements
-const allAgreements = await db
-  .select({
-    status: agreements.status,
-  })
-  .from(agreements);
+// Safe Metric counts across all agreements
+let allAgreements: any[] = [];
+try {
+  allAgreements = await db
+    .select({
+      status: agreements.status,
+    })
+    .from(agreements);
+} catch (err) {
+  console.warn('[Admin/Agreements/index] Error loading agreement statuses:', err);
+  allAgreements = [];
+}
 
 const totalAgreements = allAgreements.length;
 const pendingSignatureCount = allAgreements.filter((a) =>
@@ -61,35 +74,41 @@ const partiallySignedCount = allAgreements.filter((a) => a.status === 'partially
 const fullySignedCount = allAgreements.filter((a) => a.status === 'signed').length;
 const draftCount = allAgreements.filter((a) => ['draft', 'pending_review'].includes(a.status)).length;
 
-const agreementList = await db
-  .select({
-    id: agreements.id,
-    agreementNumber: agreements.agreementNumber,
-    secureToken: agreements.secureToken,
-    title: agreements.title,
-    status: agreements.status,
-    version: agreements.version,
-    isImmutable: agreements.isImmutable,
-    clientName: agreements.clientName,
-    clientEmail: agreements.clientEmail,
-    clientCompany: agreements.clientCompany,
-    projectName: agreements.projectName,
-    currency: agreements.currency,
-    totalAmount: agreements.totalAmount,
-    advanceAmount: agreements.advanceAmount,
-    clientSignedAt: agreements.clientSignedAt,
-    providerSignedAt: agreements.providerSignedAt,
-    signedAt: agreements.signedAt,
-    createdAt: agreements.createdAt,
-    updatedAt: agreements.updatedAt,
-  })
-  .from(agreements)
-  .where(whereClause)
-  .orderBy(desc(agreements.createdAt))
-  .limit(limit)
-  .offset(offset);
+let agreementList: any[] = [];
+try {
+  agreementList = await db
+    .select({
+      id: agreements.id,
+      agreementNumber: agreements.agreementNumber,
+      secureToken: agreements.secureToken,
+      title: agreements.title,
+      status: agreements.status,
+      version: agreements.version,
+      isImmutable: agreements.isImmutable,
+      clientName: agreements.clientName,
+      clientEmail: agreements.clientEmail,
+      clientCompany: agreements.clientCompany,
+      projectName: agreements.projectName,
+      currency: agreements.currency,
+      totalAmount: agreements.totalAmount,
+      advanceAmount: agreements.advanceAmount,
+      clientSignedAt: agreements.clientSignedAt,
+      providerSignedAt: agreements.providerSignedAt,
+      signedAt: agreements.signedAt,
+      createdAt: agreements.createdAt,
+      updatedAt: agreements.updatedAt,
+    })
+    .from(agreements)
+    .where(whereClause)
+    .orderBy(desc(agreements.createdAt))
+    .limit(limit)
+    .offset(offset);
+} catch (err) {
+  console.warn('[Admin/Agreements/index] Error loading agreement list:', err);
+  agreementList = [];
+}
 
-const totalPages = Math.ceil(totalCount / limit);
+const totalPages = Math.max(1, Math.ceil(totalCount / limit));
 
 function formatCurrency(amount: string | number, curr = 'INR') {
   const num = typeof amount === 'string' ? parseFloat(amount) : amount;

@@ -19,11 +19,18 @@ if (isUuid) {
   conditions.push(eq(agreements.id, clean));
 }
 
-const [agreement] = await db
-  .select()
-  .from(agreements)
-  .where(or(...conditions))
-  .limit(1);
+let agreement: any = null;
+try {
+  const [found] = await db
+    .select()
+    .from(agreements)
+    .where(or(...conditions))
+    .limit(1);
+  agreement = found;
+} catch (err) {
+  console.error('[Agreements/[token]/print] Error loading agreement:', err);
+  return Astro.redirect('/404');
+}
 
 if (!agreement) {
   return Astro.redirect('/404');
@@ -36,10 +43,16 @@ const autoPrint = Astro.url.searchParams.get('autoPrint') === '1' ||
   Astro.url.searchParams.get('download') === '1' ||
   Astro.url.searchParams.get('print') === '1';
 
-const signatures = await db
-  .select()
-  .from(agreementSignatures)
-  .where(eq(agreementSignatures.agreementId, agreement.id));
+let signatures: any[] = [];
+try {
+  signatures = await db
+    .select()
+    .from(agreementSignatures)
+    .where(eq(agreementSignatures.agreementId, agreement.id));
+} catch (err) {
+  console.warn('[Agreements/[token]/print] Error loading signatures:', err);
+  signatures = [];
+}
 
 const providerSig = signatures.find((s) => s.signerRole === 'provider');
 const clientSig = signatures.find((s) => s.signerRole === 'client');

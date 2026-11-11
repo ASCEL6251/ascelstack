@@ -17,32 +17,65 @@ if (!id) {
   return Astro.redirect('/admin/agreements');
 }
 
-const [agreement] = await db
-  .select()
-  .from(agreements)
-  .where(eq(agreements.id, id))
-  .limit(1);
+// Intercept named routes if matched dynamically
+if (id === 'new') {
+  return Astro.redirect('/admin/agreements/new');
+}
+if (id === 'settings') {
+  return Astro.redirect('/admin/agreements/settings');
+}
+
+// Strict UUID format validation to prevent Postgres syntax crash
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+if (!UUID_REGEX.test(id)) {
+  return Astro.redirect('/admin/agreements');
+}
+
+let agreement: any = null;
+try {
+  const [found] = await db
+    .select()
+    .from(agreements)
+    .where(eq(agreements.id, id))
+    .limit(1);
+  agreement = found;
+} catch (err) {
+  console.error('[Admin/Agreements/[id]] Error loading agreement:', err);
+  return Astro.redirect('/admin/agreements');
+}
 
 if (!agreement) {
   return Astro.redirect('/admin/agreements');
 }
 
-// Fetch signatures
-const signatures = await db
-  .select()
-  .from(agreementSignatures)
-  .where(eq(agreementSignatures.agreementId, id))
-  .orderBy(desc(agreementSignatures.signedAt));
+// Fetch signatures safely
+let signatures: any[] = [];
+try {
+  signatures = await db
+    .select()
+    .from(agreementSignatures)
+    .where(eq(agreementSignatures.agreementId, id))
+    .orderBy(desc(agreementSignatures.signedAt));
+} catch (err) {
+  console.warn('[Admin/Agreements/[id]] Error loading signatures:', err);
+  signatures = [];
+}
 
 const providerSig = signatures.find((s) => s.signerRole === 'provider');
 const clientSig = signatures.find((s) => s.signerRole === 'client');
 
-// Fetch audit logs
-const auditLogs = await db
-  .select()
-  .from(agreementAuditLogs)
-  .where(eq(agreementAuditLogs.agreementId, id))
-  .orderBy(desc(agreementAuditLogs.createdAt));
+// Fetch audit logs safely
+let auditLogs: any[] = [];
+try {
+  auditLogs = await db
+    .select()
+    .from(agreementAuditLogs)
+    .where(eq(agreementAuditLogs.agreementId, id))
+    .orderBy(desc(agreementAuditLogs.createdAt));
+} catch (err) {
+  console.warn('[Admin/Agreements/[id]] Error loading audit logs:', err);
+  auditLogs = [];
+}
 
 function formatCurrency(amount: string | number, curr = 'INR') {
   const num = typeof amount === 'string' ? parseFloat(amount) : amount;

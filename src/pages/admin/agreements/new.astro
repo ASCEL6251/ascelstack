@@ -13,51 +13,86 @@ if (!session) {
   return Astro.redirect('/admin/login');
 }
 
-// Fetch active company settings
-const [settings] = await db.select().from(companySettings).limit(1);
-const companyInfo = {
-  legalName: settings?.companyLegalName || DEFAULT_COMPANY_INFO.legalName,
-  brandName: settings?.companyBrandName || DEFAULT_COMPANY_INFO.brandName,
-  address: settings?.registeredAddress || DEFAULT_COMPANY_INFO.address,
-  email: settings?.legalEmail || DEFAULT_COMPANY_INFO.email,
-  supportEmail: settings?.supportEmail || DEFAULT_COMPANY_INFO.supportEmail,
-  phone: settings?.contactPhone || DEFAULT_COMPANY_INFO.phone,
-  gstin: settings?.gstin || '',
-  gstinEnabled: settings?.gstinEnabled || false,
-  logoUrl: settings?.logoUrl || DEFAULT_COMPANY_INFO.logoUrl,
-  signatoryName: settings?.signatoryName || DEFAULT_COMPANY_INFO.signatoryName,
-  signatoryTitle: settings?.signatoryTitle || DEFAULT_COMPANY_INFO.signatoryTitle,
-  defaultCurrency: settings?.defaultCurrency || 'INR',
-};
+// 1. Safe Company Settings with guaranteed fallbacks
+let companyInfo = { ...DEFAULT_COMPANY_INFO };
+try {
+  const [settings] = await db.select().from(companySettings).limit(1);
+  if (settings) {
+    companyInfo = {
+      legalName: settings.companyLegalName || DEFAULT_COMPANY_INFO.legalName,
+      brandName: settings.companyBrandName || DEFAULT_COMPANY_INFO.brandName,
+      address: settings.registeredAddress || DEFAULT_COMPANY_INFO.address,
+      email: settings.legalEmail || DEFAULT_COMPANY_INFO.email,
+      supportEmail: settings.supportEmail || DEFAULT_COMPANY_INFO.supportEmail,
+      phone: settings.contactPhone || DEFAULT_COMPANY_INFO.phone,
+      gstin: settings.gstin || '',
+      gstinEnabled: Boolean(settings.gstinEnabled),
+      logoUrl: settings.logoUrl || DEFAULT_COMPANY_INFO.logoUrl,
+      signatoryName: settings.signatoryName || DEFAULT_COMPANY_INFO.signatoryName,
+      signatoryTitle: settings.signatoryTitle || DEFAULT_COMPANY_INFO.signatoryTitle,
+      defaultCurrency: settings.defaultCurrency || 'INR',
+    };
+  }
+} catch (err) {
+  console.warn('[Agreements/New] Error fetching company settings, using defaults:', err);
+}
 
-// Fetch registered clients for quick selection
-const registeredUsers = await db
-  .select({
-    id: users.id,
-    fullName: users.fullName,
-    email: users.email,
-  })
-  .from(users)
-  .orderBy(asc(users.fullName));
+// 2. Safe registered clients for quick selection
+let registeredUsers: Array<{ id: string; fullName: string | null; email: string }> = [];
+try {
+  registeredUsers = await db
+    .select({
+      id: users.id,
+      fullName: users.fullName,
+      email: users.email,
+    })
+    .from(users)
+    .orderBy(asc(users.fullName));
+} catch (err) {
+  console.warn('[Agreements/New] Error fetching registered users:', err);
+  registeredUsers = [];
+}
 
-// Fetch approved quotations if admin wants to base agreement on a quotation
-const approvedQuotations = await db
-  .select({
-    id: quotations.id,
-    quotationNumber: quotations.quotationNumber,
-    projectTitle: quotations.projectTitle,
-    finalQuotationAmount: quotations.finalQuotationAmount,
-    currency: quotations.currency,
-    userId: quotations.userId,
-    businessId: quotations.businessId,
-  })
-  .from(quotations)
-  .orderBy(desc(quotations.createdAt))
-  .limit(30);
+// 3. Safe quotations if admin wants to base agreement on a quotation
+let approvedQuotations: Array<{
+  id: string;
+  quotationNumber: string;
+  projectTitle: string;
+  finalQuotationAmount: string | null;
+  currency: string;
+  userId: string;
+  businessId: string | null;
+}> = [];
+try {
+  approvedQuotations = await db
+    .select({
+      id: quotations.id,
+      quotationNumber: quotations.quotationNumber,
+      projectTitle: quotations.projectTitle,
+      finalQuotationAmount: quotations.finalQuotationAmount,
+      currency: quotations.currency,
+      userId: quotations.userId,
+      businessId: quotations.businessId,
+    })
+    .from(quotations)
+    .orderBy(desc(quotations.createdAt))
+    .limit(30);
+} catch (err) {
+  console.warn('[Agreements/New] Error fetching approved quotations:', err);
+  approvedQuotations = [];
+}
 
-// Fetch saved templates from database
-const dbTemplates = await db.select().from(agreementTemplates).orderBy(asc(agreementTemplates.name));
-const templatesList = dbTemplates.length > 0 ? dbTemplates : PRESET_TEMPLATES;
+// 4. Safe saved templates from database
+let templatesList = PRESET_TEMPLATES;
+try {
+  const dbTemplates = await db.select().from(agreementTemplates).orderBy(asc(agreementTemplates.name));
+  if (dbTemplates && dbTemplates.length > 0) {
+    templatesList = dbTemplates as any;
+  }
+} catch (err) {
+  console.warn('[Agreements/New] Error fetching templates:', err);
+  templatesList = PRESET_TEMPLATES;
+}
 ---
 
 <AdminLayout
@@ -155,7 +190,7 @@ const templatesList = dbTemplates.length > 0 ? dbTemplates : PRESET_TEMPLATES;
             <div style="min-width: 240px;">
               <select id="select-registered-client" class="field-select">
                 <option value="">-- Quick Load Client Profile --</option>
-                {registeredUsers.map((u) => (
+                {(registeredUsers || []).map((u) => (
                   <option value={u.id} data-name={u.fullName || ''} data-email={u.email}>
                     {u.fullName || u.email} ({u.email})
                   </option>
@@ -215,9 +250,9 @@ const templatesList = dbTemplates.length > 0 ? dbTemplates : PRESET_TEMPLATES;
               <span class="mono">Link Existing Quotation (Optional)</span>
               <select id="quotationId" name="quotationId">
                 <option value="">-- No linked quotation --</option>
-                {approvedQuotations.map((q) => (
-                  <option value={q.id} data-amount={q.finalQuotationAmount} data-title={q.projectTitle}>
-                    {q.quotationNumber} - {q.projectTitle} ({q.currency} {Number(q.finalQuotationAmount).toLocaleString()})
+                {(approvedQuotations || []).map((q) => (
+                  <option value={q.id} data-amount={q.finalQuotationAmount || '0'} data-title={q.projectTitle || ''}>
+                    {q.quotationNumber} - {q.projectTitle} ({q.currency || 'INR'} {Number(q.finalQuotationAmount || 0).toLocaleString()})
                   </option>
                 ))}
               </select>
@@ -403,7 +438,7 @@ const templatesList = dbTemplates.length > 0 ? dbTemplates : PRESET_TEMPLATES;
             <!-- Template Switcher -->
             <div style="min-width: 280px;">
               <select id="select-agreement-template" class="field-select">
-                {templatesList.map((tpl) => (
+                {(templatesList || []).map((tpl) => (
                   <option value={tpl.code}>
                     Template: {tpl.name}
                   </option>
@@ -683,7 +718,6 @@ const templatesList = dbTemplates.length > 0 ? dbTemplates : PRESET_TEMPLATES;
 
   <!-- Toast Hub -->
   <div class="toast-hub" id="toast-hub" aria-live="polite"></div>
-</AdminLayout>
 
 <script is:inline define:vars={{ standardClauses: STANDARD_25_CLAUSES, presetTemplates: PRESET_TEMPLATES }}>
   // Dynamic Agreement Builder Client Script
@@ -1197,3 +1231,4 @@ const templatesList = dbTemplates.length > 0 ? dbTemplates : PRESET_TEMPLATES;
   // Initialize
   renderClausesEditor();
 </script>
+</AdminLayout>

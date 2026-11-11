@@ -21,11 +21,18 @@ if (isUuid) {
   conditions.push(eq(agreements.id, clean));
 }
 
-const [agreement] = await db
-  .select()
-  .from(agreements)
-  .where(or(...conditions))
-  .limit(1);
+let agreement: any = null;
+try {
+  const [found] = await db
+    .select()
+    .from(agreements)
+    .where(or(...conditions))
+    .limit(1);
+  agreement = found;
+} catch (err) {
+  console.error('[Agreements/[token]] Error fetching agreement:', err);
+  return Astro.redirect('/404');
+}
 
 if (!agreement) {
   return Astro.redirect('/404');
@@ -45,34 +52,44 @@ if (authData?.user && !agreement.userId) {
 
 // Auto-record "viewed" on first opening by client
 if (agreement.status === 'sent') {
-  const now = new Date();
-  await db
-    .update(agreements)
-    .set({
-      status: 'viewed',
-      viewedAt: now,
-      updatedAt: now,
-    })
-    .where(eq(agreements.id, agreement.id));
+  try {
+    const now = new Date();
+    await db
+      .update(agreements)
+      .set({
+        status: 'viewed',
+        viewedAt: now,
+        updatedAt: now,
+      })
+      .where(eq(agreements.id, agreement.id));
 
-  agreement.status = 'viewed';
-  agreement.viewedAt = now;
+    agreement.status = 'viewed';
+    agreement.viewedAt = now;
 
-  await db.insert(agreementAuditLogs).values({
-    agreementId: agreement.id,
-    action: 'viewed',
-    performedBy: agreement.clientEmail,
-    role: 'client',
-    description: `Agreement ${agreement.agreementNumber} was opened and viewed by client (${agreement.clientEmail})`,
-    ipAddress: Astro.clientAddress || null,
-  });
+    await db.insert(agreementAuditLogs).values({
+      agreementId: agreement.id,
+      action: 'viewed',
+      performedBy: agreement.clientEmail,
+      role: 'client',
+      description: `Agreement ${agreement.agreementNumber} was opened and viewed by client (${agreement.clientEmail})`,
+      ipAddress: Astro.clientAddress || null,
+    });
+  } catch (err) {
+    console.warn('[Agreements/[token]] Error updating viewed status:', err);
+  }
 }
 
 // Fetch existing signatures
-const signatures = await db
-  .select()
-  .from(agreementSignatures)
-  .where(eq(agreementSignatures.agreementId, agreement.id));
+let signatures: any[] = [];
+try {
+  signatures = await db
+    .select()
+    .from(agreementSignatures)
+    .where(eq(agreementSignatures.agreementId, agreement.id));
+} catch (err) {
+  console.warn('[Agreements/[token]] Error fetching signatures:', err);
+  signatures = [];
+}
 
 const clientSig = signatures.find((s) => s.signerRole === 'client');
 const providerSig = signatures.find((s) => s.signerRole === 'provider');

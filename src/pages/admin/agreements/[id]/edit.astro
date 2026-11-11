@@ -17,11 +17,24 @@ if (!id) {
   return Astro.redirect('/admin/agreements');
 }
 
-const [agreement] = await db
-  .select()
-  .from(agreements)
-  .where(eq(agreements.id, id))
-  .limit(1);
+// Strict UUID format validation
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+if (!UUID_REGEX.test(id)) {
+  return Astro.redirect('/admin/agreements');
+}
+
+let agreement: any = null;
+try {
+  const [found] = await db
+    .select()
+    .from(agreements)
+    .where(eq(agreements.id, id))
+    .limit(1);
+  agreement = found;
+} catch (err) {
+  console.error('[Admin/Agreements/[id]/edit] Error loading agreement:', err);
+  return Astro.redirect('/admin/agreements');
+}
 
 if (!agreement) {
   return Astro.redirect('/admin/agreements');
@@ -36,7 +49,13 @@ const clauses = (agreement.clauses as any[]) || [];
 const deliverables = (agreement.deliverables as any[]) || [];
 const milestones = (agreement.milestones as any[]) || [];
 
-const dbTemplates = await db.select().from(agreementTemplates).orderBy(asc(agreementTemplates.name));
+let dbTemplates: any[] = [];
+try {
+  dbTemplates = await db.select().from(agreementTemplates).orderBy(asc(agreementTemplates.name));
+} catch (err) {
+  console.warn('[Admin/Agreements/[id]/edit] Error loading templates:', err);
+  dbTemplates = [];
+}
 ---
 
 <AdminLayout

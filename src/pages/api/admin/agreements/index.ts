@@ -51,10 +51,17 @@ export const GET: APIRoute = async (context) => {
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    const [{ totalCount }] = await db
-      .select({ totalCount: sql<number>`count(*)::int` })
-      .from(agreements)
-      .where(whereClause);
+    let totalCount = 0;
+    try {
+      const countRes = await db
+        .select({ totalCount: sql<number>`count(*)::int` })
+        .from(agreements)
+        .where(whereClause);
+      totalCount = Number((countRes[0] as any)?.totalCount ?? (countRes[0] as any)?.count ?? 0);
+    } catch (countErr) {
+      console.warn('Count query failed in admin agreements GET:', countErr);
+      totalCount = 0;
+    }
 
     const items = await db
       .select({
@@ -92,7 +99,7 @@ export const GET: APIRoute = async (context) => {
           page,
           limit,
           total: totalCount,
-          totalPages: Math.ceil(totalCount / limit),
+          totalPages: Math.max(1, Math.ceil(totalCount / limit)),
         },
       }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }

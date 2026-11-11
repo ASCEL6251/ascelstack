@@ -12,7 +12,13 @@ if (!session) {
   return Astro.redirect('/admin/login');
 }
 
-let [settings] = await db.select().from(companySettings).limit(1);
+let settings: any = null;
+try {
+  const [found] = await db.select().from(companySettings).limit(1);
+  settings = found;
+} catch (err) {
+  console.warn('[Admin/Agreements/settings] Error fetching company settings:', err);
+}
 const company = settings || DEFAULT_COMPANY_INFO;
 ---
 

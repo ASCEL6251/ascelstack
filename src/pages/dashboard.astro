@@ -93,34 +93,40 @@ const customerQuotations = await db
   .orderBy(desc(quotations.createdAt));
 
 // 3c. Fetch all client agreements for customer
-const customerAgreements = await db
-  .select({
-    id: agreements.id,
-    agreementNumber: agreements.agreementNumber,
-    secureToken: agreements.secureToken,
-    title: agreements.title,
-    projectName: agreements.projectName,
-    status: agreements.status,
-    version: agreements.version,
-    isImmutable: agreements.isImmutable,
-    currency: agreements.currency,
-    totalAmount: agreements.totalAmount,
-    advanceAmount: agreements.advanceAmount,
-    advancePercentage: agreements.advancePercentage,
-    clientSignedAt: agreements.clientSignedAt,
-    providerSignedAt: agreements.providerSignedAt,
-    signedAt: agreements.signedAt,
-    createdAt: agreements.createdAt,
-  })
-  .from(agreements)
-  .where(
-    or(
-      eq(agreements.userId, user.id),
-      sql`lower(${agreements.clientEmail}) = lower(${user.email})`,
-      business ? eq(agreements.businessId, business.id) : undefined
+let customerAgreements: any[] = [];
+try {
+  customerAgreements = await db
+    .select({
+      id: agreements.id,
+      agreementNumber: agreements.agreementNumber,
+      secureToken: agreements.secureToken,
+      title: agreements.title,
+      projectName: agreements.projectName,
+      status: agreements.status,
+      version: agreements.version,
+      isImmutable: agreements.isImmutable,
+      currency: agreements.currency,
+      totalAmount: agreements.totalAmount,
+      advanceAmount: agreements.advanceAmount,
+      advancePercentage: agreements.advancePercentage,
+      clientSignedAt: agreements.clientSignedAt,
+      providerSignedAt: agreements.providerSignedAt,
+      signedAt: agreements.signedAt,
+      createdAt: agreements.createdAt,
+    })
+    .from(agreements)
+    .where(
+      or(
+        eq(agreements.userId, user.id),
+        sql`lower(${agreements.clientEmail}) = lower(${user.email})`,
+        business ? eq(agreements.businessId, business.id) : undefined
+      )
     )
-  )
-  .orderBy(desc(agreements.createdAt));
+    .orderBy(desc(agreements.createdAt));
+} catch (err) {
+  console.warn('[Dashboard] Error fetching customer agreements:', err);
+  customerAgreements = [];
+}
 
 // 4. Fetch all catalog services for exploration and the estimation planner
 const allServices = await db
