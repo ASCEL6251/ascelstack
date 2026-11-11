@@ -5,7 +5,7 @@ import { UserButton, SignOutButton } from '@clerk/astro/components';
 import Logo from '../components/Logo.astro';
 import { getAuthenticatedUser } from '../lib/auth';
 import { db, services, serviceRequests, businesses, activityLogs, quotations, agreements } from '../db';
-import { eq, desc, asc, or } from 'drizzle-orm';
+import { eq, desc, asc, or, sql } from 'drizzle-orm';
 import { getPricing, cardPrice, formatINR } from '../lib/pricing';
 import rawPricing from '../data/pricing.json';
 import '../styles/global.css';
@@ -116,7 +116,7 @@ const customerAgreements = await db
   .where(
     or(
       eq(agreements.userId, user.id),
-      eq(agreements.clientEmail, user.email),
+      sql`lower(${agreements.clientEmail}) = lower(${user.email})`,
       business ? eq(agreements.businessId, business.id) : undefined
     )
   )
@@ -1191,6 +1191,36 @@ const initialData = {
                   <span>Browse Legal Framework</span>
                   <span class="arrow">→</span>
                 </a>
+              </div>
+
+              <!-- Direct Bridge: Claim Agreement by Unique Code / ID -->
+              <div class="card-panel" style="background: #f8fafc; border: 1px solid #e2e8f0; margin-bottom: 1.5rem; padding: 1.25rem 1.5rem; border-radius: 6px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 1.25rem; flex-wrap: wrap;">
+                  <div>
+                    <span class="eyebrow" style="color: var(--accent);">Direct Admin-to-Client Bridge</span>
+                    <h3 class="display" style="font-size: 1.15rem; margin: 2px 0 4px; color: var(--ink);">
+                      Have an Agreement Code from Ascelstack?
+                    </h3>
+                    <p class="text-muted text-xs" style="margin: 0; max-width: 520px;">
+                      Enter the unique agreement code (e.g. <strong>PSA-2026-0001</strong>) provided by our team. It will link to your panel so you can review terms, e-sign, and download the executed PDF.
+                    </p>
+                  </div>
+                  <form id="form-claim-agreement" style="display: flex; gap: 0.5rem; flex: 1; max-width: 440px; min-width: 280px;">
+                    <input
+                      type="text"
+                      id="input-claim-code"
+                      placeholder="e.g. PSA-2026-0001"
+                      required
+                      class="field-input mono"
+                      style="flex: 1; text-transform: uppercase; background: #ffffff; padding: 0.65rem 0.85rem; border: 1px solid #cbd5e1; border-radius: 4px; font-weight: 600;"
+                    />
+                    <button type="submit" class="btn btn-primary" id="btn-claim-code" style="white-space: nowrap;">
+                      <span>Link Agreement</span>
+                      <span class="arrow">→</span>
+                    </button>
+                  </form>
+                </div>
+                <div id="claim-code-feedback" style="display: none; margin-top: 0.75rem; font-size: 0.85rem; font-weight: 500;"></div>
               </div>
 
               {customerAgreements.length === 0 ? (
@@ -4032,6 +4062,53 @@ const initialData = {
             card.hidden = !(filter === 'all' || card.dataset.myLayer === filter);
           });
         });
+      });
+
+      // Agreement Code Claim Handler (Bridge Admin & User)
+      const claimForm = document.getElementById('form-claim-agreement') as HTMLFormElement;
+      const claimInput = document.getElementById('input-claim-code') as HTMLInputElement;
+      const claimFeedback = document.getElementById('claim-code-feedback') as HTMLElement;
+      const claimBtn = document.getElementById('btn-claim-code') as HTMLButtonElement;
+
+      claimForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const code = claimInput?.value.trim();
+        if (!code) return;
+
+        if (claimBtn) claimBtn.disabled = true;
+        if (claimFeedback) {
+          claimFeedback.style.display = 'block';
+          claimFeedback.style.color = '#64748b';
+          claimFeedback.textContent = 'Verifying and linking agreement code...';
+        }
+
+        try {
+          const res = await fetch('/api/customer/agreements', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code }),
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.error || 'Failed to link agreement');
+          }
+
+          if (claimFeedback) {
+            claimFeedback.style.color = '#047857';
+            claimFeedback.textContent = `✓ Success! Agreement ${data.agreement?.agreementNumber || code} linked to your panel. Refreshing...`;
+          }
+          showToast('Agreement linked to your account!', 'success');
+          setTimeout(() => {
+            window.location.reload();
+          }, 1200);
+        } catch (err: any) {
+          if (claimFeedback) {
+            claimFeedback.style.color = '#ef4444';
+            claimFeedback.textContent = `✕ ${err.message}`;
+          }
+          showToast(err.message, 'error');
+          if (claimBtn) claimBtn.disabled = false;
+        }
       });
     </script>
 

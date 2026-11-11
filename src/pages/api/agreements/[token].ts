@@ -1,28 +1,46 @@
 import type { APIRoute } from 'astro';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, or, sql } from 'drizzle-orm';
 import { db, agreements, agreementSignatures, agreementAuditLogs } from '../../../db';
 import { agreementSignSchema } from '../../../lib/validations';
+import { getAuthenticatedUser } from '../../../lib/auth';
 
 export const prerender = false;
+
+async function resolveAgreement(rawToken: string) {
+  if (!rawToken) return null;
+  const clean = rawToken.trim();
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clean);
+  const conditions = [
+    eq(agreements.secureToken, clean),
+    sql`lower(${agreements.agreementNumber}) = lower(${clean})`,
+  ];
+  if (isUuid) {
+    conditions.push(eq(agreements.id, clean));
+  }
+
+  const [agreement] = await db
+    .select()
+    .from(agreements)
+    .where(or(...conditions))
+    .limit(1);
+
+  return agreement || null;
+}
 
 export const GET: APIRoute = async (context) => {
   try {
     const { token } = context.params;
     if (!token) {
-      return new Response(JSON.stringify({ error: 'Agreement access token required' }), {
+      return new Response(JSON.stringify({ error: 'Agreement access token or code required' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    const [agreement] = await db
-      .select()
-      .from(agreements)
-      .where(eq(agreements.secureToken, token))
-      .limit(1);
+    const agreement = await resolveAgreement(token);
 
     if (!agreement) {
-      return new Response(JSON.stringify({ error: 'Agreement not found or invalid link' }), {
+      return new Response(JSON.stringify({ error: 'Agreement not found or invalid code' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' },
       });
@@ -93,18 +111,25 @@ export const POST: APIRoute = async (context) => {
       });
     }
 
-    const [agreement] = await db
-      .select()
-      .from(agreements)
-      .where(eq(agreements.secureToken, token))
-      .limit(1);
+    const agreement = await resolveAgreement(token);
 
     if (!agreement) {
-      return new Response(JSON.stringify({ error: 'Agreement not found or invalid link' }), {
+      return new Response(JSON.stringify({ error: 'Agreement not found or invalid code' }), {
         status: 404,
         headers: { 'Content-Type': 'application/json' },
       });
     }
+
+    // Try linking authenticated Clerk customer if user ID not yet linked
+    try {
+      const authData = await getAuthenticatedUser(context);
+      if (authData?.user && !agreement.userId) {
+        await db
+          .update(agreements)
+          .set({ userId: authData.user.id, businessId: authData.business?.id || agreement.businessId })
+          .where(eq(agreements.id, agreement.id));
+      }
+    } catch {}
 
     // Validation: cannot sign cancelled, rejected, or expired agreement
     if (['cancelled', 'rejected', 'expired'].includes(agreement.status)) {

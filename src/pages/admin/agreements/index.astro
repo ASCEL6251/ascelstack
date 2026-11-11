@@ -343,6 +343,19 @@ const statusLabels: Record<string, string> = {
                         <button
                           type="button"
                           class="btn btn-sm btn-ghost"
+                          data-action="copy-code"
+                          data-code={agr.agreementNumber}
+                          title={`Copy Code: ${agr.agreementNumber}`}
+                        >
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="16 18 22 12 16 6"></polyline>
+                            <polyline points="8 6 2 12 8 18"></polyline>
+                          </svg>
+                        </button>
+
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-ghost"
                           data-action="copy-link"
                           data-token={agr.secureToken}
                           title="Copy Client Signing Link"
@@ -422,6 +435,20 @@ const statusLabels: Record<string, string> = {
       setTimeout(() => toast.remove(), 300);
     }, 3000);
   }
+
+  // Copy Code Handlers
+  document.querySelectorAll('[data-action="copy-code"]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const code = btn.getAttribute('data-code');
+      if (!code) return;
+      try {
+        await navigator.clipboard.writeText(code);
+        showToast(`Agreement Code "${code}" copied! Send this code to client.`);
+      } catch {
+        prompt('Copy agreement code:', code);
+      }
+    });
+  });
 
   // Copy Link Handlers
   document.querySelectorAll('[data-action="copy-link"]').forEach((btn) => {

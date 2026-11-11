@@ -48,12 +48,30 @@ export const agreementClauseSchema = z.object({
   isCustomizable: z.boolean().default(true),
 });
 
+const optionalUuidOrNull = z
+  .union([z.string().uuid(), z.string().length(0), z.null(), z.undefined()])
+  .transform((val) => (val === '' || !val ? null : val));
+
+const optionalDateOrNull = z
+  .union([z.string(), z.date(), z.null(), z.undefined()])
+  .transform((val) => {
+    if (!val || val === '') return null;
+    const d = new Date(val);
+    return isNaN(d.getTime()) ? null : d.toISOString();
+  });
+
+const numberCoerce = z.preprocess((val) => {
+  if (val === '' || val === null || val === undefined) return 0;
+  const num = Number(val);
+  return isNaN(num) ? 0 : num;
+}, z.number().nonnegative().default(0));
+
 export const agreementCreateSchema = z.object({
   title: z.string().trim().min(2, 'Title required').max(255).default('PROFESSIONAL SERVICE AGREEMENT'),
-  templateId: z.string().uuid().optional().nullable(),
-  userId: z.string().uuid().optional().nullable(),
-  businessId: z.string().uuid().optional().nullable(),
-  quotationId: z.string().uuid().optional().nullable(),
+  templateId: optionalUuidOrNull,
+  userId: optionalUuidOrNull,
+  businessId: optionalUuidOrNull,
+  quotationId: optionalUuidOrNull,
 
   // Client Details
   clientName: z.string().trim().min(2, 'Client name is required').max(255),
@@ -76,12 +94,16 @@ export const agreementCreateSchema = z.object({
 
   // Commercials
   currency: z.string().trim().max(10).default('INR'),
-  totalAmount: z.number().nonnegative('Total amount cannot be negative').default(0),
-  advanceAmount: z.number().nonnegative('Advance amount cannot be negative').default(0),
-  advancePercentage: z.number().int().min(0).max(100).default(50),
+  totalAmount: numberCoerce,
+  advanceAmount: numberCoerce,
+  advancePercentage: z.preprocess((val) => {
+    if (val === '' || val === null || val === undefined) return 50;
+    const num = parseInt(String(val), 10);
+    return isNaN(num) ? 50 : Math.min(100, Math.max(0, num));
+  }, z.number().int().min(0).max(100).default(50)),
   paymentSchedule: z.string().trim().optional().nullable(),
-  taxPercentage: z.number().nonnegative().max(100).default(0),
-  taxAmount: z.number().nonnegative().default(0),
+  taxPercentage: numberCoerce,
+  taxAmount: numberCoerce,
 
   // Clauses
   clauses: z.array(agreementClauseSchema).min(1, 'At least one agreement clause is required'),
@@ -99,7 +121,7 @@ export const agreementCreateSchema = z.object({
     'expired',
     'cancelled',
   ]).default('draft'),
-  validUntil: z.string().datetime().optional().nullable(),
+  validUntil: optionalDateOrNull,
   providerGstinEnabled: z.boolean().default(false),
   providerGstin: z.string().trim().max(50).optional().nullable(),
 });

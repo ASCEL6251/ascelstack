@@ -3,21 +3,44 @@ export const prerender = false;
 
 import Base from '../../layouts/Base.astro';
 import { db, agreements, agreementSignatures, agreementAuditLogs } from '../../db';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, or, sql } from 'drizzle-orm';
+import { getAuthenticatedUser } from '../../lib/auth';
 
 const { token } = Astro.params;
 if (!token) {
   return Astro.redirect('/agreements');
 }
 
+const clean = token.trim();
+const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clean);
+const conditions = [
+  eq(agreements.secureToken, clean),
+  sql`lower(${agreements.agreementNumber}) = lower(${clean})`,
+];
+if (isUuid) {
+  conditions.push(eq(agreements.id, clean));
+}
+
 const [agreement] = await db
   .select()
   .from(agreements)
-  .where(eq(agreements.secureToken, token))
+  .where(or(...conditions))
   .limit(1);
 
 if (!agreement) {
   return Astro.redirect('/404');
+}
+
+// Check logged in Clerk user to bridge/auto-link account
+const authData = await getAuthenticatedUser(Astro);
+if (authData?.user && !agreement.userId) {
+  try {
+    await db
+      .update(agreements)
+      .set({ userId: authData.user.id, businessId: authData.business?.id || agreement.businessId })
+      .where(eq(agreements.id, agreement.id));
+    agreement.userId = authData.user.id;
+  } catch {}
 }
 
 // Auto-record "viewed" on first opening by client

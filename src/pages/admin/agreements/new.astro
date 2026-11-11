@@ -1155,15 +1155,25 @@ const templatesList = dbTemplates.length > 0 ? dbTemplates : PRESET_TEMPLATES;
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to create agreement');
+        let msg = data.error || 'Failed to create agreement';
+        if (data.details) {
+          try {
+            const errList = Object.entries(data.details)
+              .filter(([k]) => k !== '_errors')
+              .map(([k, v]) => `${k}: ${v?._errors?.join(', ') || 'invalid'}`)
+              .join('; ');
+            if (errList) msg += ` (${errList})`;
+          } catch {}
+        }
+        throw new Error(msg);
       }
 
-      showToast(`Agreement ${data.agreement.agreementNumber} created successfully!`);
+      showToast(`Agreement ${data.agreement.agreementNumber} created successfully! Unique Code: ${data.agreement.agreementNumber}`);
       setTimeout(() => {
         window.location.href = `/admin/agreements/${data.agreement.id}`;
-      }, 1000);
+      }, 1200);
     } catch (err) {
       alert(`Error creating agreement: ${err.message}`);
       if (submitBtn) submitBtn.disabled = false;

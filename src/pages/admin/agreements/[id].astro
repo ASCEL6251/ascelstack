@@ -107,6 +107,21 @@ const statusDisplay: Record<string, string> = {
       </div>
 
       <div class="welcome-actions">
+        <!-- Copy Unique Agreement Code -->
+        <button
+          type="button"
+          class="btn btn-ghost"
+          id="btn-copy-agreement-code"
+          data-code={agreement.agreementNumber}
+          title="Copy Unique Agreement Code for Client (User can enter this in their portal)"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="16 18 22 12 16 6"></polyline>
+            <polyline points="8 6 2 12 8 18"></polyline>
+          </svg>
+          <span>Copy Code: <strong style="color: var(--accent);">{agreement.agreementNumber}</strong></span>
+        </button>
+
         <!-- Secure link button -->
         <button
           type="button"
@@ -123,13 +138,13 @@ const statusDisplay: Record<string, string> = {
         </button>
 
         <!-- PDF Print / Download Button -->
-        <a href={printPdfUrl} target="_blank" rel="noreferrer" class="btn btn-ghost">
+        <a href={`${printPdfUrl}?download=1`} target="_blank" rel="noreferrer" class="btn btn-ghost" title="Print document or download as official PDF">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
             <polyline points="7 10 12 15 17 10"></polyline>
             <line x1="12" y1="15" x2="12" y2="3"></line>
           </svg>
-          <span>Download PDF</span>
+          <span>Download PDF / Print</span>
         </a>
 
         {!providerSig && agreement.status !== 'cancelled' && (
@@ -540,6 +555,20 @@ const statusDisplay: Record<string, string> = {
       setTimeout(() => toast.remove(), 300);
     }, 3000);
   }
+
+  // Copy Agreement Code Handlers
+  document.querySelectorAll('#btn-copy-agreement-code, [data-action="copy-agreement-code"]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const code = btn.getAttribute('data-code');
+      if (!code) return;
+      try {
+        await navigator.clipboard.writeText(code);
+        showToast(`Agreement Code "${code}" copied! Send this code to client to enter in their portal.`);
+      } catch {
+        prompt('Copy client agreement code:', code);
+      }
+    });
+  });
 
   // Copy Link Handlers
   document.querySelectorAll('#btn-copy-signing-link, #btn-copy-client-link-side').forEach((btn) => {

@@ -2,22 +2,39 @@
 export const prerender = false;
 
 import { db, agreements, agreementSignatures } from '../../../db';
-import { eq } from 'drizzle-orm';
+import { eq, or, sql } from 'drizzle-orm';
 
 const { token } = Astro.params;
 if (!token) {
   return Astro.redirect('/agreements');
 }
 
+const clean = token.trim();
+const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clean);
+const conditions = [
+  eq(agreements.secureToken, clean),
+  sql`lower(${agreements.agreementNumber}) = lower(${clean})`,
+];
+if (isUuid) {
+  conditions.push(eq(agreements.id, clean));
+}
+
 const [agreement] = await db
   .select()
   .from(agreements)
-  .where(eq(agreements.secureToken, token))
+  .where(or(...conditions))
   .limit(1);
 
 if (!agreement) {
   return Astro.redirect('/404');
 }
+
+const deliverables = (agreement.deliverables as any[]) || [];
+const milestones = (agreement.milestones as any[]) || [];
+const autoPrint = Astro.url.searchParams.get('autoPrint') === '1' ||
+  Astro.url.searchParams.get('autoPrint') === 'true' ||
+  Astro.url.searchParams.get('download') === '1' ||
+  Astro.url.searchParams.get('print') === '1';
 
 const signatures = await db
   .select()
@@ -43,7 +60,7 @@ const isFullySigned = Boolean(providerSig && clientSig);
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{agreement.agreementNumber} · Professional Service Agreement</title>
+    <title>{`${agreement.agreementNumber} - ${agreement.clientName} - Professional Service Agreement`}</title>
     <link rel="icon" type="image/svg+xml" href="/brand/mark.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -422,6 +439,68 @@ const isFullySigned = Boolean(providerSig && clientSig);
         </div>
       </div>
 
+      <!-- Key Deliverables Table (if defined) -->
+      {deliverables.length > 0 && (
+        <div style="margin-bottom: 16pt; break-inside: avoid;">
+          <h4 style="font-family: 'JetBrains Mono', monospace; font-size: 7.5pt; text-transform: uppercase; color: #5980a6; margin: 0 0 6pt;">
+            STATEMENT OF WORK · CORE DELIVERABLES
+          </h4>
+          <table style="width: 100%; border-collapse: collapse; font-size: 8pt; border: 0.75pt solid #e5e7eb;">
+            <thead>
+              <tr style="background: #f9fafb; text-align: left;">
+                <th style="padding: 5pt 8pt; border-bottom: 0.75pt solid #e5e7eb; width: 40pt;">#</th>
+                <th style="padding: 5pt 8pt; border-bottom: 0.75pt solid #e5e7eb;">Deliverable Item</th>
+              </tr>
+            </thead>
+            <tbody>
+              {deliverables.map((d: any, idx: number) => (
+                <tr style={idx % 2 === 1 ? 'background: #fdfdfd;' : ''}>
+                  <td style="padding: 4pt 8pt; border-bottom: 0.5pt solid #f1f5f9; font-family: 'JetBrains Mono', monospace; color: #64748b;">
+                    {String(idx + 1).padStart(2, '0')}
+                  </td>
+                  <td style="padding: 4pt 8pt; border-bottom: 0.5pt solid #f1f5f9; color: #111827;">
+                    {typeof d === 'string' ? d : d.title || d.name || ''}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <!-- Milestone Disbursement Roadmap (if defined) -->
+      {milestones.length > 0 && (
+        <div style="margin-bottom: 16pt; break-inside: avoid;">
+          <h4 style="font-family: 'JetBrains Mono', monospace; font-size: 7.5pt; text-transform: uppercase; color: #5980a6; margin: 0 0 6pt;">
+            MILESTONE ROADMAP & DISBURSEMENT TERMS
+          </h4>
+          <table style="width: 100%; border-collapse: collapse; font-size: 8pt; border: 0.75pt solid #e5e7eb;">
+            <thead>
+              <tr style="background: #f9fafb; text-align: left;">
+                <th style="padding: 5pt 8pt; border-bottom: 0.75pt solid #e5e7eb;">Milestone Phase</th>
+                <th style="padding: 5pt 8pt; border-bottom: 0.75pt solid #e5e7eb; width: 100pt;">Timeline</th>
+                <th style="padding: 5pt 8pt; border-bottom: 0.75pt solid #e5e7eb; width: 100pt; text-align: right;">Disbursement</th>
+              </tr>
+            </thead>
+            <tbody>
+              {milestones.map((m: any, idx: number) => (
+                <tr style={idx % 2 === 1 ? 'background: #fdfdfd;' : ''}>
+                  <td style="padding: 4pt 8pt; border-bottom: 0.5pt solid #f1f5f9; font-weight: 500; color: #111827;">
+                    {m.title || `Phase ${idx + 1}`}
+                  </td>
+                  <td style="padding: 4pt 8pt; border-bottom: 0.5pt solid #f1f5f9; font-family: 'JetBrains Mono', monospace; color: #64748b;">
+                    {m.duration || '-'}
+                  </td>
+                  <td style="padding: 4pt 8pt; border-bottom: 0.5pt solid #f1f5f9; font-family: 'JetBrains Mono', monospace; text-align: right; color: #047857; font-weight: 600;">
+                    {m.amount || '-'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
       <!-- All 25 Clauses -->
       <div class="clauses-container">
         {clauses.map((c: any) => (
@@ -489,5 +568,15 @@ const isFullySigned = Boolean(providerSig && clientSig);
         <span>Corporate Verified Document</span>
       </footer>
     </main>
+
+    {autoPrint && (
+      <script is:inline>
+        window.addEventListener('load', () => {
+          setTimeout(() => {
+            window.print();
+          }, 350);
+        });
+      </script>
+    )}
   </body>
 </html>

@@ -4,7 +4,12 @@ import { db, agreements, users, businesses, companySettings, agreementAuditLogs 
 import { getAdminSession } from '../../../../lib/admin-auth';
 import { agreementCreateSchema } from '../../../../lib/validations';
 import { DEFAULT_COMPANY_INFO } from '../../../../lib/agreement-clauses';
-import crypto from 'node:crypto';
+
+function generateSecureHex(byteLength = 24): string {
+  const arr = new Uint8Array(byteLength);
+  crypto.getRandomValues(arr);
+  return Array.from(arr, (b) => b.toString(16).padStart(2, '0')).join('');
+}
 
 export const prerender = false;
 
@@ -134,16 +139,52 @@ export const POST: APIRoute = async (context) => {
     const providerSignatoryName = settings?.signatoryName || DEFAULT_COMPANY_INFO.signatoryName;
     const providerSignatoryTitle = settings?.signatoryTitle || DEFAULT_COMPANY_INFO.signatoryTitle;
 
-    // Generate unique Agreement Number: PSA-YYYY-XXXX
+    // Generate unique Agreement Number: PSA-YYYY-XXXX (collision-proof)
     const currentYear = new Date().getFullYear();
-    const [{ currentCount }] = await db
-      .select({ currentCount: sql<number>`count(*)::int` })
-      .from(agreements);
-    const nextSeq = String(currentCount + 1).padStart(4, '0');
+    const existingForYear = await db
+      .select({ agreementNumber: agreements.agreementNumber })
+      .from(agreements)
+      .where(ilike(agreements.agreementNumber, `PSA-${currentYear}-%`));
+
+    let maxSeq = 0;
+    for (const item of existingForYear) {
+      const parts = item.agreementNumber.split('-');
+      if (parts.length >= 3) {
+        const num = parseInt(parts[2], 10);
+        if (!isNaN(num) && num > maxSeq) {
+          maxSeq = num;
+        }
+      }
+    }
+    const nextSeq = String(maxSeq + 1).padStart(4, '0');
     const agreementNumber = `PSA-${currentYear}-${nextSeq}`;
 
-    // Cryptographically secure token for public signing link
-    const secureToken = crypto.randomBytes(24).toString('hex');
+    // Cryptographically secure token for public signing link (Web Crypto standard)
+    const secureToken = generateSecureHex(24);
+
+    // Auto-link registered user in Neon if clientEmail matches existing user account
+    let linkedUserId = data.userId || null;
+    let linkedBusinessId = data.businessId || null;
+
+    if (!linkedUserId && data.clientEmail) {
+      const [matchedUser] = await db
+        .select({ id: users.id, email: users.email })
+        .from(users)
+        .where(sql`lower(${users.email}) = lower(${data.clientEmail.trim()})`)
+        .limit(1);
+
+      if (matchedUser) {
+        linkedUserId = matchedUser.id;
+        if (!linkedBusinessId) {
+          const [matchedBiz] = await db
+            .select({ id: businesses.id })
+            .from(businesses)
+            .where(eq(businesses.ownerUserId, matchedUser.id))
+            .limit(1);
+          if (matchedBiz) linkedBusinessId = matchedBiz.id;
+        }
+      }
+    }
 
     // Calculate advance amount if not explicitly provided
     const advanceAmount =
@@ -158,8 +199,8 @@ export const POST: APIRoute = async (context) => {
         secureToken,
         title: data.title,
         status: data.status || 'draft',
-        userId: data.userId || null,
-        businessId: data.businessId || null,
+        userId: linkedUserId,
+        businessId: linkedBusinessId,
         quotationId: data.quotationId || null,
         templateId: data.templateId || null,
         version: 1,
@@ -230,8 +271,15 @@ export const POST: APIRoute = async (context) => {
       ipAddress: context.clientAddress || null,
     });
 
+    const origin = context.url.origin;
     return new Response(
-      JSON.stringify({ success: true, agreement: newAgreement }),
+      JSON.stringify({
+        success: true,
+        agreement: newAgreement,
+        accessCode: newAgreement.agreementNumber,
+        signingUrl: `${origin}/agreements/${newAgreement.secureToken}`,
+        printPdfUrl: `${origin}/agreements/${newAgreement.secureToken}/print`,
+      }),
       { status: 201, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (error: any) {

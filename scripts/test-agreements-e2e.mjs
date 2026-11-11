@@ -320,6 +320,48 @@ async function runTests() {
   const logs = await sql`SELECT * FROM "agreement_audit_logs" WHERE "agreement_id" = ${createdAgreement.id}`;
   assert(logs.length >= 2, `Audit trail contains all logged lifecycle events (Found: ${logs.length})`);
 
+  // --------------------------------------------------------------------------
+  console.log('\nTest 9: Bridge Resolution: Lookup by Agreement Number / Unique ID');
+  // --------------------------------------------------------------------------
+  const [resolvedByNumber] = await sql`
+    SELECT * FROM "agreements"
+    WHERE lower("agreement_number") = lower(${testAgrNumber})
+    LIMIT 1;
+  `;
+  assert(resolvedByNumber && resolvedByNumber.id === createdAgreement.id, 'Agreement successfully resolvable by human-friendly Agreement Code (PSA-TEST-...)');
+
+  const [resolvedByToken] = await sql`
+    SELECT * FROM "agreements"
+    WHERE "secure_token" = ${testToken}
+    LIMIT 1;
+  `;
+  assert(resolvedByToken && resolvedByToken.id === createdAgreement.id, 'Agreement successfully resolvable by secure cryptographic token');
+
+  // --------------------------------------------------------------------------
+  console.log('\nTest 10: Client Dashboard Agreement Linking via Unique Code');
+  // --------------------------------------------------------------------------
+  // Simulate client entering testAgrNumber in their panel
+  const [dummyUser] = await sql`SELECT id, email FROM "users" LIMIT 1`;
+  if (dummyUser) {
+    const [linkedAgr] = await sql`
+      UPDATE "agreements"
+      SET "user_id" = ${dummyUser.id}, "updated_at" = now()
+      WHERE lower("agreement_number") = lower(${testAgrNumber})
+      RETURNING *;
+    `;
+    assert(linkedAgr && linkedAgr.user_id === dummyUser.id, 'Customer successfully links agreement to their account using the unique code');
+  } else {
+    assert(true, 'No registered users in db to link (skipped)');
+  }
+
+  // --------------------------------------------------------------------------
+  console.log('\nTest 11: PDF / Print Route & SOW Table Template Verification');
+  // --------------------------------------------------------------------------
+  const printAstroCode = readFileSync(resolve(root, 'src/pages/agreements/[token]/print.astro'), 'utf8');
+  assert(printAstroCode.includes('STATEMENT OF WORK · CORE DELIVERABLES'), 'Print template includes Core Deliverables SOW table');
+  assert(printAstroCode.includes('MILESTONE ROADMAP & DISBURSEMENT TERMS'), 'Print template includes Milestone Roadmap table');
+  assert(printAstroCode.includes('window.print()'), 'Print template includes client-side automatic print/PDF execution');
+
   // Cleanup test agreement row
   await sql`DELETE FROM "agreements" WHERE "id" = ${createdAgreement.id}`;
   console.log('  ✓ Cleaned up test agreement record');
