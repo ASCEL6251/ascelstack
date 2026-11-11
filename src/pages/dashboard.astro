@@ -4615,8 +4615,16 @@ const initialData = {
       /* ------------------------------------------------------------- Panels & Tables */
       .overview-columns {
         display: grid;
-        grid-template-columns: 2fr 1.15fr;
+        grid-template-columns: minmax(0, 2fr) minmax(0, 1.15fr);
         gap: 1.5rem;
+      }
+      /* Grid/flex children must be allowed to shrink below their content width,
+         otherwise long tables and labels push panels past the viewport. */
+      .dash-content,
+      .dash-view,
+      .card-panel,
+      .dash-view :is(.overview-columns, .form-row, .form-row-3, .support-grid, .planner-workspace-grid) > * {
+        min-width: 0;
       }
       .card-panel {
         background: var(--paper-raised);
@@ -6663,12 +6671,17 @@ const initialData = {
           transform: translateX(-100%);
           transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
           z-index: 50;
-          box-shadow: 4px 0 32px rgba(0, 0, 0, 0.35);
+          box-shadow: none;
+          visibility: hidden;
+          transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s linear 0.28s;
           overflow-y: auto;
           -webkit-overflow-scrolling: touch;
         }
         .dash-sidebar.is-open {
           transform: translateX(0);
+          visibility: visible;
+          box-shadow: 4px 0 32px rgba(0, 0, 0, 0.35);
+          transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .sidebar-close-btn {
           display: inline-flex;
@@ -6677,7 +6690,7 @@ const initialData = {
           display: inline-flex;
         }
         .overview-columns {
-          grid-template-columns: 1fr;
+          grid-template-columns: minmax(0, 1fr);
         }
         .dash-welcome-card,
         .planner-teaser-card {

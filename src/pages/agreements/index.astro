@@ -81,7 +81,7 @@ const statusLabels: Record<string, string> = {
 
         <!-- Search / Lookup Box -->
         <div style="margin-top: 2.5rem; max-width: 580px; margin-inline: auto;">
-          <form id="token-lookup-form" class="card-panel" style="padding: 0.5rem 0.5rem 0.5rem 1.25rem; display: flex; align-items: center; gap: 0.5rem; border-radius: 999px; background: #ffffff; box-shadow: 0 10px 30px -10px rgba(29, 45, 61, 0.15);">
+          <form id="token-lookup-form" class="card-panel token-lookup" style="padding: 0.5rem 0.5rem 0.5rem 1.25rem; display: flex; align-items: center; gap: 0.5rem; border-radius: 999px; background: #ffffff; box-shadow: 0 10px 30px -10px rgba(29, 45, 61, 0.15);">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent); flex-shrink: 0;">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
               <polyline points="14 2 14 8 20 8"></polyline>
@@ -90,7 +90,7 @@ const statusLabels: Record<string, string> = {
               type="text"
               id="agreementTokenInput"
               placeholder="Enter secure agreement token or link..."
-              style="border: 0; outline: none; background: transparent; flex: 1; font-size: 0.95rem; color: var(--ink);"
+              style="border: 0; outline: none; background: transparent; flex: 1; min-width: 0; font-size: 0.95rem; color: var(--ink);"
               required
             />
             <button type="submit" class="btn btn-primary" style="border-radius: 999px; padding: 0.65rem 1.4rem;">
@@ -251,6 +251,18 @@ const statusLabels: Record<string, string> = {
     </div>
   </section>
 </Base>
+
+<style>
+  @media (max-width: 560px) {
+    .token-lookup {
+      flex-wrap: wrap;
+      border-radius: 20px !important;
+      padding: 0.75rem !important;
+    }
+    .token-lookup input { flex-basis: calc(100% - 2rem) !important; padding-block: 0.4rem; }
+    .token-lookup button { width: 100%; justify-content: center; }
+  }
+</style>
 
 <script>
   // Lookup Form Handler
