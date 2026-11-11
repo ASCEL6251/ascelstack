@@ -525,7 +525,7 @@ try {
           </div>
 
           <!-- GSTIN Options -->
-          <div class="card-panel" style="background: #f8fafc; border: 1px solid #e2e8f0; margin-bottom: 1.5rem;">
+          <div class="card-panel" style="background: var(--paper-raised); border: 1px solid var(--line); border-radius: var(--radius-s); padding: 1.25rem; margin-bottom: 1.5rem;">
             <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; user-select: none;">
               <input type="checkbox" id="providerGstinEnabled" name="providerGstinEnabled" checked={companyInfo.gstinEnabled} style="width: 18px; height: 18px; cursor: pointer;" />
               <div>
@@ -537,7 +537,7 @@ try {
             </label>
 
             <div id="gstin-input-wrapper" style={`margin-top: 0.85rem; ${companyInfo.gstinEnabled ? '' : 'display: none;'}`}>
-              <label class="field">
+              <label class="field" style="margin-bottom: 0;">
                 <span class="mono">Service Provider GSTIN</span>
                 <input type="text" id="providerGstin" name="providerGstin" value={companyInfo.gstin} placeholder="19AAAAA0000A1Z5" />
               </label>
@@ -1180,9 +1180,53 @@ try {
 
       quotationId: document.getElementById('quotationId')?.value || null,
       userId: document.getElementById('select-registered-client')?.value || null,
+      templateId: document.getElementById('select-agreement-template')?.value || null,
+      businessId: null,
     };
 
+    function showToast(msg, type = 'success') {
+      if (typeof window.showAdminToast === 'function') {
+        window.showAdminToast(msg, type);
+      } else {
+        const hub = document.getElementById('admin-toast-hub');
+        if (hub) {
+          const toast = document.createElement('div');
+          toast.className = `toast-item toast-${type}`;
+          toast.textContent = msg;
+          hub.appendChild(toast);
+          setTimeout(() => toast.remove(), 4000);
+        }
+      }
+    }
+
+    function showFormError(msg) {
+      showToast(msg, 'error');
+      let errBox = document.getElementById('agreement-form-error-banner');
+      if (!errBox) {
+        errBox = document.createElement('div');
+        errBox.id = 'agreement-form-error-banner';
+        errBox.className = 'admin-alert-banner admin-alert-error';
+        const form = document.getElementById('agreement-form');
+        form?.insertBefore(errBox, form.firstChild);
+      }
+      errBox.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0; margin-top:2px;">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <div>
+          <strong>Validation / Save Error:</strong>
+          <div style="margin-top: 4px;">${msg}</div>
+        </div>
+      `;
+      errBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
     try {
+      const existingErr = document.getElementById('agreement-form-error-banner');
+      if (existingErr) existingErr.remove();
+
       const res = await fetch('/api/admin/agreements', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1204,12 +1248,12 @@ try {
         throw new Error(msg);
       }
 
-      showToast(`Agreement ${data.agreement.agreementNumber} created successfully! Unique Code: ${data.agreement.agreementNumber}`);
+      showToast(`Agreement ${data.agreement.agreementNumber} created successfully!`, 'success');
       setTimeout(() => {
         window.location.href = `/admin/agreements/${data.agreement.id}`;
-      }, 1200);
+      }, 1000);
     } catch (err) {
-      alert(`Error creating agreement: ${err.message}`);
+      showFormError(err.message || 'Error creating agreement');
       if (submitBtn) submitBtn.disabled = false;
       if (draftBtn) draftBtn.disabled = false;
     }

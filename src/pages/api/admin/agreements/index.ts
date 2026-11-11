@@ -193,6 +193,60 @@ export const POST: APIRoute = async (context) => {
       }
     }
 
+    // Verify template existence if templateId UUID was provided
+    let verifiedTemplateId: string | null = null;
+    if (data.templateId) {
+      try {
+        const [foundTemplate] = await db
+          .select({ id: agreementTemplates.id })
+          .from(agreementTemplates)
+          .where(eq(agreementTemplates.id, data.templateId))
+          .limit(1);
+        if (foundTemplate) verifiedTemplateId = foundTemplate.id;
+      } catch {
+        verifiedTemplateId = null;
+      }
+    }
+
+    // Verify quotation existence if quotationId UUID was provided
+    let verifiedQuotationId: string | null = null;
+    if (data.quotationId) {
+      try {
+        const [foundQuotation] = await db
+          .select({ id: quotations.id, businessId: quotations.businessId, userId: quotations.userId })
+          .from(quotations)
+          .where(eq(quotations.id, data.quotationId))
+          .limit(1);
+        if (foundQuotation) {
+          verifiedQuotationId = foundQuotation.id;
+          if (!linkedUserId && foundQuotation.userId) linkedUserId = foundQuotation.userId;
+          if (!linkedBusinessId && foundQuotation.businessId) linkedBusinessId = foundQuotation.businessId;
+        }
+      } catch {
+        verifiedQuotationId = null;
+      }
+    }
+
+    // Verify user existence if linkedUserId was set
+    if (linkedUserId) {
+      try {
+        const [foundUser] = await db.select({ id: users.id }).from(users).where(eq(users.id, linkedUserId)).limit(1);
+        if (!foundUser) linkedUserId = null;
+      } catch {
+        linkedUserId = null;
+      }
+    }
+
+    // Verify business existence if linkedBusinessId was set
+    if (linkedBusinessId) {
+      try {
+        const [foundBiz] = await db.select({ id: businesses.id }).from(businesses).where(eq(businesses.id, linkedBusinessId)).limit(1);
+        if (!foundBiz) linkedBusinessId = null;
+      } catch {
+        linkedBusinessId = null;
+      }
+    }
+
     // Calculate advance amount if not explicitly provided
     const advanceAmount =
       data.advanceAmount > 0
@@ -208,8 +262,8 @@ export const POST: APIRoute = async (context) => {
         status: data.status || 'draft',
         userId: linkedUserId,
         businessId: linkedBusinessId,
-        quotationId: data.quotationId || null,
-        templateId: data.templateId || null,
+        quotationId: verifiedQuotationId,
+        templateId: verifiedTemplateId,
         version: 1,
         isImmutable: false,
 

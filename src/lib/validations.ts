@@ -48,15 +48,26 @@ export const agreementClauseSchema = z.object({
   isCustomizable: z.boolean().default(true),
 });
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 const optionalUuidOrNull = z
-  .union([z.string().uuid(), z.string().length(0), z.null(), z.undefined()])
-  .transform((val) => (val === '' || !val ? null : val));
+  .unknown()
+  .optional()
+  .nullable()
+  .transform((val) => {
+    if (typeof val === 'string' && UUID_REGEX.test(val.trim())) {
+      return val.trim();
+    }
+    return null;
+  });
 
 const optionalDateOrNull = z
-  .union([z.string(), z.date(), z.null(), z.undefined()])
+  .unknown()
+  .optional()
+  .nullable()
   .transform((val) => {
     if (!val || val === '') return null;
-    const d = new Date(val);
+    const d = new Date(val as any);
     return isNaN(d.getTime()) ? null : d.toISOString();
   });
 

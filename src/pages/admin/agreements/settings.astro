@@ -347,6 +347,21 @@ const company = settings || DEFAULT_COMPANY_INFO;
       defaultCurrency: 'INR',
     };
 
+    function showToast(msg: string, type: 'success' | 'error' | 'info' = 'success') {
+      if (typeof (window as any).showAdminToast === 'function') {
+        (window as any).showAdminToast(msg, type);
+      } else {
+        const hub = document.getElementById('admin-toast-hub');
+        if (hub) {
+          const toast = document.createElement('div');
+          toast.className = `toast-item toast-${type}`;
+          toast.textContent = msg;
+          hub.appendChild(toast);
+          setTimeout(() => toast.remove(), 4000);
+        }
+      }
+    }
+
     try {
       const res = await fetch('/api/admin/company-settings', {
         method: 'PUT',
@@ -357,9 +372,9 @@ const company = settings || DEFAULT_COMPANY_INFO;
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to update company settings');
 
-      showToast('Company settings & document branding updated successfully!');
+      showToast('Company settings & document branding updated successfully!', 'success');
     } catch (err: any) {
-      alert(`Error updating settings: ${err.message}`);
+      showToast(err.message || 'Error updating settings', 'error');
     } finally {
       if (btn) btn.disabled = false;
     }

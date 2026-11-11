@@ -383,6 +383,21 @@ try {
       clauses: activeClauses,
     };
 
+    function showToast(msg: string, type: 'success' | 'error' | 'info' = 'success') {
+      if (typeof (window as any).showAdminToast === 'function') {
+        (window as any).showAdminToast(msg, type);
+      } else {
+        const hub = document.getElementById('admin-toast-hub');
+        if (hub) {
+          const toast = document.createElement('div');
+          toast.className = `toast-item toast-${type}`;
+          toast.textContent = msg;
+          hub.appendChild(toast);
+          setTimeout(() => toast.remove(), 4000);
+        }
+      }
+    }
+
     try {
       const res = await fetch(`/api/admin/agreements/${agreementId}`, {
         method: 'PUT',
@@ -393,12 +408,12 @@ try {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to update agreement');
 
-      showToast('Agreement updated successfully!');
+      showToast('Agreement updated successfully!', 'success');
       setTimeout(() => {
         window.location.href = `/admin/agreements/${agreementId}`;
       }, 800);
-    } catch (err) {
-      alert(`Update Error: ${err.message}`);
+    } catch (err: any) {
+      showToast(err.message || 'Update failed', 'error');
       if (saveBtn) saveBtn.disabled = false;
     }
   });
