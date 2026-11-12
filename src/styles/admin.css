@@ -1714,3 +1714,220 @@ body.admin-sidebar-locked {
   }
 }
 
+
+/* ==========================================================================
+   Shared admin form controls (agreement create / edit / settings pages)
+   ========================================================================== */
+.text-muted { color: var(--ink-60, #5b6b7a); }
+.text-xs { font-size: 0.75rem; }
+
+.form-row,
+.form-row-3 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.form-row-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.form-row + .field,
+.form-row-3 + .field,
+.field + .form-row,
+.field + .form-row-3,
+.form-row + .form-row,
+.form-row + .form-row-3,
+.form-row-3 + .form-row,
+.field + .field { margin-top: 1rem; }
+
+.field {
+  display: grid;
+  gap: 0.4rem;
+  min-width: 0;
+}
+.field > span:first-child {
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: #4b5a69;
+  font-weight: 500;
+}
+.field input,
+.field select,
+.field textarea,
+.field-select,
+.deliverable-row input,
+.milestone-row input,
+.clause-title-input,
+.clause-content-input {
+  width: 100%;
+  min-height: 42px;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--line, rgba(29, 45, 61, 0.14));
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink, #1d2d3d);
+  font-size: 0.92rem;
+  line-height: 1.4;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.field textarea,
+.clause-content-input { min-height: 84px; resize: vertical; }
+.field input:focus,
+.field select:focus,
+.field textarea:focus,
+.field-select:focus,
+.deliverable-row input:focus,
+.milestone-row input:focus,
+.clause-title-input:focus,
+.clause-content-input:focus {
+  outline: none;
+  border-color: var(--accent, #5980a6);
+  box-shadow: 0 0 0 3px rgba(148, 188, 227, 0.35);
+}
+.field input::placeholder,
+.field textarea::placeholder { color: #9aa6b2; }
+.field-select { cursor: pointer; }
+.input-disabled,
+.field input[readonly] { background: var(--paper-sunk, #e8e8ea); color: #4b5a69; cursor: not-allowed; }
+
+.deliverable-row input,
+.milestone-row input { min-height: 38px; }
+
+.form-footer {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line, rgba(29, 45, 61, 0.14));
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.btn-sm { padding: 0.55rem 0.95rem; font-size: 0.82rem; }
+.btn-primary { --bg: var(--ink, #1d2d3d); }
+
+.tab-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid var(--line, rgba(29, 45, 61, 0.14));
+  background: #fff;
+  color: #4b5a69;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.tab-pill:hover { border-color: var(--accent, #5980a6); color: var(--ink, #1d2d3d); }
+.tab-pill.is-on { background: var(--ink, #1d2d3d); color: #fff; border-color: var(--ink, #1d2d3d); }
+
+@media (max-width: 760px) {
+  .form-row,
+  .form-row-3 { grid-template-columns: 1fr; }
+  .milestone-row { grid-template-columns: 1fr 1fr !important; }
+  .milestone-row > :first-child { grid-column: 1 / -1; }
+}
+
+/* ==========================================================================
+   Phones and portrait tablets: data tables become stacked cards
+   (labels come from the AdminLayout script)
+   ========================================================================== */
+@media (max-width: 900px) {
+  .requests-table-wrap {
+    margin-inline: 0;
+    border-inline: 1px solid rgba(29, 45, 61, 0.08);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .data-table { min-width: 0 !important; display: block; }
+  .data-table thead { display: none; }
+  .data-table tbody { display: block; }
+  .data-table tbody tr {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.75rem 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid rgba(29, 45, 61, 0.08);
+  }
+  .data-table tbody tr:last-child { border-bottom: 0; }
+  @media (min-width: 641px) {
+    .data-table tbody td:last-child > * { width: auto; }
+    .data-table tbody td:last-child { display: flex; justify-content: flex-end; gap: 0.5rem; }
+  }
+  .data-table tbody td {
+    display: block;
+    padding: 0 !important;
+    border: 0 !important;
+    min-width: 0;
+    width: auto !important;
+    text-align: left !important;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .data-table tbody td[colspan] { grid-column: 1 / -1; }
+  .data-table tbody td:first-child,
+  .data-table tbody td:last-child,
+  .data-table tbody td.dt-wide { grid-column: 1 / -1; }
+  .data-table tbody td[data-label]:not(:first-child)::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 0.25rem;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.64rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #7b8794;
+  }
+  .data-table tbody td:last-child::before { display: none !important; }
+  .data-table tbody td:last-child > * { width: 100%; justify-content: center; }
+  .data-table tbody td:last-child :is(.btn, .btn-table-action, a, button) { min-height: 40px; }
+}
+
+/* Filter pill row (agreements list): one line, scrolls sideways on narrow screens */
+.matrix-layer-pills {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.matrix-layer-pills::-webkit-scrollbar { display: none; }
+.mlp-btn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(29, 45, 61, 0.14);
+  background: #fff;
+  color: #4b5a69;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.mlp-btn:hover { border-color: var(--accent, #5980a6); color: var(--ink, #1d2d3d); }
+.mlp-btn.is-on { background: var(--ink, #1d2d3d); border-color: var(--ink, #1d2d3d); color: #fff; }
+
+/* Phones: panel headers stack, so the title gets the full width and the action
+   button becomes a full-width bar under it. Action rows wrap into even buttons. */
+@media (max-width: 560px) {
+  .panel-header,
+  .panel-header-flex {
+    flex-direction: column;
+    align-items: stretch;
+    flex-wrap: nowrap;
+  }
+  .panel-header > :is(.btn, a.btn, button),
+  .panel-header-flex > :is(.btn, a.btn, button) {
+    width: 100%;
+    justify-content: center;
+  }
+  .welcome-actions {
+    display: grid !important;
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+    width: 100%;
+  }
+  .welcome-actions > * { width: 100%; justify-content: center; }
+}

@@ -558,7 +558,7 @@ const disciplines = Array.from(new Set(serviceItems.map((s) => s.discipline))).s
   })))}></script>
 </AdminLayout>
 
-<style>
+<style is:global>
   .pricing-admin-header {
     display: flex;
     justify-content: space-between;
@@ -1323,6 +1323,50 @@ const disciplines = Array.from(new Set(serviceItems.map((s) => s.discipline))).s
   @media (max-width: 768px) {
     .pricing-toolbar { padding: 0.85rem; }
     .status-radio-grid, .form-grid-3, .form-row-2 { grid-template-columns: 1fr; }
+  }
+
+  /* Phones and small tablets: each service becomes a card instead of an 8-column row. */
+  @media (max-width: 760px) {
+    .table-wrapper { max-height: none; overflow: visible; }
+    .pricing-table, .pricing-table tbody { display: block; }
+    .pricing-table thead { display: none; }
+    .pricing-table .service-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem 1rem;
+      padding: 1rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .pricing-table .service-row[hidden] { display: none; }
+    .pricing-table td { display: block; padding: 0; border: 0; min-width: 0; }
+    .pricing-table .col-code,
+    .pricing-table .col-name,
+    .pricing-table .col-status,
+    .pricing-table .col-type,
+    .pricing-table .col-market,
+    .pricing-table .col-actions { grid-column: 1 / -1; }
+    .code-wrapper { flex-direction: row; align-items: center; gap: 0.5rem; }
+    .service-meta-box { max-width: none; }
+    .status-action-cell { flex-direction: row; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; }
+    .pricing-table .col-type { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    .pricing-table .col-small::before,
+    .pricing-table .col-mid::before,
+    .pricing-table .col-market::before {
+      display: block;
+      margin-bottom: 0.2rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.66rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .pricing-table .col-small::before { content: 'Small business'; }
+    .pricing-table .col-mid::before { content: 'Mid-size'; }
+    .pricing-table .col-market::before { content: 'Market benchmark'; }
+    .pricing-table .col-actions { text-align: left; }
+    .pricing-table .actions-group { justify-content: stretch; }
+    .pricing-table .btn-edit { width: 100%; justify-content: center; min-height: 42px; }
+    .btn-toggle-status { min-height: 36px; padding: 0 0.8rem; }
   }
 </style>
 

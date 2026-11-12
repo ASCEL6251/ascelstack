@@ -1256,7 +1256,7 @@ const initialData = {
                             {clientSigned ? 'View Agreement' : 'Review & Sign →'}
                           </a>
                           <a
-                            href={`/agreements/${agr.secureToken}/print`}
+                            href={`/agreements/${agr.secureToken}/print?download=1`}
                             target="_blank"
                             rel="noreferrer"
                             class="btn-sm btn-ghost"
@@ -3290,7 +3290,7 @@ const initialData = {
       });
 
       // Preset Stacks
-      function applyPreset(presetKey: string) {
+      function applyPreset(presetKey: string, silent = false) {
         selectedServiceIds.clear();
         serviceCheckboxes.forEach((cb) => {
           cb.checked = false;
@@ -3334,7 +3334,7 @@ const initialData = {
         }
 
         recalculateEstimate();
-        showToast(`Loaded ${presetKey.toUpperCase()} preset template`, 'info');
+        if (!silent) showToast(`Loaded ${presetKey.toUpperCase()} preset template`, 'info');
       }
 
       document.querySelectorAll<HTMLButtonElement>('[data-preset]').forEach((btn) => {
@@ -3750,8 +3750,8 @@ const initialData = {
       document.getElementById('btn-print-sow')?.addEventListener('click', triggerPrintSOW);
       document.getElementById('btn-print-sow-bottom')?.addEventListener('click', triggerPrintSOW);
 
-      // Default preset
-      applyPreset('mvp');
+      // Default preset (quietly: the visitor didn't ask for it, so no toast on page load)
+      applyPreset('mvp', true);
 
       // ----------------------------------------------------------------------
       // EXPLORE CATALOG SEARCH & MODAL
@@ -4539,7 +4539,8 @@ const initialData = {
       /* ------------------------------------------------------------- 4 Metrics Grid */
       .metrics-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        /* Four stats: 4 across, then 2 x 2. auto-fit left one card orphaned on tablets. */
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 1.25rem;
         margin-bottom: 2rem;
       }
@@ -4762,6 +4763,14 @@ const initialData = {
       .empty-title { font-size: 1.6rem; color: var(--ink); }
       .empty-desc { color: var(--text-muted); font-size: 0.95rem; max-width: 46ch; }
       .empty-actions { display: flex; gap: 0.75rem; margin-top: 0.5rem; }
+      @media (max-width: 1180px) { .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+      @media (max-width: 420px) { .metrics-grid { grid-template-columns: 1fr; } }
+      .my-services-filter-bar > *,
+      .matrix-layer-pills > * { flex: none; white-space: nowrap; }
+      @media (max-width: 560px) {
+        .empty-actions { flex-direction: column; align-items: stretch; width: 100%; max-width: 320px; margin-inline: auto; }
+        .empty-actions > * { justify-content: center; }
+      }
 
       /* ============================================================== */
       /* STYLES: PROJECT ESTIMATION PLANNER */
@@ -6631,6 +6640,16 @@ const initialData = {
         gap: 0.5rem;
         pointer-events: none;
       }
+      @media (max-width: 768px) {
+        /* Phones: top of screen, clear of the planner's bottom dock and the home indicator. */
+        .toast-hub {
+          top: calc(64px + env(safe-area-inset-top));
+          bottom: auto;
+          left: 12px;
+          right: 12px;
+        }
+        .toast-item { width: 100%; }
+      }
       .toast-item {
         pointer-events: auto;
         background: var(--ink);
@@ -6649,7 +6668,7 @@ const initialData = {
       .toast-item.toast-info { border-left-color: var(--tint); }
       .toast-content { display: flex; align-items: center; gap: 0.6rem; }
       .toast-icon { display: flex; align-items: center; }
-      .toast-close { background: none; border: 0; color: rgba(255, 255, 255, 0.6); cursor: pointer; padding: 2px; display: grid; place-items: center; }
+      .toast-close { background: none; border: 0; color: rgba(255, 255, 255, 0.6); cursor: pointer; padding: 2px; display: grid; place-items: center; min-width: 32px; min-height: 32px; }
       @keyframes toastEnter {
         from { opacity: 0; transform: translateY(12px); }
         to { opacity: 1; transform: none; }

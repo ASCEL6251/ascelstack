@@ -1,0 +1,1179 @@
+---
+import Base from '../layouts/Base.astro';
+import { projects, featuredProject } from '../data/projects';
+
+const featured = featuredProject;
+const rest = projects.filter((p) => p !== featured);
+// The big card cycles through every project, featured one first.
+const slides = [featured, ...rest];
+// Strip behind the featured card: every project, repeated so the loop is seamless.
+const strip = [...projects, ...projects];
+
+const host = (url?: string) => (url ? new URL(url).hostname.replace(/^www\./, '') : 'concept.ascelstack.com');
+const linkOf = (p: (typeof projects)[number]) => p.url ?? `#${p.slug}`;
+const slideData = slides.map((p) => ({
+  slug: p.slug,
+  name: p.name,
+  meta: `${p.category} · ${p.year}`,
+  summary: p.summary,
+  url: p.url ?? null,
+  host: host(p.url),
+}));
+
+// Hero headline, split into words so each can rise from its own mask.
+const titleBefore = "We've built for some of the".split(' ');
+const titleAccent = ['best', 'teams'];
+const titleAfter = 'around the world.'.split(' ');
+
+// Tech chips scattered round the headline. x/y are % of the hero; speed drives scroll parallax.
+const chips = [
+  { label: 'React', x: 6, y: 14, color: '#61dafb', speed: 1.4, bob: 6 },
+  { label: 'TypeScript', x: 15, y: 34, color: '#3178c6', speed: 0.8, bob: 7 },
+  { label: 'Figma', x: 3, y: 50, color: '#a259ff', speed: 1.1, bob: 5.5 },
+  { label: 'Postgres', x: 87, y: 12, color: '#336791', speed: 1.2, bob: 6.5 },
+  { label: 'Astro', x: 95, y: 30, color: '#ff5d01', speed: 0.9, bob: 5 },
+  { label: 'Node.js', x: 82, y: 42, color: '#5fa04e', speed: 1.5, bob: 7.5 },
+  { label: 'Cloudflare', x: 22, y: 8, color: '#f38020', speed: 0.7, bob: 6 },
+  { label: 'Next.js', x: 76, y: 6, color: '#1d1f20', speed: 1.3, bob: 5.8 },
+];
+
+const features = [
+  {
+    title: 'Web design and development',
+    body: 'We design and build with love, care and attention to detail.',
+    icon: 'browser',
+  },
+  {
+    title: 'Mobile responsive',
+    body: 'Every page is tested on phones, tablets and wide screens before it ships.',
+    icon: 'device',
+  },
+  {
+    title: 'Dark and light mode',
+    body: 'Accessible contrast and a look that holds up in both themes.',
+    icon: 'theme',
+  },
+  {
+    title: 'Latest tech stack',
+    body: 'Modern, typed, fast frameworks — chosen for your problem, not for hype.',
+    icon: 'stack',
+  },
+  {
+    title: 'Regular updates',
+    body: 'Weekly progress, shared previews and one channel to reach the team.',
+    icon: 'chat',
+  },
+  {
+    title: 'Built to keep improving',
+    body: 'Clean code and a CMS where it helps, so the next change is cheap.',
+    icon: 'future',
+  },
+];
+
+---
+
+<Base
+  title="Our Projects"
+  description="Selected websites, apps and platforms designed and built by Ascelstack — from consumer web apps to SaaS dashboards and e-commerce."
+>
+  <div class="pj">
+    <!-- ─────────────── Hero ─────────────── -->
+    <section class="pj-hero" data-hero>
+      <div class="wrap pj-frame">
+        <!-- Stack objects around the headline. Decorative only. -->
+        <div class="pj-art" aria-hidden="true">
+          {chips.map((c) => (
+            <span
+              class="pj-chip"
+              data-chip
+              data-speed={c.speed}
+              style={`--x:${c.x}%;--y:${c.y}%;--c:${c.color};--bob:${c.bob}s`}
+            >
+              <i></i>{c.label}
+            </span>
+          ))}
+
+          <canvas class="pj-3d pj-3d-left" data-3d="slabs"></canvas>
+          <canvas class="pj-3d pj-3d-right" data-3d="mark"></canvas>
+        </div>
+
+        <h1 class="pj-title">
+          {titleBefore.map((w) => (
+            <>
+              <span class="pj-w"><span class="pj-wi">{w}</span></span>{' '}
+            </>
+          ))}
+          <span class="pj-accent">
+            {titleAccent.map((w, i) => (
+              <>
+                <span class="pj-w"><span class="pj-wi">{w}</span></span>{i < titleAccent.length - 1 ? ' ' : ''}
+              </>
+            ))}
+            <span class="pj-underline" data-underline></span>
+          </span>{' '}
+          {titleAfter.map((w) => (
+            <>
+              <span class="pj-w"><span class="pj-wi">{w}</span></span>{' '}
+            </>
+          ))}
+        </h1>
+        <p class="pj-lead" data-hero-fade>
+          Websites, products and internal tools — <strong>designed, built and kept running by one team.</strong> Scroll to see the work.
+        </p>
+        <span class="pj-scroll-cue" data-hero-fade aria-hidden="true"><i></i></span>
+      </div>
+    </section>
+
+    <!-- ─────────────── Featured showcase ─────────────── -->
+    <section class="pj-show" aria-label={`Featured project: ${featured.name}`}>
+      <div class="pj-strip">
+        <div class="pj-strip-track">
+          {strip.map((p, i) => {
+            // Second half only exists to make the loop seamless: hide it from AT and tab order.
+            const clone = i >= projects.length;
+            return (
+              <a
+                class="pj-thumb"
+                href={p.url ?? `#${p.slug}`}
+                target={p.url ? '_blank' : undefined}
+                rel={p.url ? 'noopener' : undefined}
+                aria-label={clone ? undefined : `${p.name} — ${p.category}`}
+                aria-hidden={clone ? 'true' : undefined}
+                tabindex={clone ? -1 : undefined}
+              >
+                <img src={p.image} alt="" loading="lazy" width="1440" height="900" />
+                <span class="pj-thumb-tag">
+                  {p.name} <span aria-hidden="true">{p.url ? '↗' : '↓'}</span>
+                </span>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+
+      <div class="pj-stage" data-stage>
+        <a
+          class="pj-feature"
+          data-feature
+          href={linkOf(featured)}
+          target={featured.url ? '_blank' : undefined}
+          rel={featured.url ? 'noopener' : undefined}
+        >
+          <div class="pj-chrome">
+            <span class="pj-dots"><i></i><i></i><i></i></span>
+            <span class="pj-url mono" data-f-url>{host(featured.url)}</span>
+          </div>
+          <div class="pj-screens">
+            {slides.map((p, i) => (
+              <img
+                src={p.image}
+                alt={`${p.name} home page`}
+                width="1440"
+                height="900"
+                loading={i === 0 ? 'eager' : 'lazy'}
+                class={i === 0 ? 'is-on' : undefined}
+                data-slide={i}
+              />
+            ))}
+          </div>
+          <div class="pj-progress" aria-hidden="true"><i data-f-bar></i></div>
+        </a>
+        <div class="pj-pager" role="tablist" aria-label="Featured projects">
+          {slides.map((p, i) => (
+            <button
+              type="button"
+              role="tab"
+              aria-selected={i === 0 ? 'true' : 'false'}
+              aria-label={p.name}
+              data-goto={i}
+            ></button>
+          ))}
+        </div>
+      </div>
+
+      <div class="wrap pj-feature-meta" data-reveal aria-live="polite">
+        <div class="pj-swap" data-f-swap>
+          <span class="mono pj-cat" data-f-cat>{featured.category} · {featured.year}</span>
+          <h2 class="pj-fname" data-f-name>{featured.name}</h2>
+        </div>
+        <p class="pj-swap" data-f-sum>{featured.summary}</p>
+        <a
+          href={linkOf(featured)}
+          target={featured.url ? '_blank' : undefined}
+          rel={featured.url ? 'noopener' : undefined}
+          class="btn"
+          data-f-btn
+        >
+          <span data-f-btn-label>{featured.url ? 'Visit site' : 'View project'}</span>
+          <span class="arrow" data-f-btn-arrow>{featured.url ? '↗' : '↓'}</span>
+        </a>
+      </div>
+      <script type="application/json" id="pj-slides" set:html={JSON.stringify(slideData)} />
+    </section>
+
+    <!-- ─────────────── Project list ─────────────── -->
+    <section class="section pj-list-sec">
+      <div class="wrap">
+        <div class="pj-list-head">
+          <p class="eyebrow" data-reveal>Selected work</p>
+          <h2 class="pj-h2" data-reveal>
+            Shipped, live and <span class="pj-accent">still growing.</span>
+          </h2>
+        </div>
+
+        <div class="pj-list">
+          {rest.map((p, i) => (
+            <article class="pj-item" id={p.slug} data-item>
+              <div class="pj-shot" data-shot>
+                <div class="pj-shot-inner" data-shot-inner>
+                  <img src={p.image} alt={`${p.name} screen`} loading="lazy" width="1440" height="900" />
+                </div>
+                {p.demo && <span class="pj-badge mono">Concept</span>}
+              </div>
+              <div class="pj-info">
+                <span class="mono pj-idx">{String(i + 2).padStart(2, '0')}</span>
+                <div class="pj-info-body">
+                  <span class="mono pj-cat" data-reveal>{p.category} · {p.year}</span>
+                  <h3 class="pj-iname" data-reveal>{p.name}</h3>
+                  <p class="pj-sum" data-reveal>{p.summary}</p>
+                  <ul class="pj-chips" data-reveal>
+                    {p.services.map((s) => <li>{s}</li>)}
+                  </ul>
+                  <p class="mono pj-stack" data-reveal>{p.stack.join(' · ')}</p>
+                  {p.url && (
+                    <a href={p.url} target="_blank" rel="noopener" class="pj-link" data-reveal>
+                      Visit site <span aria-hidden="true">↗</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <p class="pj-more mono" data-reveal>More case studies are on the way.</p>
+      </div>
+    </section>
+
+    <!-- ─────────────── Bento: everything web ─────────────── -->
+    <section class="pj-web">
+      <div class="wrap pj-frame">
+        <div class="pj-bento" data-reveal>
+          <div class="pj-bento-copy">
+            <h2 class="pj-bento-title">Anything and everything web</h2>
+            <p>
+              We take care of deployments, hosting, maintenance, revisions, design systems and everything else in
+              between.
+            </p>
+            <div class="pj-trust">
+              <strong>One team from first sketch to launch day — and after.</strong>
+              <div class="pj-avatars" aria-hidden="true">
+                <span>B</span><span>G</span><span>R</span><span>+</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pj-globe" aria-hidden="true">
+            <canvas class="pj-globe-canvas" data-globe></canvas>
+          </div>
+        </div>
+
+        <div class="pj-features">
+          {features.map((f, i) => (
+            <div class="pj-feat" data-reveal data-reveal-delay={(i % 3) * 0.08}>
+              <span class="pj-ico">
+                {f.icon === 'browser' && (
+                  <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.5" /><path d="M3 9h18M6.5 6.6h.01M9 6.6h.01M11.5 6.6h.01" /></svg>
+                )}
+                {f.icon === 'device' && (
+                  <svg viewBox="0 0 24 24"><rect x="3" y="4" width="15" height="11" rx="2" /><path d="M8 19h6M11 15v4M16 4.5l2 2 3.5-4" /></svg>
+                )}
+                {f.icon === 'theme' && (
+                  <svg viewBox="0 0 24 24"><path d="M7 18a4 4 0 0 1-.5-7.97A5.5 5.5 0 0 1 17 9.5a4.25 4.25 0 0 1 .25 8.5Z" /><path d="M5 3v1.5M2 6h1.5M2.9 3.9l1 1" /></svg>
+                )}
+                {f.icon === 'stack' && (
+                  <svg viewBox="0 0 24 24"><rect x="4" y="3" width="6" height="18" rx="2.5" /><rect x="14" y="3" width="6" height="7" rx="2" /><rect x="14" y="14" width="6" height="7" rx="2" /></svg>
+                )}
+                {f.icon === 'chat' && (
+                  <svg viewBox="0 0 24 24"><path d="M5 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-7l-5 4v-4H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" /><path d="M8 9h8M8 12.5h5" /></svg>
+                )}
+                {f.icon === 'future' && (
+                  <svg viewBox="0 0 24 24"><path d="M12 20.5 4.6 13.2a4.6 4.6 0 0 1 6.5-6.5l.9.9.9-.9a4.6 4.6 0 0 1 6.5 6.5Z" /><path d="M9 12.5 12 9l3 3.5" /></svg>
+                )}
+              </span>
+              <h3>{f.title}</h3>
+              <p>{f.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- ─────────────── CTA ─────────────── -->
+    <section class="section on-ink pj-cta">
+      <div class="wrap pj-cta-in">
+        <p class="eyebrow" data-reveal>Your project next</p>
+        <h2 class="display h2" data-reveal>Have something worth <em>building?</em></h2>
+        <div class="pj-cta-actions" data-reveal>
+          <a href="/contact" class="btn">Start a project <span class="arrow">→</span></a>
+          <a href="/services" class="btn btn-ghost">Browse services</a>
+        </div>
+      </div>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .pj {
+    --pj-dot: color-mix(in srgb, var(--ink) 28%, transparent);
+    --pj-grid: color-mix(in srgb, var(--ink) 5%, transparent);
+    --pj-card: #fff;
+    --pj-shadow: 0 30px 80px -20px rgba(29, 45, 61, 0.28), 0 8px 24px -8px rgba(29, 45, 61, 0.12);
+    overflow-x: clip;
+  }
+
+  /* Dotted side rails, like a ruled canvas */
+  .pj-frame { position: relative; }
+  .pj-frame::before,
+  .pj-frame::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    border-left: 2px dotted var(--pj-dot);
+    pointer-events: none;
+  }
+  .pj-frame::before { left: calc(var(--gutter) * 0.5); }
+  .pj-frame::after { right: calc(var(--gutter) * 0.5); }
+
+  .pj-accent { color: var(--accent); }
+
+  /* ─── Hero ─── */
+  .pj-hero { padding-top: calc(var(--nav-h) + clamp(3.5rem, 2rem + 6vw, 7rem)); }
+  .pj-hero .pj-frame {
+    display: grid;
+    justify-items: center;
+    text-align: center;
+    gap: 1.25rem;
+    padding-bottom: clamp(3rem, 2rem + 4vw, 5rem);
+    min-height: clamp(380px, 32vw, 520px);
+    align-content: center;
+  }
+  .pj-hero .pj-frame > :not(.pj-art) { position: relative; z-index: 1; }
+  .pj-hero .pj-frame::before,
+  .pj-hero .pj-frame::after { display: none; }
+
+  /* Headline words rise out of their own clip box */
+  .pj-w { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.08em; margin-bottom: -0.08em; }
+  .pj-wi { display: inline-block; will-change: transform; }
+  .pj-accent { position: relative; display: inline-block; }
+  /* Hero accent: the site's serif italic, in a brand gradient */
+  .pj-title .pj-accent {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.12em;
+    letter-spacing: -0.01em;
+    padding-inline: 0.04em 0.08em;
+  }
+  .pj-title .pj-accent .pj-wi {
+    background: linear-gradient(100deg, var(--accent) 0%, #7fa6cc 45%, var(--ink) 100%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: pj-sheen 6s ease-in-out infinite alternate;
+  }
+  /* Italic glyphs overhang their box; give the clip mask room so nothing gets cut */
+  .pj-title .pj-accent .pj-w { padding-right: 0.08em; margin-right: -0.08em; }
+  @keyframes pj-sheen { to { background-position: 100% 0; } }
+  .pj-lead strong { color: var(--ink); font-weight: 600; }
+  .pj-underline {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.04em;
+    height: 0.055em;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--tint), var(--accent));
+    transform-origin: left;
+  }
+
+  /* Pre-animation state only when JS + motion are available (no flash, no-JS safe) */
+  :global(html.js) .pj-wi { transform: translateY(110%); }
+  :global(html.js) .pj-underline { transform: scaleX(0); }
+  :global(html.js) [data-hero-fade],
+  :global(html.js) .pj-chip,
+  :global(html.js) .pj-3d { opacity: 0; }
+
+  .pj-scroll-cue {
+    width: 22px;
+    height: 34px;
+    margin-top: 0.75rem;
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    display: grid;
+    justify-items: center;
+    padding-top: 6px;
+  }
+  .pj-scroll-cue i {
+    width: 3px;
+    height: 7px;
+    border-radius: 2px;
+    background: var(--accent);
+    animation: pj-cue 1.8s var(--ease-out) infinite;
+  }
+  @keyframes pj-cue {
+    0% { transform: translateY(0); opacity: 1; }
+    70% { transform: translateY(12px); opacity: 0; }
+    100% { opacity: 0; }
+  }
+
+  /* Decorative layer */
+  .pj-art { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+  .pj-chip {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    translate: -50% 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.8rem 0.45rem 0.6rem;
+    border-radius: 999px;
+    background: #fff;
+    border: 1px solid var(--line);
+    box-shadow: 0 10px 24px -14px rgba(29, 45, 61, 0.45);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .pj-chip i { width: 9px; height: 9px; border-radius: 3px; background: var(--c); }
+  .pj-chip.is-idle { animation: pj-bob var(--bob) ease-in-out infinite; }
+  @keyframes pj-bob { 50% { translate: -50% -8px; } }
+
+  /* 3D objects: slabs (Build · Grow · Run) left, the layered mark right */
+  .pj-3d {
+    position: absolute;
+    bottom: -4%;
+    width: clamp(180px, 17vw, 260px);
+    height: clamp(200px, 19vw, 290px);
+    translate: -50% 0;
+  }
+  .pj-3d-left { left: 10%; }
+  .pj-3d-right { left: 89%; }
+
+  @media (max-width: 1100px) {
+    .pj-3d { display: none; }
+  }
+  @media (max-width: 860px) {
+    .pj-chip { font-size: 0.7rem; padding: 0.35rem 0.6rem 0.35rem 0.5rem; }
+    .pj-chip:nth-child(n + 5) { display: none; }
+  }
+  @media (max-width: 600px) {
+    .pj-art { display: none; }
+    .pj-hero .pj-frame { min-height: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :global(html.js) .pj-wi,
+    :global(html.js) .pj-underline { transform: none; }
+    .pj-title .pj-accent .pj-wi { animation: none; }
+    :global(html.js) [data-hero-fade],
+    :global(html.js) .pj-chip,
+    :global(html.js) .pj-3d { opacity: 1; }
+    .pj-scroll-cue i { animation: none; }
+  }
+  .pj-title {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: clamp(2.25rem, 1.2rem + 4vw, 4.5rem);
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    max-width: 18ch;
+    color: var(--ink);
+  }
+  .pj-lead {
+    max-width: 52ch;
+    color: var(--text-muted);
+    font-size: var(--fs-lead);
+    line-height: 1.55;
+  }
+
+  /* ─── Showcase ─── */
+  .pj-show {
+    position: relative;
+    padding-block: clamp(1rem, 4vw, 3rem) clamp(3rem, 6vw, 6rem);
+    background-image:
+      linear-gradient(var(--pj-grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--pj-grid) 1px, transparent 1px);
+    background-size: 22px 22px;
+    mask-image: linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
+  }
+  .pj-strip {
+    position: absolute;
+    inset-inline: 0;
+    top: clamp(4rem, 11vw, 10rem);
+    padding-block: 2.25rem;
+    border-block: 2px dotted var(--pj-dot);
+    overflow: hidden;
+  }
+  /* Pause the loop while someone is pointing at or tabbing through it. */
+  .pj-strip:hover .pj-strip-track,
+  .pj-strip:focus-within .pj-strip-track { animation-play-state: paused; }
+  .pj-strip-track {
+    display: flex;
+    gap: 1.5rem;
+    width: max-content;
+    animation: pj-marquee 60s linear infinite;
+  }
+  .pj-thumb {
+    position: relative;
+    display: block;
+    flex: none;
+    width: clamp(130px, 12vw, 190px);
+    aspect-ratio: 16 / 10;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--pj-card);
+    box-shadow: 0 8px 22px -12px rgba(29, 45, 61, 0.3);
+    border: 1px solid var(--line);
+    transform: translateZ(0);
+    transition:
+      transform 0.55s var(--ease-out),
+      box-shadow 0.55s var(--ease-out),
+      border-color 0.3s;
+  }
+  .pj-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+    transition: transform 0.8s var(--ease-out);
+  }
+  .pj-thumb-tag {
+    position: absolute;
+    inset: auto 0 0 0;
+    padding: 1.4rem 0.6rem 0.45rem;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(to top, rgba(20, 33, 48, 0.85), transparent);
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.35s, transform 0.45s var(--ease-out);
+  }
+  .pj-thumb:hover,
+  .pj-thumb:focus-visible {
+    z-index: 2;
+    transform: translateY(-8px) scale(1.22);
+    border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+    box-shadow: 0 24px 44px -16px rgba(29, 45, 61, 0.5);
+  }
+  .pj-thumb:hover img,
+  .pj-thumb:focus-visible img { transform: scale(1.06); }
+  .pj-thumb:hover .pj-thumb-tag,
+  .pj-thumb:focus-visible .pj-thumb-tag { opacity: 1; transform: none; }
+  .pj-thumb:active { transform: translateY(-4px) scale(1.14); transition-duration: 0.15s; }
+  @keyframes pj-marquee { to { transform: translateX(-50%); } }
+
+  .pj-stage {
+    position: relative;
+    z-index: 1;
+    perspective: 1200px;
+    width: min(100% - 2 * var(--gutter), 600px);
+    margin-inline: auto;
+  }
+  .pj-feature {
+    display: block;
+    border-radius: 18px;
+    overflow: hidden;
+    background: var(--pj-card);
+    border: 1px solid var(--line);
+    box-shadow: var(--pj-shadow);
+    transform-origin: 50% 0;
+    will-change: transform;
+  }
+  .pj-chrome {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.6rem 0.9rem;
+    border-bottom: 1px solid var(--line);
+    background: var(--paper-raised);
+  }
+  .pj-dots { display: flex; gap: 6px; }
+  .pj-dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--mist); }
+  .pj-url {
+    flex: 1;
+    max-width: 320px;
+    margin-inline: auto;
+    text-align: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    background: var(--paper-sunk);
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .pj-screens { position: relative; aspect-ratio: 16 / 10; overflow: hidden; background: var(--paper-sunk); }
+  .pj-screens img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+    opacity: 0;
+    transform: scale(1.04);
+    transition: opacity 0.9s var(--ease-out), transform 1.4s var(--ease-out);
+  }
+  .pj-screens img.is-on { opacity: 1; transform: scale(1); }
+  .pj-feature:hover .pj-screens img.is-on { transform: scale(1.02); }
+  .pj-url { transition: opacity 0.35s; }
+  .pj-progress { height: 2px; background: var(--paper-sunk); }
+  .pj-progress i {
+    display: block;
+    height: 100%;
+    width: 100%;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  .pj-pager { display: flex; justify-content: center; gap: 0.5rem; margin-top: 1rem; }
+  .pj-pager button {
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: var(--mist);
+    cursor: pointer;
+    transition: width 0.45s var(--ease-out), background 0.3s;
+  }
+  .pj-pager button[aria-selected='true'] { width: 26px; background: var(--accent); }
+  .pj-pager button::after { content: ''; display: block; margin: -8px; height: 24px; }
+  .pj-swap { transition: opacity 0.35s, transform 0.5s var(--ease-out); }
+  .pj-swap.is-out { opacity: 0; transform: translateY(8px); }
+  .pj-thumb.is-current { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent), 0 8px 22px -12px rgba(29, 45, 61, 0.3); }
+
+  .pj-feature-meta {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 1.5rem 3rem;
+    max-width: calc(760px + 2 * var(--gutter));
+    margin-top: clamp(1.75rem, 3vw, 2.5rem);
+  }
+  .pj-feature-meta p { color: var(--text-muted); max-width: 52ch; font-size: 0.98rem; }
+  .pj-cat { color: var(--accent); text-transform: uppercase; }
+  .pj-fname {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(1.75rem, 1.2rem + 1.6vw, 2.5rem);
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    color: var(--ink);
+  }
+
+  /* ─── List ─── */
+  .pj-list-head {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: clamp(3rem, 2rem + 4vw, 6rem);
+  }
+  .pj-h2 {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: clamp(1.9rem, 1.2rem + 2.6vw, 3.25rem);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    max-width: 18ch;
+    color: var(--ink);
+  }
+  .pj-list { display: grid; gap: clamp(4rem, 3rem + 6vw, 9rem); }
+  .pj-item {
+    display: grid;
+    grid-template-columns: 1.35fr 1fr;
+    gap: clamp(1.75rem, 1rem + 3vw, 4.5rem);
+    align-items: center;
+    scroll-margin-top: calc(var(--nav-h) + 2rem);
+  }
+  .pj-item:nth-child(even) { grid-template-columns: 1fr 1.35fr; }
+  .pj-item:nth-child(even) .pj-shot { order: 2; }
+
+  .pj-shot {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: var(--pj-card);
+    box-shadow: var(--pj-shadow);
+    aspect-ratio: 16 / 10;
+    clip-path: inset(0 round 16px);
+  }
+  .pj-shot-inner { width: 100%; height: 100%; }
+  .pj-shot-inner img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .pj-badge {
+    position: absolute;
+    top: 0.9rem;
+    left: 0.9rem;
+    padding: 0.3rem 0.65rem;
+    border-radius: 999px;
+    background: rgba(29, 45, 61, 0.78);
+    color: var(--paper);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    backdrop-filter: blur(6px);
+  }
+
+  .pj-info { display: grid; grid-template-columns: auto 1fr; gap: 1.25rem; }
+  .pj-idx { color: var(--text-muted); padding-top: 0.2rem; }
+  .pj-info-body { display: grid; gap: 0.9rem; justify-items: start; }
+  .pj-iname {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(1.75rem, 1.2rem + 1.6vw, 2.6rem);
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    color: var(--ink);
+  }
+  .pj-sum { color: var(--text-muted); max-width: 46ch; }
+  .pj-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .pj-chips li {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--paper-raised);
+  }
+  .pj-stack { color: var(--text-muted); }
+  .pj-link {
+    display: inline-flex;
+    gap: 0.4rem;
+    font-weight: 500;
+    color: var(--accent);
+    border-bottom: 1px solid currentColor;
+    padding-bottom: 2px;
+  }
+  .pj-more {
+    margin-top: clamp(3rem, 6vw, 5rem);
+    text-align: center;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  /* ─── Bento ─── */
+  .pj-web { padding-bottom: clamp(4rem, 3rem + 5vw, 8rem); }
+  /* No dotted rails around the globe card. */
+  .pj-web .pj-frame::before,
+  .pj-web .pj-frame::after { display: none; }
+
+  .pj-bento {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: clamp(520px, 30rem + 12vw, 720px);
+    border-radius: var(--radius-l);
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .pj-bento-copy {
+    display: grid;
+    align-content: start;
+    gap: 1rem;
+    padding: clamp(2rem, 1rem + 4vw, 4.5rem);
+    position: relative;
+    z-index: 1;
+  }
+  .pj-bento-title {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: clamp(1.75rem, 1.1rem + 1.8vw, 2.75rem);
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .pj-bento-copy > p { color: var(--text-muted); font-size: var(--fs-lead); line-height: 1.5; max-width: 34ch; }
+  .pj-trust { margin-top: 1.5rem; display: grid; gap: 0.9rem; }
+  .pj-trust strong { font-weight: 500; max-width: 26ch; color: var(--ink); }
+  .pj-avatars { display: flex; }
+  .pj-avatars span {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    margin-left: -10px;
+    border-radius: 50%;
+    border: 3px solid var(--paper-raised);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: #fff;
+    background: var(--ink);
+  }
+  .pj-avatars span:first-child { margin-left: 0; }
+  .pj-avatars span:nth-child(2) { background: var(--accent); }
+  .pj-avatars span:nth-child(3) { background: var(--tint); color: var(--ink); }
+  .pj-avatars span:nth-child(4) { background: var(--charcoal); }
+
+  .pj-globe { position: relative; min-height: 360px; container-type: size; }
+  .pj-globe-canvas {
+    position: absolute;
+    /* Sized by the card's height so wide screens don't push it out of view. */
+    --size: min(130cqh, 112cqw);
+    width: var(--size);
+    height: var(--size);
+    max-width: none;
+    right: calc(var(--size) * -0.2);
+    top: 6%;
+    cursor: grab;
+    touch-action: pan-y;
+    /* Static fallback until WebGL draws (or if it never does). */
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #3b5978, #142130 70%);
+    transition: background 0.6s;
+  }
+  .pj-globe-canvas.is-live { background: transparent; }
+  .pj-globe-canvas:active { cursor: grabbing; }
+
+  .pj-features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(2.25rem, 4vw, 3.5rem) clamp(1.5rem, 3vw, 3rem);
+    padding: clamp(3rem, 6vw, 5rem) clamp(0.5rem, 3vw, 3rem) 0;
+  }
+  .pj-feat { display: grid; gap: 0.6rem; align-content: start; }
+  .pj-ico { width: 34px; height: 34px; color: var(--accent); margin-bottom: 0.75rem; }
+  .pj-ico svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .pj-feat h3 { font-size: 1.15rem; font-weight: 600; letter-spacing: -0.01em; color: var(--ink); }
+  .pj-feat p { color: var(--text-muted); font-size: 0.98rem; max-width: 34ch; }
+
+  /* ─── CTA ─── */
+  .pj-cta-in { display: grid; justify-items: center; text-align: center; gap: 1.5rem; }
+  .pj-cta-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; margin-top: 0.5rem; }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 960px) {
+    .pj-item,
+    .pj-item:nth-child(even) { grid-template-columns: 1fr; }
+    .pj-item:nth-child(even) .pj-shot { order: 0; }
+    .pj-feature-meta { grid-template-columns: 1fr; gap: 1rem; }
+    .pj-feature-meta .btn { justify-self: start; }
+    .pj-features { grid-template-columns: repeat(2, 1fr); }
+    .pj-bento { grid-template-columns: 1fr; }
+    .pj-bento { min-height: 0; }
+    .pj-globe { min-height: clamp(340px, 70vw, 520px); }
+    .pj-globe-canvas { width: min(125cqw, 640px); height: min(125cqw, 640px); right: -25%; top: auto; bottom: -22%; }
+  }
+  @media (max-width: 600px) {
+    .pj-features { grid-template-columns: 1fr; }
+    .pj-info { grid-template-columns: 1fr; gap: 0.5rem; }
+    .pj-strip { top: 2.5rem; padding-block: 1.75rem; }
+    .pj-frame::before,
+    .pj-frame::after { display: none; }
+    .pj-features { padding-inline: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pj-strip-track { animation: none; }
+  }
+</style>
+
+<script>
+  import { gsap, reducedMotion, getLenis } from '../scripts/motion';
+
+  function initHero() {
+    const hero = document.querySelector<HTMLElement>('[data-hero]');
+    if (!hero || reducedMotion) return;
+
+    const words = hero.querySelectorAll<HTMLElement>('.pj-wi');
+    const fades = hero.querySelectorAll<HTMLElement>('[data-hero-fade]');
+    const chips = [...hero.querySelectorAll<HTMLElement>('[data-chip]')];
+    const canvases = [...hero.querySelectorAll<HTMLCanvasElement>('[data-3d]')];
+
+    // ── Intro: headline rises word by word, then the stack objects arrive.
+    const intro = gsap.timeline({ defaults: { ease: 'expo.out' } });
+    intro
+      .fromTo(words, { y: 0, yPercent: 110 }, { y: 0, yPercent: 0, duration: 1.1, stagger: 0.055 }, 0.05)
+      .to('[data-underline]', { scaleX: 1, duration: 0.9, ease: 'power3.inOut' }, 0.7)
+      .fromTo(fades, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.9, stagger: 0.1 }, 0.65)
+      .fromTo(
+        chips,
+        { opacity: 0, scale: 0.6, y: 20 },
+        {
+          opacity: 1,
+          scale: 1,
+          y: 0,
+          duration: 0.9,
+          ease: 'back.out(1.8)',
+          stagger: { each: 0.07, from: 'random' },
+          onComplete: () => chips.forEach((c) => c.classList.add('is-idle')),
+        },
+        0.5,
+      )
+      .fromTo(canvases, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 1.2, stagger: 0.15 }, 0.8);
+
+    // ── Scroll: chips drift away at their own speeds; 3D layers pull apart.
+    const scroll = gsap.timeline({
+      scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom 20%', scrub: 0.8 },
+    });
+    chips.forEach((c) => {
+      const speed = Number(c.dataset.speed || 1);
+      const left = parseFloat(c.style.getPropertyValue('--x')) < 50;
+      scroll.to(
+        c,
+        { y: -140 * speed, x: (left ? -40 : 40) * speed, opacity: 0, rotate: (left ? -8 : 8) * speed, ease: 'none', duration: 1 },
+        0,
+      );
+    });
+    scroll.to(hero.querySelector('.pj-title'), { y: -40, ease: 'none', duration: 1 }, 0);
+    scroll.to(canvases, { y: -50, ease: 'none', duration: 1 }, 0);
+
+    // 3D only on wide screens, loaded when needed (three.js is a separate chunk).
+    if (!window.matchMedia('(min-width: 1101px)').matches) return;
+    const slabsCanvas = hero.querySelector<HTMLCanvasElement>('[data-3d="slabs"]');
+    const markCanvas = hero.querySelector<HTMLCanvasElement>('[data-3d="mark"]');
+
+    if (slabsCanvas) {
+      import('../scripts/hero-slabs').then(({ createSlabs }) => {
+        const slabs = createSlabs(slabsCanvas);
+        if (!slabs) return;
+        gsap.fromTo(slabs.state, { scale: 0.6 }, { scale: 1, duration: 1.4, ease: 'expo.out', delay: 0.6 });
+        scroll.to(slabs.state, { spread: 1, spin: 1, ease: 'none', duration: 1 }, 0);
+      });
+    }
+
+    if (markCanvas) {
+      import('../scripts/stack-scene').then(({ createStack }) => {
+        const mark = createStack(markCanvas);
+        if (!mark) return;
+        mark.state.scale = 0.95;
+        // Slow turn so the extrusion depth reads; layers fan apart on scroll.
+        gsap.to(mark.group.rotation, { y: Math.PI * 2, duration: 22, ease: 'none', repeat: -1 });
+        gsap.from(mark.group.scale, { x: 0.6, y: 0.6, z: 0.6, duration: 1.4, ease: 'expo.out', delay: 0.7 });
+        const [top, mid, base] = mark.layers;
+        scroll
+          .to(top.position, { y: 0.9, z: 0.4, ease: 'none', duration: 1 }, 0)
+          .to(mid.position, { z: 0.15, ease: 'none', duration: 1 }, 0)
+          .to(base.position, { y: -0.7, z: -0.3, ease: 'none', duration: 1 }, 0);
+      });
+    }
+  }
+
+  initHero();
+
+  function initProjects() {
+    if (reducedMotion) return;
+
+    // Featured card tilts back like a laptop lid, then flattens as it scrolls in.
+    const feature = document.querySelector<HTMLElement>('[data-feature]');
+    const stage = document.querySelector<HTMLElement>('[data-stage]');
+    if (feature && stage) {
+      gsap.fromTo(
+        feature,
+        { rotateX: 32, scale: 0.88, y: 40 },
+        {
+          rotateX: 0,
+          scale: 1,
+          y: 0,
+          ease: 'none',
+          scrollTrigger: { trigger: stage, start: 'top 95%', end: 'top 25%', scrub: 0.6 },
+        },
+      );
+    }
+
+    // Each project screenshot opens from a clipped window and settles its zoom.
+    document.querySelectorAll<HTMLElement>('[data-item]').forEach((item) => {
+      const shot = item.querySelector<HTMLElement>('[data-shot]');
+      const inner = item.querySelector<HTMLElement>('[data-shot-inner]');
+      if (!shot || !inner) return;
+      const tl = gsap.timeline({
+        scrollTrigger: { trigger: item, start: 'top 90%', end: 'top 35%', scrub: 0.6 },
+      });
+      tl.fromTo(
+        shot,
+        { clipPath: 'inset(14% 10% 14% 10% round 28px)', y: 60 },
+        { clipPath: 'inset(0% 0% 0% 0% round 16px)', y: 0, ease: 'none' },
+        0,
+      ).fromTo(inner, { scale: 1.18 }, { scale: 1, ease: 'none' }, 0);
+    });
+  }
+
+  initProjects();
+
+  // ── Featured card: auto-advances through every project; strip thumbs stay in sync.
+  (() => {
+    const dataEl = document.getElementById('pj-slides');
+    const card = document.querySelector<HTMLAnchorElement>('[data-feature]');
+    if (!dataEl || !card) return;
+    type Slide = { slug: string; name: string; meta: string; summary: string; url: string | null; host: string };
+    const slides: Slide[] = JSON.parse(dataEl.textContent || '[]');
+    const imgs = [...card.querySelectorAll<HTMLImageElement>('[data-slide]')];
+    const dots = [...document.querySelectorAll<HTMLButtonElement>('[data-goto]')];
+    const bar = card.querySelector<HTMLElement>('[data-f-bar]');
+    const $ = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
+    const urlEl = $('[data-f-url]');
+    const catEl = $('[data-f-cat]');
+    const nameEl = $('[data-f-name]');
+    const sumEl = $('[data-f-sum]');
+    const btn = $<HTMLAnchorElement>('[data-f-btn]');
+    const btnLabel = $('[data-f-btn-label]');
+    const btnArrow = $('[data-f-btn-arrow]');
+    const swaps = [...document.querySelectorAll<HTMLElement>('.pj-swap')];
+    const thumbs = [...document.querySelectorAll<HTMLAnchorElement>('.pj-thumb')];
+
+    const DURATION = 4.5; // seconds per project
+    let index = 0;
+    let swapTimer = 0;
+
+    const setLink = (a: HTMLAnchorElement, s: Slide) => {
+      a.href = s.url ?? `#${s.slug}`;
+      if (s.url) {
+        a.target = '_blank';
+        a.rel = 'noopener';
+      } else {
+        a.removeAttribute('target');
+        a.removeAttribute('rel');
+      }
+    };
+
+    function show(i: number) {
+      index = (i + slides.length) % slides.length;
+      const s = slides[index];
+      imgs.forEach((img, n) => img.classList.toggle('is-on', n === index));
+      dots.forEach((d, n) => d.setAttribute('aria-selected', String(n === index)));
+      thumbs.forEach((t) => {
+        const h = t.getAttribute('href');
+        t.classList.toggle('is-current', h === (s.url ?? `#${s.slug}`));
+      });
+      setLink(card, s);
+      setLink(btn, s);
+      urlEl.style.opacity = '0';
+      swaps.forEach((el) => el.classList.add('is-out'));
+      clearTimeout(swapTimer);
+      swapTimer = window.setTimeout(() => {
+        urlEl.textContent = s.host;
+        catEl.textContent = s.meta;
+        nameEl.textContent = s.name;
+        sumEl.textContent = s.summary;
+        btnLabel.textContent = s.url ? 'Visit site' : 'View project';
+        btnArrow.textContent = s.url ? '↗' : '↓';
+        urlEl.style.opacity = '1';
+        swaps.forEach((el) => el.classList.remove('is-out'));
+      }, 300);
+      restartTimer();
+    }
+
+    // Progress bar doubles as the timer, so pausing it pauses the rotation.
+    let tween: gsap.core.Tween | null = null;
+    function restartTimer() {
+      tween?.kill();
+      if (!bar) return;
+      tween = gsap.fromTo(
+        bar,
+        { scaleX: 0 },
+        { scaleX: 1, duration: DURATION, ease: 'none', onComplete: () => show(index + 1) },
+      );
+      if (paused || !inView) tween.pause();
+    }
+
+    let paused = false;
+    let inView = true;
+    const pause = () => {
+      paused = true;
+      tween?.pause();
+    };
+    const resume = () => {
+      paused = false;
+      if (inView) tween?.resume();
+    };
+
+    if (reducedMotion) {
+      show(0);
+      tween?.kill();
+    } else {
+      show(0);
+      card.addEventListener('mouseenter', pause);
+      card.addEventListener('mouseleave', resume);
+      card.addEventListener('focusin', pause);
+      card.addEventListener('focusout', resume);
+      new IntersectionObserver(([e]) => {
+        inView = e.isIntersecting;
+        if (inView && !paused) tween?.resume();
+        else tween?.pause();
+      }).observe(card);
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) tween?.pause();
+        else if (inView && !paused) tween?.resume();
+      });
+    }
+
+    dots.forEach((d) => d.addEventListener('click', () => show(Number(d.dataset.goto))));
+
+    // Hovering a strip card previews it in the big card.
+    thumbs.forEach((t) => {
+      t.addEventListener('mouseenter', () => {
+        const h = t.getAttribute('href');
+        const n = slides.findIndex((s) => (s.url ?? `#${s.slug}`) === h);
+        if (n >= 0 && n !== index) show(n);
+        pause();
+      });
+      t.addEventListener('mouseleave', resume);
+    });
+
+    // In-page project links in the card and button glide like the strip does.
+    [card, btn].forEach((a) =>
+      a.addEventListener('click', (e) => {
+        const h = a.getAttribute('href');
+        if (!h?.startsWith('#')) return;
+        const target = document.querySelector<HTMLElement>(h);
+        if (!target) return;
+        e.preventDefault();
+        const lenis = getLenis();
+        if (lenis) lenis.scrollTo(target, { offset: -100, duration: 1.4 });
+        else target.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth' });
+      }),
+    );
+  })();
+
+  // Strip thumbnails that point at a project on this page glide to it.
+  document.querySelectorAll<HTMLAnchorElement>('.pj-thumb[href^="#"]').forEach((a) => {
+    a.addEventListener('click', (e) => {
+      const target = document.querySelector<HTMLElement>(a.getAttribute('href')!);
+      if (!target) return;
+      e.preventDefault();
+      const lenis = getLenis();
+      if (lenis) lenis.scrollTo(target, { offset: -100, duration: 1.4 });
+      else target.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
+      history.replaceState(null, '', a.getAttribute('href'));
+    });
+  });
+
+  // Earth loads only when its card is near the viewport, and pauses off-screen.
+  const globeCanvas = document.querySelector<HTMLCanvasElement>('[data-globe]');
+  if (globeCanvas && 'IntersectionObserver' in window) {
+    let globe: import('../scripts/earth-globe').Globe | null | undefined;
+    const io = new IntersectionObserver(
+      async ([entry]) => {
+        if (entry.isIntersecting) {
+          if (globe === undefined) {
+            const { createGlobe } = await import('../scripts/earth-globe');
+            globe = createGlobe(globeCanvas, { animate: !reducedMotion });
+            if (globe) globeCanvas.classList.add('is-live');
+          }
+          globe?.start();
+        } else {
+          globe?.stop();
+        }
+      },
+      { rootMargin: '200px' },
+    );
+    io.observe(globeCanvas);
+  }
+</script>

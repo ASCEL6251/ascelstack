@@ -53,8 +53,8 @@ async function runTests() {
   // --------------------------------------------------------------------------
   const navContent = readFileSync(resolve(root, 'src/components/Nav.astro'), 'utf8');
   assert(
-    navContent.includes('/agreements') && navContent.includes('Client Agreements'),
-    'Website main navigation (Nav.astro) includes "Client Agreements"'
+    !navContent.includes('Client Agreements') && navContent.includes("href: '/projects'"),
+    'Main navigation links to Our Projects; agreements live in the signed-in dashboard only'
   );
 
   const adminLayoutContent = readFileSync(resolve(root, 'src/layouts/AdminLayout.astro'), 'utf8');

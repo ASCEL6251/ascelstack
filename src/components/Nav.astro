@@ -8,11 +8,11 @@ interface Props {
   tone?: 'light' | 'dark';
 }
 
-// Order: Logo · Services · Automation · Client Agreements · About · Industries · Process · CTA
+// Order: Logo · Services · Automation · Our Projects · About · Industries · Process · CTA
 const links = [
   { href: '/services', label: 'Services' },
   { href: '/automation', label: 'Automation' },
-  { href: '/agreements', label: 'Client Agreements' },
+  { href: '/projects', label: 'Our Projects' },
   { href: '/about', label: 'About' },
   { href: '/#industries', label: 'Industries' },
   { href: '/#process', label: 'Process' },
@@ -21,8 +21,41 @@ const path = Astro.url.pathname;
 const isActive = (href: string) => !href.startsWith('/#') && path.startsWith(href);
 
 // Phone menu: Services and Industries open as accordions, the rest are plain links.
-type Sub = { href: string; title: string; sub: string; mark: string; layer?: string };
+type Sub = { href: string; title: string; sub: string; mark: string; layer?: string; icon: string };
 const layerIndex = { build: 0, grow: 1, run: 2 } as const;
+
+// Line icons for the phone menu (24×24, 1.6 stroke). Keyed by service slug or `ind:<slug>`.
+const ICONS: Record<string, string> = {
+  'software-development': '<path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/><path d="m14 4-4 16"/>',
+  'ai-automation':
+    '<rect x="5" y="5" width="14" height="14" rx="2.5"/><path d="M9.5 9.5h5v5h-5z"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/>',
+  'digital-marketing': '<path d="m3 17 6-6 4 4 8-8"/><path d="M14 7h7v7"/>',
+  'branding-creative':
+    '<path d="m12 19 7-7 3 3-7 7-3-3Z"/><path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5Z"/><path d="m2 2 7.6 7.6"/><circle cx="11" cy="11" r="2"/>',
+  'ecommerce-marketplaces':
+    '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>',
+  'business-operations':
+    '<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3"/><path d="M1 14h6M9 8h6M17 16h6"/>',
+  'restaurant-food':
+    '<path d="M3 2v7a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6a2 2 0 0 0 2 2h3Zm0 0v7"/>',
+  'registration-compliance': '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/>',
+  'it-infrastructure':
+    '<rect x="2" y="3" width="20" height="7" rx="2"/><rect x="2" y="14" width="20" height="7" rx="2"/><path d="M6 6.5h.01M6 17.5h.01"/>',
+  'hr-recruitment':
+    '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>',
+  'education-training': '<path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c3 2.5 9 2.5 12 0v-5"/>',
+  'startup-consulting':
+    '<path d="M4.5 16.5c-1.5 1.3-2 5-2 5s3.7-.5 5-2c.7-.8.7-2.1-.1-2.9a2.2 2.2 0 0 0-2.9-.1Z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.9A12.9 12.9 0 0 1 22 2c0 2.7-.8 7.5-6 11a22.4 22.4 0 0 1-4 2Z"/><path d="M9 12H4s.6-3 2-4c1.6-1.1 5 0 5 0M12 15v5s3-.6 4-2c1.1-1.6 0-5 0-5"/>',
+  'corporate-solutions':
+    '<path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v8h4M18 9h2a2 2 0 0 1 2 2v11h-4"/><path d="M10 6h4M10 10h4M10 14h4M10 18h4"/>',
+  'ind:restaurant-food':
+    '<path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1Z"/><path d="M6 17h12"/>',
+  'ind:ecommerce-marketplaces':
+    '<path d="m2 7 4.4-4.4A2 2 0 0 1 7.8 2h8.4a2 2 0 0 1 1.4.6L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20v2a3 3 0 0 1-5 2.2 3 3 0 0 1-5 0 3 3 0 0 1-5 0A3 3 0 0 1 2 9Z"/>',
+  'ind:registration-compliance':
+    '<path d="M4.5 16.5c-1.5 1.3-2 5-2 5s3.7-.5 5-2c.7-.8.7-2.1-.1-2.9a2.2 2.2 0 0 0-2.9-.1Z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.9A12.9 12.9 0 0 1 22 2c0 2.7-.8 7.5-6 11a22.4 22.4 0 0 1-4 2Z"/><path d="M9 12H4s.6-3 2-4c1.6-1.1 5 0 5 0M12 15v5s3-.6 4-2c1.1-1.6 0-5 0-5"/>',
+};
+const FALLBACK_ICON = '<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12h8M12 8v8"/>';
 const menu: { label: string; href: string; sub?: Sub[]; all?: string }[] = [
   {
     label: 'Services',
@@ -34,10 +67,11 @@ const menu: { label: string; href: string; sub?: Sub[]; all?: string }[] = [
       sub: LAYERS[c.layer].title,
       mark: String(layerIndex[c.layer]),
       layer: c.layer,
+      icon: ICONS[c.slug] ?? FALLBACK_ICON,
     })),
   },
   { label: 'Automation', href: '/automation' },
-  { label: 'Client Agreements', href: '/agreements' },
+  { label: 'Our Projects', href: '/projects' },
   { label: 'About', href: '/about' },
   {
     label: 'Industries',
@@ -48,6 +82,7 @@ const menu: { label: string; href: string; sub?: Sub[]; all?: string }[] = [
       title: ind.title,
       sub: ind.tag,
       mark: String(i + 1).padStart(2, '0'),
+      icon: ICONS[`ind:${ind.slug}`] ?? ICONS[ind.slug] ?? FALLBACK_ICON,
     })),
   },
   { label: 'Process', href: '/#process' },
@@ -131,12 +166,8 @@ const menu: { label: string; href: string; sub?: Sub[]; all?: string }[] = [
                     {m.sub.map((s) => (
                       <li>
                         <a href={s.href} class:list={['mnav-sublink', { 'is-active': path === s.href }]}>
-                          <span class="mnav-tile" aria-hidden="true">
-                            {s.layer ? (
-                              <span class="mnav-layers" data-layer={s.mark}><i /><i /><i /></span>
-                            ) : (
-                              <span class="mono">{s.mark}</span>
-                            )}
+                          <span class="mnav-tile" data-layer={s.layer} aria-hidden="true">
+                            <svg class="mnav-icon" viewBox="0 0 24 24" set:html={s.icon} />
                           </span>
                           <span class="mnav-subtext">
                             <span class="mnav-subtitle">{s.title}</span>
@@ -163,7 +194,17 @@ const menu: { label: string; href: string; sub?: Sub[]; all?: string }[] = [
     </nav>
     <div class="mnav-foot" style={`--i:${menu.length}`}>
       <div class="mnav-acct">
-        <a href="/cart" class="mnav-acct-link">Your estimate <span class="mono" data-cart-count-m>0</span></a>
+        <a href="/cart" class="mnav-est">
+          <span class="mnav-est-main">
+            <strong data-est-title>How much will it cost?</strong>
+            <span class="mnav-est-sub" data-est-copy>Pick what you need and see a rough price. No calls, no forms.</span>
+          </span>
+          <span class="mnav-est-side">
+            <span data-est-cta>Get a price</span>
+            <span class="mnav-est-count" data-cart-count-m hidden>0</span>
+            <span aria-hidden="true">→</span>
+          </span>
+        </a>
       </div>
       <a href="/contact" class="mnav-cta">
         Start a project <span aria-hidden="true">→</span>
@@ -380,6 +421,52 @@ const menu: { label: string; href: string; sub?: Sub[]; all?: string }[] = [
     font-size: 0.9rem;
   }
   .mnav-acct-link .mono { padding: 0.1rem 0.45rem; border-radius: 999px; background: var(--accent); }
+
+  /* Two-tone estimate card: plain question on the left, one clear action on the right */
+  .mnav-est {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    border-radius: 16px;
+    overflow: hidden;
+    color: var(--ink);
+    transition: transform 0.25s var(--ease-out);
+  }
+  .mnav-est:active { transform: scale(0.98); }
+  .mnav-est-main {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.9rem 1rem;
+    background: var(--paper);
+    min-width: 0;
+  }
+  .mnav-est-main strong { font-size: 1rem; font-weight: 700; line-height: 1.25; }
+  .mnav-est-sub { font-size: 0.8rem; line-height: 1.4; color: #55606b; }
+  .mnav-est-side {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0 1rem;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .mnav-est-count {
+    min-width: 1.35rem;
+    padding: 0.05rem 0.4rem;
+    border-radius: 999px;
+    background: #fff;
+    color: var(--accent);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .mnav-est-side > span:last-child { transition: transform 0.3s var(--ease-out); }
+  .mnav-est:hover .mnav-est-side > span:last-child,
+  .mnav-est:focus-visible .mnav-est-side > span:last-child { transform: translateX(3px); }
 
   /* ------------------------------------------------------------- Client Portal */
   .nav-portal {
@@ -630,12 +717,33 @@ const menu: { label: string; href: string; sub?: Sub[]; all?: string }[] = [
   .mnav-sublink:hover .mnav-tile,
   .mnav-sublink.is-active .mnav-tile { background: var(--ink-deep); }
 
-  /* Three stacked bars; the one for this service's layer is lit */
-  .mnav-layers { display: grid; gap: 3px; width: 18px; }
-  .mnav-layers i { display: block; height: 3px; border-radius: 2px; background: rgba(242, 242, 243, 0.18); }
-  .mnav-layers[data-layer='0'] i:nth-child(1) { background: var(--tint); }
-  .mnav-layers[data-layer='1'] i:nth-child(2) { background: var(--accent); }
-  .mnav-layers[data-layer='2'] i:nth-child(3) { background: var(--paper); }
+  /* Line icon per service; tile tint follows its layer (Build / Grow / Run). */
+  .mnav-icon {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .mnav-tile { position: relative; }
+  .mnav-tile[data-layer='build'] { color: var(--tint); }
+  .mnav-tile[data-layer='grow'] { color: #b7cfe6; }
+  .mnav-tile[data-layer='run'] { color: var(--paper); }
+  .mnav-tile[data-layer]::after {
+    content: '';
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.85;
+  }
+  .mnav-sublink:hover .mnav-icon { transform: scale(1.08); }
+  .mnav-icon { transition: transform 0.3s var(--ease-out); }
 
   .mnav-subtext { display: grid; gap: 1px; min-width: 0; }
   .mnav-subtitle { font-weight: 700; font-size: 0.95rem; transition: color 0.25s; }
@@ -719,6 +827,18 @@ const menu: { label: string; href: string; sub?: Sub[]; all?: string }[] = [
   onCart((cart) => {
     const n = count(cart);
     badge.textContent = badgeM.textContent = String(n);
+    // Estimate card copy talks to where the visitor actually is.
+    const estTitle = document.querySelector<HTMLElement>('[data-est-title]');
+    const estCopy = document.querySelector<HTMLElement>('[data-est-copy]');
+    const estCta = document.querySelector<HTMLElement>('[data-est-cta]');
+    badgeM.hidden = n === 0;
+    if (estTitle) estTitle.textContent = n === 0 ? 'How much will it cost?' : 'Your estimate is ready';
+    if (estCopy)
+      estCopy.textContent =
+        n === 0
+          ? 'Pick what you need and see a rough price. No calls, no forms.'
+          : `You've picked ${n} ${n === 1 ? 'service' : 'services'}. Check the total and send it to us.`;
+    if (estCta) estCta.textContent = n === 0 ? 'Get a price' : 'Review';
     badge.hidden = n === 0;
     if (lastCount >= 0 && n > lastCount) {
       badge.classList.remove('is-bump');

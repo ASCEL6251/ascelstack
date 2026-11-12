@@ -1,0 +1,538 @@
+---
+/**
+ * The agreement itself, laid out as a legal document. Rendered on the client
+ * signing page and on the print / PDF page so both read exactly the same.
+ */
+import type { LoadedAgreement } from '../../lib/agreement-load';
+import { money, amountInWords, longDate, stamp, clientAddressLine } from '../../lib/agreement-document';
+
+interface Props {
+  data: LoadedAgreement;
+}
+
+const { agreement: a, clauses, hash, clientSig, providerSig } = Astro.props.data;
+
+const currency = a.currency || 'INR';
+const deliverables = ((a.deliverables as any[]) || []).filter((d) => d?.title);
+const milestones = ((a.milestones as any[]) || []).filter((m) => m?.title);
+const taxPct = parseFloat(String(a.taxPercentage ?? 0)) || 0;
+const clientAddress = clientAddressLine(a);
+const effectiveDate = a.signedAt ?? a.createdAt;
+const isExecuted = Boolean(clientSig && providerSig);
+
+// Timeline for the execution certificate.
+const events = [
+  { label: 'Agreement issued', who: a.providerName, at: a.sentAt ?? a.createdAt },
+  a.viewedAt && { label: 'Opened by client', who: a.clientEmail, at: a.viewedAt },
+  providerSig && {
+    label: 'Signed for Service Provider',
+    who: `${providerSig.signerName}${providerSig.signerTitle ? `, ${providerSig.signerTitle}` : ''}`,
+    at: providerSig.signedAt,
+    ip: providerSig.ipAddress,
+    method: providerSig.signatureType,
+  },
+  clientSig && {
+    label: 'Signed for Client',
+    who: `${clientSig.signerName} <${clientSig.signerEmail}>`,
+    at: clientSig.signedAt,
+    ip: clientSig.ipAddress,
+    method: clientSig.signatureType,
+  },
+]
+  .filter(Boolean)
+  .sort((x: any, y: any) => +new Date(x.at) - +new Date(y.at)) as any[];
+
+const pad = (n: number) => String(n).padStart(2, '0');
+---
+
+<div class="d-wrap">
+<article class="d-doc" id="agreement-document">
+  <!-- Masthead -->
+  <header class="d-mast">
+    <div class="d-mast-brand">
+      <svg class="d-mast-logo" viewBox="0 0 100 100" aria-hidden="true">
+        <path d="M50 6 L66 38 L34 38 Z" fill="#94BCE3"></path>
+        <path d="M32 42 L68 42 L70 46 L80 66 L60 66 L50 46 L40 66 L20 66 L30 46 Z" fill="#5980A6"></path>
+        <path d="M18 70 L38 70 L26 94 L6 94 Z M82 70 L62 70 L74 94 L94 94 Z" fill="#1D2D3D"></path>
+      </svg>
+      <div>
+        <p class="d-mast-name">{a.providerName}</p>
+        <p class="d-mast-line">{a.providerAddress}</p>
+        <p class="d-mast-line">
+          {a.providerEmail}{a.providerPhone && <> · {a.providerPhone}</>}
+          {a.providerGstinEnabled && a.providerGstin && <> · GSTIN {a.providerGstin}</>}
+        </p>
+      </div>
+    </div>
+    <dl class="d-mast-meta">
+      <div><dt>Agreement no.</dt><dd class="d-mono">{a.agreementNumber}</dd></div>
+      <div><dt>Date</dt><dd>{longDate(a.createdAt)}</dd></div>
+      <div><dt>Version</dt><dd>{a.version}</dd></div>
+    </dl>
+  </header>
+
+  <!-- Title -->
+  <div class="d-title-block">
+    <p class="d-kicker">Professional Service Agreement</p>
+    <h1 class="d-title">{a.projectName}</h1>
+    <p class="d-title-sub">
+      Between {a.providerName} and {a.clientCompany || a.clientName}
+    </p>
+  </div>
+
+  <!-- Parties -->
+  <section class="d-block" id="doc-parties">
+    <p class="d-lead">
+      This Professional Service Agreement (the “Agreement”) is made on <strong>{longDate(a.createdAt)}</strong> and takes effect from the date on which it is signed by both parties.
+    </p>
+    <div class="d-parties">
+      <div class="d-party">
+        <span class="d-label">Service Provider</span>
+        <strong>{a.providerName}</strong>
+        <p>{a.providerAddress}</p>
+        <p>{a.providerEmail}{a.providerPhone && <> · {a.providerPhone}</>}</p>
+        <p class="d-muted">Represented by {a.providerSignatoryName}, {a.providerSignatoryTitle}</p>
+      </div>
+      <div class="d-party-and" aria-hidden="true">and</div>
+      <div class="d-party">
+        <span class="d-label">Client</span>
+        <strong>{a.clientCompany || a.clientName}</strong>
+        {a.clientCompany && <p>Attn. {a.clientName}</p>}
+        {clientAddress && <p>{clientAddress}</p>}
+        <p>{a.clientEmail}{a.clientPhone && <> · {a.clientPhone}</>}</p>
+        {a.clientGstin && <p class="d-muted">GSTIN {a.clientGstin}</p>}
+      </div>
+    </div>
+    <p class="d-lead d-small">
+      Each a “Party” and together the “Parties”. The Parties agree to the terms below.
+    </p>
+  </section>
+
+  <!-- Key terms -->
+  <section class="d-block" id="doc-summary">
+    <h2 class="d-h2"><span class="d-h2-num">§</span> Key commercial terms</h2>
+    <table class="d-terms">
+      <tbody>
+        <tr><th>Project</th><td>{a.projectName}</td></tr>
+        {a.timeline && <tr><th>Timeline</th><td>{a.timeline}</td></tr>}
+        <tr>
+          <th>Contract value</th>
+          <td>
+            <strong class="d-num">{money(a.totalAmount, currency)}</strong>
+            {taxPct > 0 ? <span class="d-muted"> plus {taxPct}% GST ({money(a.taxAmount, currency)})</span> : <span class="d-muted"> exclusive of applicable taxes</span>}
+            <span class="d-words">{amountInWords(a.totalAmount, currency)}</span>
+          </td>
+        </tr>
+        <tr>
+          <th>Advance</th>
+          <td>
+            <strong class="d-num">{money(a.advanceAmount, currency)}</strong>
+            <span class="d-muted"> ({a.advancePercentage}% of contract value, payable on signing)</span>
+          </td>
+        </tr>
+        <tr><th>Governing law</th><td>Laws of India. Electronic execution under Section 10A, Information Technology Act, 2000.</td></tr>
+        {a.validUntil && <tr><th>Offer valid until</th><td>{longDate(a.validUntil)}</td></tr>}
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Schedule A -->
+  <section class="d-block" id="doc-schedule">
+    <h2 class="d-h2"><span class="d-h2-num">A</span> Schedule A: Scope, deliverables and payments</h2>
+
+    {a.projectDescription && (
+      <>
+        <h3 class="d-h3">Project overview</h3>
+        <p class="d-body-text">{a.projectDescription}</p>
+      </>
+    )}
+    {a.scopeOfWork && (
+      <>
+        <h3 class="d-h3">Scope of work</h3>
+        <p class="d-body-text">{a.scopeOfWork}</p>
+      </>
+    )}
+
+    {deliverables.length > 0 && (
+      <>
+        <h3 class="d-h3">Deliverables</h3>
+        <ol class="d-deliv">
+          {deliverables.map((d) => <li>{d.title}</li>)}
+        </ol>
+      </>
+    )}
+
+    {milestones.length > 0 && (
+      <>
+        <h3 class="d-h3">Milestones</h3>
+        <table class="d-grid">
+          <thead>
+            <tr><th class="d-c-no">No.</th><th>Milestone</th><th>Duration</th><th class="d-c-pay">Payment</th></tr>
+          </thead>
+          <tbody>
+            {milestones.map((m, i) => (
+              <tr>
+                <td class="d-c-no d-mono">{pad(i + 1)}</td>
+                <td>{m.title}</td>
+                <td>{m.duration || '—'}</td>
+                <td class="d-c-pay">{m.amount || '—'}</td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3">Total contract value</td>
+              <td class="d-c-pay d-num">{money(a.totalAmount, currency)}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </>
+    )}
+
+    {a.paymentSchedule && (
+      <>
+        <h3 class="d-h3">Payment schedule</h3>
+        <p class="d-body-text">{a.paymentSchedule}</p>
+      </>
+    )}
+  </section>
+
+  <!-- Terms -->
+  <section class="d-block d-terms-wrap" id="doc-terms">
+    <h2 class="d-h2"><span class="d-h2-num">B</span> Terms and conditions</h2>
+    <ol class="d-clauses">
+      {clauses.map((c) => (
+        <li class="d-clause" id={`clause-${c.sectionNumber}`}>
+          <h3 class="d-clause-title">
+            <span class="d-clause-no">{c.sectionNumber}.</span>
+            {c.title}
+          </h3>
+          <p class="d-body-text">{c.content}</p>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <!-- Execution -->
+  <section class="d-block d-sign-wrap" id="doc-signatures">
+    <h2 class="d-h2"><span class="d-h2-num">C</span> Execution</h2>
+    <p class="d-lead d-small">
+      In witness whereof, the Parties have executed this Agreement electronically on the dates shown below.
+    </p>
+
+    <div class="d-sigs">
+      {[
+        { role: 'For the Service Provider', org: a.providerName, sig: providerSig, name: a.providerSignatoryName, title: a.providerSignatoryTitle },
+        { role: 'For the Client', org: a.clientCompany || a.clientName, sig: clientSig, name: a.clientName, title: 'Authorised signatory' },
+      ].map((s) => (
+        <div class="d-sig">
+          <span class="d-label">{s.role}</span>
+          <div class:list={['d-sig-mark', { 'd-empty': !s.sig }]}>
+            {s.sig ? (
+              s.sig.signatureType === 'drawn' ? (
+                <img src={s.sig.signatureData} alt={`Signature of ${s.sig.signerName}`} />
+              ) : (
+                <span class="d-sig-typed">{s.sig.signatureData}</span>
+              )
+            ) : (
+              <span class="d-sig-pending">Awaiting signature</span>
+            )}
+          </div>
+          <dl class="d-sig-meta">
+            <div><dt>Name</dt><dd>{s.sig?.signerName ?? s.name}</dd></div>
+            <div><dt>Title</dt><dd>{s.sig?.signerTitle || s.title}</dd></div>
+            <div><dt>For</dt><dd>{s.org}</dd></div>
+            <div><dt>Date</dt><dd>{s.sig ? longDate(s.sig.signedAt) : '—'}</dd></div>
+          </dl>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- Certificate -->
+  <section class="d-block d-cert" id="doc-certificate">
+    <div class="d-cert-head">
+      <h2 class="d-h2"><span class="d-h2-num">✓</span> Certificate of electronic execution</h2>
+      <span class:list={['d-cert-state', { 'd-done': isExecuted }]}>{isExecuted ? 'Completed' : 'In progress'}</span>
+    </div>
+    <table class="d-grid d-cert-table">
+      <thead>
+        <tr><th>Event</th><th>By</th><th>Time</th><th>Details</th></tr>
+      </thead>
+      <tbody>
+        {events.map((e) => (
+          <tr>
+            <td>{e.label}</td>
+            <td>{e.who}</td>
+            <td class="d-mono d-nowrap">{stamp(e.at)}</td>
+            <td class="d-mono">
+              {e.method ? `${e.method === 'drawn' ? 'Drawn' : 'Typed'} signature` : '—'}
+              {e.ip && <><br />IP {e.ip}</>}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    <dl class="d-cert-meta">
+      <div><dt>Agreement</dt><dd class="d-mono">{a.agreementNumber} · v{a.version}</dd></div>
+      <div><dt>Effective</dt><dd>{isExecuted ? longDate(effectiveDate) : 'On signature by both Parties'}</dd></div>
+      <div class="d-wide"><dt>Document fingerprint (SHA-256)</dt><dd class="d-mono d-hash">{hash}</dd></div>
+    </dl>
+    <p class="d-fine">
+      Signed electronically under Section 10A of the Information Technology Act, 2000. Each signer confirmed they had read
+      this Agreement and had authority to sign it. The fingerprint above is computed from the agreement’s content; any later
+      change to the terms produces a different value.
+    </p>
+  </section>
+</article>
+</div>
+
+<style>
+  .d-wrap { container: agreement / inline-size; }
+  .d-doc {
+    --d-ink: #1d2d3d;
+    --d-text: #2b3743;
+    --d-muted: #66737f;
+    --d-rule: #dfe4e9;
+    --d-soft: #f5f7f9;
+    --d-accent: #5980a6;
+    background: #fff;
+    color: var(--d-text);
+    font-family: 'Inter Tight', system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
+    padding: clamp(24px, 6cqi, 72px) clamp(18px, 6.5cqi, 80px);
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(29, 45, 61, 0.06), 0 24px 60px -24px rgba(29, 45, 61, 0.22);
+    font-variant-numeric: tabular-nums;
+  }
+  .d-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 0.86em; }
+  .d-muted { color: var(--d-muted); }
+  .d-num { font-weight: 600; color: var(--d-ink); }
+  .d-nowrap { white-space: nowrap; }
+
+  /* Masthead */
+  .d-mast {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    padding-bottom: 22px;
+    border-bottom: 2px solid var(--d-ink);
+  }
+  .d-mast-brand { display: flex; gap: 14px; align-items: flex-start; min-width: 0; }
+  .d-mast-logo { width: 40px; height: 40px; flex: none; }
+  .d-mast-name { margin: 0; font-weight: 700; color: var(--d-ink); font-size: 1.02em; }
+  .d-mast-line { margin: 2px 0 0; font-size: 0.8em; color: var(--d-muted); line-height: 1.45; }
+  .d-mast-meta { margin: 0; display: grid; gap: 4px; text-align: right; font-size: 0.8em; flex: none; }
+  .d-mast-meta div { display: flex; gap: 10px; justify-content: flex-end; }
+  .d-mast-meta dt { color: var(--d-muted); }
+  .d-mast-meta dd { margin: 0; color: var(--d-ink); font-weight: 600; }
+
+  /* Title */
+  .d-title-block { padding: 44px 0 34px; text-align: center; border-bottom: 1px solid var(--d-rule); }
+  .d-kicker {
+    margin: 0 0 12px;
+    font-size: 0.74em;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--d-accent);
+    font-weight: 600;
+  }
+  .d-title {
+    margin: 0 auto;
+    max-width: 22ch;
+    font-family: 'Bacasime Antique', Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(1.6rem, 4.2cqi, 2.5rem);
+    line-height: 1.12;
+    color: var(--d-ink);
+    letter-spacing: -0.01em;
+  }
+  .d-title-sub { margin: 12px 0 0; color: var(--d-muted); font-size: 0.92em; }
+
+  /* Blocks */
+  .d-block { padding-top: 34px; }
+  .d-lead { margin: 0 0 18px; }
+  .d-lead.d-small { font-size: 0.9em; color: var(--d-muted); margin: 16px 0 0; }
+  .d-label {
+    display: block;
+    font-size: 0.7em;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--d-accent);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .d-h2 {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin: 0 0 16px;
+    font-family: 'Bacasime Antique', Georgia, serif;
+    font-weight: 400;
+    font-size: 1.42em;
+    color: var(--d-ink);
+    line-height: 1.25;
+  }
+  .d-h2-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55em;
+    color: var(--d-accent);
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    padding: 1px 6px;
+    transform: translateY(-3px);
+  }
+  .d-h3 {
+    margin: 22px 0 8px;
+    font-size: 0.78em;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--d-ink);
+    font-weight: 700;
+  }
+  .d-body-text { margin: 0; white-space: pre-line; text-align: justify; hyphens: auto; }
+
+  /* Parties */
+  .d-parties {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 20px;
+    align-items: stretch;
+  }
+  .d-party {
+    background: var(--d-soft);
+    border: 1px solid var(--d-rule);
+    border-radius: 6px;
+    padding: 16px 18px;
+    font-size: 0.9em;
+  }
+  .d-party strong { display: block; color: var(--d-ink); font-size: 1.06em; margin-bottom: 4px; }
+  .d-party p { margin: 2px 0 0; line-height: 1.5; overflow-wrap: anywhere; }
+  .d-party-and {
+    align-self: center;
+    font-family: 'Bacasime Antique', Georgia, serif;
+    font-style: italic;
+    color: var(--d-muted);
+  }
+
+  /* Tables */
+  .d-terms { width: 100%; border-collapse: collapse; font-size: 0.92em; }
+  .d-terms th, .d-terms td { text-align: left; vertical-align: top; padding: 11px 0; border-bottom: 1px solid var(--d-rule); }
+  .d-terms tr:first-child th, .d-terms tr:first-child td { border-top: 1px solid var(--d-rule); }
+  .d-terms th { width: 32%; font-weight: 500; color: var(--d-muted); padding-right: 16px; }
+  .d-words { display: block; font-size: 0.85em; color: var(--d-muted); font-style: italic; margin-top: 2px; }
+
+  .d-grid { width: 100%; border-collapse: collapse; font-size: 0.88em; }
+  .d-grid th {
+    text-align: left;
+    font-size: 0.78em;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--d-muted);
+    font-weight: 600;
+    padding: 8px 10px;
+    background: var(--d-soft);
+    border-top: 1px solid var(--d-rule);
+    border-bottom: 1px solid var(--d-rule);
+  }
+  .d-grid td { padding: 10px; border-bottom: 1px solid var(--d-rule); vertical-align: top; }
+  .d-grid tfoot td { font-weight: 600; color: var(--d-ink); border-bottom: 2px solid var(--d-ink); }
+  .d-c-no { width: 44px; color: var(--d-muted); }
+  .d-c-pay { text-align: right; white-space: nowrap; }
+
+  .d-deliv { margin: 0; padding-left: 1.4em; list-style: decimal; }
+  .d-deliv li { padding: 3px 0; }
+  .d-deliv li::marker { color: var(--d-accent); font-weight: 600; }
+
+  /* Clauses */
+  .d-clauses { list-style: none; margin: 0; padding: 0; }
+  .d-clause { padding: 14px 0; border-top: 1px solid var(--d-rule); scroll-margin-top: 120px; }
+  .d-clause:first-child { border-top: 0; padding-top: 4px; }
+  .d-clause-title {
+    margin: 0 0 6px;
+    font-size: 0.98em;
+    font-weight: 650;
+    color: var(--d-ink);
+    display: flex;
+    gap: 10px;
+  }
+  .d-clause-no { color: var(--d-accent); font-variant-numeric: tabular-nums; min-width: 1.6em; }
+  .d-clause .d-body-text { padding-left: calc(1.6em + 10px); font-size: 0.93em; }
+
+  /* Signatures */
+  .d-sigs { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 22px; }
+  .d-sig-mark {
+    height: 92px;
+    display: flex;
+    align-items: flex-end;
+    padding-bottom: 6px;
+    border-bottom: 1.5px solid var(--d-ink);
+  }
+  .d-sig-mark img { max-height: 84px; max-width: 100%; object-fit: contain; object-position: left bottom; }
+  .d-sig-mark.d-empty { border-bottom-style: dashed; border-bottom-color: #a9b4bf; }
+  .d-sig-typed { font-family: 'Mr Dafoe', 'Brush Script MT', cursive; font-size: 2.3em; color: #13233a; line-height: 1; }
+  .d-sig-pending { font-size: 0.8em; color: #a9b4bf; font-style: italic; }
+  .d-sig-meta { margin: 10px 0 0; display: grid; gap: 2px; font-size: 0.84em; }
+  .d-sig-meta div { display: grid; grid-template-columns: 52px 1fr; gap: 8px; }
+  .d-sig-meta dt { color: var(--d-muted); }
+  .d-sig-meta dd { margin: 0; color: var(--d-ink); }
+
+  /* Certificate */
+  .d-cert { margin-top: 40px; border-top: 2px solid var(--d-ink); }
+  .d-cert-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .d-cert-state {
+    font-size: 0.72em;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 99px;
+    background: #fff4e5;
+    color: #a15c07;
+  }
+  .d-cert-state.d-done { background: #e7f6ee; color: #11683f; }
+  .d-cert-table td { font-size: 0.92em; }
+  .d-cert-meta { margin: 18px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px; font-size: 0.84em; }
+  .d-cert-meta .d-wide { grid-column: 1 / -1; }
+  .d-cert-meta dt { color: var(--d-muted); font-size: 0.86em; }
+  .d-cert-meta dd { margin: 2px 0 0; color: var(--d-ink); }
+  .d-hash { word-break: break-all; font-size: 0.82em; }
+  .d-fine { margin: 16px 0 0; font-size: 0.76em; color: var(--d-muted); line-height: 1.55; }
+
+  @container agreement (max-width: 720px) {
+    .d-doc { font-size: 14px; border-radius: 0; }
+    .d-mast { flex-direction: column; gap: 14px; }
+    .d-mast-meta { text-align: left; }
+    .d-mast-meta div { justify-content: flex-start; }
+    .d-parties { grid-template-columns: 1fr; gap: 10px; }
+    .d-party-and { justify-self: center; }
+    .d-terms th { width: 38%; }
+    .d-sigs { grid-template-columns: 1fr; }
+    .d-clause .d-body-text { padding-left: 0; text-align: left; }
+    .d-body-text { text-align: left; }
+    .d-cert-table thead { display: none; }
+    .d-cert-table tr { display: grid; padding: 10px 0; border-bottom: 1px solid var(--d-rule); }
+    .d-cert-table td { border: 0; padding: 1px 0; }
+    .d-cert-meta { grid-template-columns: 1fr; }
+  }
+
+  /* Print: the page's @page margins take over from the card padding. */
+  @media print {
+    .d-doc { box-shadow: none; border-radius: 0; padding: 0; font-size: 10pt; line-height: 1.55; }
+    .d-title-block { padding: 28pt 0 22pt; }
+    .d-title { font-size: 22pt; }
+    .d-block { padding-top: 20pt; }
+    .d-party, .d-terms tr, .d-grid tr, .d-sig, .d-cert-meta { break-inside: avoid; }
+    .d-h2, .d-h3, .d-clause-title { break-after: avoid; }
+    .d-clause { break-inside: auto; padding: 9pt 0; }
+    .d-clause-title { break-inside: avoid; }
+    .d-body-text { orphans: 3; widows: 3; }
+    #doc-schedule, #doc-terms { break-before: page; }
+    .d-sign-wrap { break-inside: avoid; }
+    .d-cert { break-before: page; margin-top: 0; }
+    .d-party { background: #f5f7f9 !important; }
+    .d-grid th { background: #f5f7f9 !important; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>

@@ -1,0 +1,117 @@
+/**
+ * Portfolio shown on /projects.
+ *
+ * To add a project: drop a 1440×900 screenshot in /public/projects/ and add an
+ * entry below. `featured: true` puts it in the big scroll-in showcase at the top
+ * (only the first featured project is used there). `demo: true` marks concept
+ * work so it is labelled honestly on the page — remove the flag for real clients.
+ */
+export interface Project {
+  slug: string;
+  name: string;
+  /** Short category line, e.g. "Consumer web app". */
+  category: string;
+  year: string;
+  summary: string;
+  /** What we did. Kept short — shown as chips. */
+  services: string[];
+  stack: string[];
+  image: string;
+  /** Live URL. Leave undefined for concept / private work. */
+  url?: string;
+  featured?: boolean;
+  demo?: boolean;
+  /** Optional headline result, e.g. { value: '3×', label: 'faster checkout' }. */
+  result?: { value: string; label: string };
+}
+
+export const projects: Project[] = [
+  {
+    slug: 'sendvirtualgift',
+    name: 'SendVirtualGift',
+    category: 'Consumer web app',
+    year: '2026',
+    summary:
+      'A playful platform to create and send personalised digital gifts in seconds — no sign-up needed. Interactive 3D mascot, premium templates, multilingual UI and a privacy-first cookie flow.',
+    services: ['Product design', 'Web development', 'SEO', 'Payments'],
+    stack: ['Astro', 'Cloudflare', 'Three.js', 'Postgres'],
+    image: '/projects/sendvirtualgift.jpg',
+    url: 'https://sendvirtualgift.com',
+    featured: true,
+    result: { value: '0', label: 'sign-ups needed to send a gift' },
+  },
+  {
+    slug: 'ledgerly',
+    name: 'Ledgerly',
+    category: 'Fintech SaaS dashboard',
+    year: '2026',
+    summary:
+      'A cash-flow cockpit for founders: revenue, burn and runway at a glance, with live bank sync and invoice tracking in one dark, focused workspace.',
+    services: ['Dashboard UX', 'Data viz', 'Frontend'],
+    stack: ['React', 'TypeScript', 'Node'],
+    image: '/projects/ledgerly.jpg',
+    demo: true,
+  },
+  {
+    slug: 'kora-coffee',
+    name: 'Kora Coffee',
+    category: 'D2C e-commerce',
+    year: '2026',
+    summary:
+      'An editorial storefront for a small-batch roaster — subscriptions, origin stories and a checkout tuned for repeat buyers.',
+    services: ['Brand', 'E-commerce', 'Subscriptions'],
+    stack: ['Shopify', 'Liquid', 'Klaviyo'],
+    image: '/projects/kora.jpg',
+    demo: true,
+  },
+  {
+    slug: 'northwind-clinic',
+    name: 'Northwind Clinic',
+    category: 'Healthcare booking',
+    year: '2025',
+    summary:
+      'Same-day appointment booking across 120+ specialists, with slot selection, lab reports and reminders built for patients on the go.',
+    services: ['UX research', 'Web app', 'Automation'],
+    stack: ['Next.js', 'Postgres', 'WhatsApp API'],
+    image: '/projects/clinic.jpg',
+    demo: true,
+  },
+  {
+    slug: 'fleetline',
+    name: 'Fleetline',
+    category: 'Logistics operations',
+    year: '2025',
+    summary:
+      'A live dispatch board that tracks every shipment, flags delays before customers notice and automates driver hand-offs.',
+    services: ['Internal tools', 'AI automation', 'Maps'],
+    stack: ['Vue', 'Go', 'Mapbox'],
+    image: '/projects/fleet.jpg',
+    demo: true,
+  },
+  {
+    slug: 'studio-arc',
+    name: 'Studio Arc',
+    category: 'Architecture portfolio',
+    year: '2025',
+    summary:
+      'A quiet, image-first portfolio for an architecture practice — big type, generous space and a project archive that loads instantly.',
+    services: ['Art direction', 'Website', 'CMS'],
+    stack: ['Astro', 'Sanity'],
+    image: '/projects/arc.jpg',
+    demo: true,
+  },
+  {
+    slug: 'quill-ai',
+    name: 'Quill AI',
+    category: 'AI product launch',
+    year: '2025',
+    summary:
+      'Launch site for an AI writing assistant: a live in-page editor demo, pricing and template gallery built to convert trial users.',
+    services: ['Landing page', 'Motion', 'Growth'],
+    stack: ['Next.js', 'Framer Motion', 'Vercel'],
+    image: '/projects/quill.jpg',
+    demo: true,
+  },
+];
+
+export const featuredProject = projects.find((p) => p.featured) ?? projects[0];

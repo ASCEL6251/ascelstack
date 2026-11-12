@@ -274,3 +274,12 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
   color: var(--text-muted);
 }
 .proto-note strong { color: var(--ink); font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.1em; }
+
+/* iOS Safari zooms the page when a focused field is under 16px. Keep form fields at 16px on touch-size screens. */
+@media (max-width: 768px) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not(.ag-typed),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}

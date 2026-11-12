@@ -113,7 +113,7 @@ export const agreementSignSchema = z.object({
   signerEmail: z.string().trim().email('Valid email required').max(255),
   signerTitle: z.string().trim().max(255).optional().nullable(),
   signatureType: z.enum(['typed', 'drawn']).default('typed'),
-  signatureData: z.string().trim().min(5, 'Valid signature data required'),
+  signatureData: z.string().trim().min(2, 'Valid signature data required'),
   consentChecked: z.literal(true, {
     errorMap: () => ({ message: 'You must explicitly accept and agree to the agreement terms' }),
   }),

@@ -443,5 +443,25 @@ if (!session) {
       });
       window.addEventListener('pageshow', () => checkSync(false));
     </script>
+    <script>
+      // Phones render .data-table rows as cards (see admin.css). Each cell needs its
+      // column name as a label, so copy the header text onto every cell.
+      const WIDE = /(customer|client|user|scope|inquiry|description|title|delta)/i;
+      function labelTables(root: ParentNode = document) {
+        root.querySelectorAll<HTMLTableElement>('table.data-table').forEach((table) => {
+          const heads = [...table.querySelectorAll('thead th')].map((th) => th.textContent?.trim() ?? '');
+          table.querySelectorAll('tbody tr').forEach((tr) => {
+            [...tr.children].forEach((cell, i) => {
+              const label = heads[i];
+              if (!label || cell.hasAttribute('colspan')) return;
+              cell.setAttribute('data-label', label);
+              if (WIDE.test(label)) cell.classList.add('dt-wide');
+            });
+          });
+        });
+      }
+      labelTables();
+      new MutationObserver(() => labelTables()).observe(document.body, { childList: true, subtree: true });
+    </script>
   </body>
 </html>

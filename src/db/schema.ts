@@ -243,7 +243,7 @@ export const agreementTemplates = pgTable(
     id: uuid('id').defaultRandom().primaryKey(),
     code: varchar('code', { length: 50 }).notNull().unique(), // e.g. AGT-WEB-DEV
     name: varchar('name', { length: 255 }).notNull(),
-    category: varchar('100', { length: 100 }).notNull(),
+    category: varchar('category', { length: 100 }).notNull(),
     description: text('description'),
     clauses: jsonb('clauses').notNull(), // array of AgreementClause
     isActive: boolean('is_active').default(true).notNull(),
