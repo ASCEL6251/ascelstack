@@ -17,11 +17,24 @@ if (!id) {
   return Astro.redirect('/admin/agreements');
 }
 
-const [agreement] = await db
-  .select()
-  .from(agreements)
-  .where(eq(agreements.id, id))
-  .limit(1);
+// Strict UUID format validation
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+if (!UUID_REGEX.test(id)) {
+  return Astro.redirect('/admin/agreements');
+}
+
+let agreement: any = null;
+try {
+  const [found] = await db
+    .select()
+    .from(agreements)
+    .where(eq(agreements.id, id))
+    .limit(1);
+  agreement = found;
+} catch (err) {
+  console.error('[Admin/Agreements/[id]/edit] Error loading agreement:', err);
+  return Astro.redirect('/admin/agreements');
+}
 
 if (!agreement) {
   return Astro.redirect('/admin/agreements');
@@ -36,7 +49,13 @@ const clauses = (agreement.clauses as any[]) || [];
 const deliverables = (agreement.deliverables as any[]) || [];
 const milestones = (agreement.milestones as any[]) || [];
 
-const dbTemplates = await db.select().from(agreementTemplates).orderBy(asc(agreementTemplates.name));
+let dbTemplates: any[] = [];
+try {
+  dbTemplates = await db.select().from(agreementTemplates).orderBy(asc(agreementTemplates.name));
+} catch (err) {
+  console.warn('[Admin/Agreements/[id]/edit] Error loading templates:', err);
+  dbTemplates = [];
+}
 ---
 
 <AdminLayout
@@ -364,6 +383,21 @@ const dbTemplates = await db.select().from(agreementTemplates).orderBy(asc(agree
       clauses: activeClauses,
     };
 
+    function showToast(msg: string, type: 'success' | 'error' | 'info' = 'success') {
+      if (typeof (window as any).showAdminToast === 'function') {
+        (window as any).showAdminToast(msg, type);
+      } else {
+        const hub = document.getElementById('admin-toast-hub');
+        if (hub) {
+          const toast = document.createElement('div');
+          toast.className = `toast-item toast-${type}`;
+          toast.textContent = msg;
+          hub.appendChild(toast);
+          setTimeout(() => toast.remove(), 4000);
+        }
+      }
+    }
+
     try {
       const res = await fetch(`/api/admin/agreements/${agreementId}`, {
         method: 'PUT',
@@ -374,12 +408,12 @@ const dbTemplates = await db.select().from(agreementTemplates).orderBy(asc(agree
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to update agreement');
 
-      showToast('Agreement updated successfully!');
+      showToast('Agreement updated successfully!', 'success');
       setTimeout(() => {
         window.location.href = `/admin/agreements/${agreementId}`;
       }, 800);
-    } catch (err) {
-      alert(`Update Error: ${err.message}`);
+    } catch (err: any) {
+      showToast(err.message || 'Update failed', 'error');
       if (saveBtn) saveBtn.disabled = false;
     }
   });

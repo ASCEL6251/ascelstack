@@ -6,6 +6,8 @@ import { agreementUpdateSchema } from '../../../../lib/validations';
 
 export const prerender = false;
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const GET: APIRoute = async (context) => {
   try {
     const session = await getAdminSession(context);
@@ -17,8 +19,8 @@ export const GET: APIRoute = async (context) => {
     }
 
     const { id } = context.params;
-    if (!id) {
-      return new Response(JSON.stringify({ error: 'Agreement ID required' }), {
+    if (!id || !UUID_REGEX.test(id)) {
+      return new Response(JSON.stringify({ error: 'Valid Agreement UUID required' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
@@ -73,8 +75,8 @@ export const PUT: APIRoute = async (context) => {
     }
 
     const { id } = context.params;
-    if (!id) {
-      return new Response(JSON.stringify({ error: 'Agreement ID required' }), {
+    if (!id || !UUID_REGEX.test(id)) {
+      return new Response(JSON.stringify({ error: 'Valid Agreement UUID required' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
@@ -202,8 +204,8 @@ export const DELETE: APIRoute = async (context) => {
     }
 
     const { id } = context.params;
-    if (!id) {
-      return new Response(JSON.stringify({ error: 'Agreement ID required' }), {
+    if (!id || !UUID_REGEX.test(id)) {
+      return new Response(JSON.stringify({ error: 'Valid Agreement UUID required' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });

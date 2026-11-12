@@ -1356,6 +1356,209 @@ body.admin-sidebar-locked {
 .status-tag.status-expired { background: rgba(107, 114, 128, 0.12); color: #4b5563; border-color: rgba(107, 114, 128, 0.25); }
 .status-tag.status-cancelled { background: rgba(71, 85, 105, 0.14); color: #334155; border-color: rgba(71, 85, 105, 0.3); }
 
+/* ------------------------------------------------------------- Admin Forms & Inputs */
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.form-row-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .form-row,
+  .form-row-3 {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-bottom: 1.25rem;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.field > .mono {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  display: block;
+}
+
+.field input[type="text"],
+.field input[type="email"],
+.field input[type="tel"],
+.field input[type="number"],
+.field input[type="date"],
+.field select,
+.field textarea,
+.field-select,
+.deliverable-row input,
+.milestone-row input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: #ffffff;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-s);
+  font-family: inherit;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.field textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus,
+.field-select:focus,
+.deliverable-row input:focus,
+.milestone-row input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(89, 128, 166, 0.18);
+  background: #ffffff;
+}
+
+.field input::placeholder,
+.field textarea::placeholder,
+.deliverable-row input::placeholder,
+.milestone-row input::placeholder {
+  color: #94a3b8;
+  font-size: 0.88rem;
+}
+
+.field input.input-disabled,
+.field input:read-only,
+.field textarea:read-only {
+  background: var(--paper-sunk);
+  color: var(--text-muted);
+  border-color: rgba(29, 45, 61, 0.12);
+  cursor: not-allowed;
+}
+
+/* Button Variants in Admin */
+.btn-primary {
+  --bg: var(--ink);
+  --fg: var(--paper);
+  background: var(--ink);
+  color: var(--paper);
+  border: 1px solid var(--ink);
+}
+.btn-primary:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+.btn-sm {
+  padding: 0.45rem 0.85rem !important;
+  font-size: 0.82rem !important;
+  gap: 0.4rem !important;
+}
+
+/* Tab Pills */
+.tab-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.15rem;
+  border-radius: var(--radius-s);
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  color: var(--text-muted);
+  font-size: 0.86rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.tab-pill:hover {
+  border-color: var(--accent);
+  color: var(--ink);
+}
+
+.tab-pill.is-on {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(29, 45, 61, 0.12);
+}
+
+.tab-pill svg {
+  flex-shrink: 0;
+}
+
+/* Deliverable Rows & Milestones Grid */
+.deliverable-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.milestone-row {
+  background: #ffffff !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius-s) !important;
+  padding: 0.75rem !important;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+@media (max-width: 640px) {
+  .milestone-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Admin Alert Banners */
+.admin-alert-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.9rem 1.25rem;
+  border-radius: var(--radius-s);
+  font-size: 0.88rem;
+  line-height: 1.45;
+  margin-bottom: 1.25rem;
+}
+
+.admin-alert-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
+.admin-alert-success {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+}
+
 /* Stepper Bar */
 .stepper-nav {
   display: flex;

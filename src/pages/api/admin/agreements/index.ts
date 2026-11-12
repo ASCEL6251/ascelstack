@@ -1,10 +1,15 @@
 import type { APIRoute } from 'astro';
 import { eq, desc, asc, ilike, or, and, sql } from 'drizzle-orm';
-import { db, agreements, users, businesses, companySettings, agreementAuditLogs } from '../../../../db';
+import { db, agreements, users, businesses, companySettings, agreementAuditLogs, agreementTemplates, quotations } from '../../../../db';
 import { getAdminSession } from '../../../../lib/admin-auth';
 import { agreementCreateSchema } from '../../../../lib/validations';
 import { DEFAULT_COMPANY_INFO } from '../../../../lib/agreement-clauses';
-import crypto from 'node:crypto';
+
+function generateSecureHex(byteLength = 24): string {
+  const arr = new Uint8Array(byteLength);
+  crypto.getRandomValues(arr);
+  return Array.from(arr, (b) => b.toString(16).padStart(2, '0')).join('');
+}
 
 export const prerender = false;
 
@@ -46,10 +51,17 @@ export const GET: APIRoute = async (context) => {
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    const [{ totalCount }] = await db
-      .select({ totalCount: sql<number>`count(*)::int` })
-      .from(agreements)
-      .where(whereClause);
+    let totalCount = 0;
+    try {
+      const countRes = await db
+        .select({ totalCount: sql<number>`count(*)::int` })
+        .from(agreements)
+        .where(whereClause);
+      totalCount = Number((countRes[0] as any)?.totalCount ?? (countRes[0] as any)?.count ?? 0);
+    } catch (countErr) {
+      console.warn('Count query failed in admin agreements GET:', countErr);
+      totalCount = 0;
+    }
 
     const items = await db
       .select({
@@ -87,7 +99,7 @@ export const GET: APIRoute = async (context) => {
           page,
           limit,
           total: totalCount,
-          totalPages: Math.ceil(totalCount / limit),
+          totalPages: Math.max(1, Math.ceil(totalCount / limit)),
         },
       }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
@@ -134,16 +146,106 @@ export const POST: APIRoute = async (context) => {
     const providerSignatoryName = settings?.signatoryName || DEFAULT_COMPANY_INFO.signatoryName;
     const providerSignatoryTitle = settings?.signatoryTitle || DEFAULT_COMPANY_INFO.signatoryTitle;
 
-    // Generate unique Agreement Number: PSA-YYYY-XXXX
+    // Generate unique Agreement Number: PSA-YYYY-XXXX (collision-proof)
     const currentYear = new Date().getFullYear();
-    const [{ currentCount }] = await db
-      .select({ currentCount: sql<number>`count(*)::int` })
-      .from(agreements);
-    const nextSeq = String(currentCount + 1).padStart(4, '0');
+    const existingForYear = await db
+      .select({ agreementNumber: agreements.agreementNumber })
+      .from(agreements)
+      .where(ilike(agreements.agreementNumber, `PSA-${currentYear}-%`));
+
+    let maxSeq = 0;
+    for (const item of existingForYear) {
+      const parts = item.agreementNumber.split('-');
+      if (parts.length >= 3) {
+        const num = parseInt(parts[2], 10);
+        if (!isNaN(num) && num > maxSeq) {
+          maxSeq = num;
+        }
+      }
+    }
+    const nextSeq = String(maxSeq + 1).padStart(4, '0');
     const agreementNumber = `PSA-${currentYear}-${nextSeq}`;
 
-    // Cryptographically secure token for public signing link
-    const secureToken = crypto.randomBytes(24).toString('hex');
+    // Cryptographically secure token for public signing link (Web Crypto standard)
+    const secureToken = generateSecureHex(24);
+
+    // Auto-link registered user in Neon if clientEmail matches existing user account
+    let linkedUserId = data.userId || null;
+    let linkedBusinessId = data.businessId || null;
+
+    if (!linkedUserId && data.clientEmail) {
+      const [matchedUser] = await db
+        .select({ id: users.id, email: users.email })
+        .from(users)
+        .where(sql`lower(${users.email}) = lower(${data.clientEmail.trim()})`)
+        .limit(1);
+
+      if (matchedUser) {
+        linkedUserId = matchedUser.id;
+        if (!linkedBusinessId) {
+          const [matchedBiz] = await db
+            .select({ id: businesses.id })
+            .from(businesses)
+            .where(eq(businesses.ownerUserId, matchedUser.id))
+            .limit(1);
+          if (matchedBiz) linkedBusinessId = matchedBiz.id;
+        }
+      }
+    }
+
+    // Verify template existence if templateId UUID was provided
+    let verifiedTemplateId: string | null = null;
+    if (data.templateId) {
+      try {
+        const [foundTemplate] = await db
+          .select({ id: agreementTemplates.id })
+          .from(agreementTemplates)
+          .where(eq(agreementTemplates.id, data.templateId))
+          .limit(1);
+        if (foundTemplate) verifiedTemplateId = foundTemplate.id;
+      } catch {
+        verifiedTemplateId = null;
+      }
+    }
+
+    // Verify quotation existence if quotationId UUID was provided
+    let verifiedQuotationId: string | null = null;
+    if (data.quotationId) {
+      try {
+        const [foundQuotation] = await db
+          .select({ id: quotations.id, businessId: quotations.businessId, userId: quotations.userId })
+          .from(quotations)
+          .where(eq(quotations.id, data.quotationId))
+          .limit(1);
+        if (foundQuotation) {
+          verifiedQuotationId = foundQuotation.id;
+          if (!linkedUserId && foundQuotation.userId) linkedUserId = foundQuotation.userId;
+          if (!linkedBusinessId && foundQuotation.businessId) linkedBusinessId = foundQuotation.businessId;
+        }
+      } catch {
+        verifiedQuotationId = null;
+      }
+    }
+
+    // Verify user existence if linkedUserId was set
+    if (linkedUserId) {
+      try {
+        const [foundUser] = await db.select({ id: users.id }).from(users).where(eq(users.id, linkedUserId)).limit(1);
+        if (!foundUser) linkedUserId = null;
+      } catch {
+        linkedUserId = null;
+      }
+    }
+
+    // Verify business existence if linkedBusinessId was set
+    if (linkedBusinessId) {
+      try {
+        const [foundBiz] = await db.select({ id: businesses.id }).from(businesses).where(eq(businesses.id, linkedBusinessId)).limit(1);
+        if (!foundBiz) linkedBusinessId = null;
+      } catch {
+        linkedBusinessId = null;
+      }
+    }
 
     // Calculate advance amount if not explicitly provided
     const advanceAmount =
@@ -158,10 +260,10 @@ export const POST: APIRoute = async (context) => {
         secureToken,
         title: data.title,
         status: data.status || 'draft',
-        userId: data.userId || null,
-        businessId: data.businessId || null,
-        quotationId: data.quotationId || null,
-        templateId: data.templateId || null,
+        userId: linkedUserId,
+        businessId: linkedBusinessId,
+        quotationId: verifiedQuotationId,
+        templateId: verifiedTemplateId,
         version: 1,
         isImmutable: false,
 
@@ -230,8 +332,15 @@ export const POST: APIRoute = async (context) => {
       ipAddress: context.clientAddress || null,
     });
 
+    const origin = context.url.origin;
     return new Response(
-      JSON.stringify({ success: true, agreement: newAgreement }),
+      JSON.stringify({
+        success: true,
+        agreement: newAgreement,
+        accessCode: newAgreement.agreementNumber,
+        signingUrl: `${origin}/agreements/${newAgreement.secureToken}`,
+        printPdfUrl: `${origin}/agreements/${newAgreement.secureToken}/print`,
+      }),
       { status: 201, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (error: any) {

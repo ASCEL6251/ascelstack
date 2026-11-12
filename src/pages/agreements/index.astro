@@ -14,32 +14,37 @@ const isAdmin = user ? isAuthorizedAdminEmail(user.email, Astro) : false;
 
 let userAgreements: any[] = [];
 if (user) {
-  userAgreements = await db
-    .select({
-      id: agreements.id,
-      agreementNumber: agreements.agreementNumber,
-      secureToken: agreements.secureToken,
-      title: agreements.title,
-      status: agreements.status,
-      version: agreements.version,
-      projectName: agreements.projectName,
-      currency: agreements.currency,
-      totalAmount: agreements.totalAmount,
-      advanceAmount: agreements.advanceAmount,
-      clientSignedAt: agreements.clientSignedAt,
-      providerSignedAt: agreements.providerSignedAt,
-      signedAt: agreements.signedAt,
-      createdAt: agreements.createdAt,
-    })
-    .from(agreements)
-    .where(
-      or(
-        eq(agreements.userId, user.id),
-        eq(agreements.clientEmail, user.email),
-        authUser.business ? eq(agreements.businessId, authUser.business.id) : undefined
+  try {
+    userAgreements = await db
+      .select({
+        id: agreements.id,
+        agreementNumber: agreements.agreementNumber,
+        secureToken: agreements.secureToken,
+        title: agreements.title,
+        status: agreements.status,
+        version: agreements.version,
+        projectName: agreements.projectName,
+        currency: agreements.currency,
+        totalAmount: agreements.totalAmount,
+        advanceAmount: agreements.advanceAmount,
+        clientSignedAt: agreements.clientSignedAt,
+        providerSignedAt: agreements.providerSignedAt,
+        signedAt: agreements.signedAt,
+        createdAt: agreements.createdAt,
+      })
+      .from(agreements)
+      .where(
+        or(
+          eq(agreements.userId, user.id),
+          eq(agreements.clientEmail, user.email),
+          authUser.business ? eq(agreements.businessId, authUser.business.id) : undefined
+        )
       )
-    )
-    .orderBy(desc(agreements.createdAt));
+      .orderBy(desc(agreements.createdAt));
+  } catch (err) {
+    console.warn('[Agreements/index] Error fetching user agreements:', err);
+    userAgreements = [];
+  }
 }
 
 function formatCurrency(amount: string | number, curr = 'INR') {
