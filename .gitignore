@@ -8,3 +8,5 @@ dist/
 .neon
 .claude/
 skills-lock.json
+.env.development.local
+.tmp-scripts/
