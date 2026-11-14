@@ -1,31 +1,11 @@
-import { formatINR, parseUnit, type Pricing, type Package } from '../lib/pricing';
+import { cardPrice, type Pricing } from '../lib/pricing';
+import { BASE_CURRENCY, convertPriceText, getCurrency } from '../lib/currency';
 
 declare global {
   interface Window {
     __ASCEL_PRICING__?: Record<string, Pricing>;
     __ascel_pricing_initialized__?: boolean;
   }
-}
-
-/**
- * Compute card price presentation
- */
-function getCardPrice(p: Pricing): { amount: string; unit: string; prefix: string } {
-  const t = p.small?.price !== null && p.small?.price !== undefined ? p.small : p.mid;
-  if (!t || t.price === null || t.price === undefined) {
-    return { amount: 'On quote', unit: t?.text || '', prefix: '' };
-  }
-  const { recurrence, per } = parseUnit(p.type === 'package' ? 'one-time' : t.unit);
-  const unit = per
-    ? `per ${per}`
-    : recurrence !== 'once'
-      ? `per ${recurrence}`
-      : t.unit && t.unit.includes('govt') ? 'one-time + govt fee' : 'one-time';
-  return {
-    amount: formatINR(t.price),
-    unit,
-    prefix: p.type === 'fixed' ? '' : 'From',
-  };
 }
 
 /**
@@ -41,7 +21,7 @@ export function applyLivePricingToCard(code: string, p: Pricing) {
   const cards = document.querySelectorAll<HTMLElement>(`article[data-card][data-service-code="${code}"]`);
   for (const card of cards) {
     const isOpen = p.status === 'open';
-    const price = getCardPrice(p);
+    const price = cardPrice(p, getCurrency());
     const typeLabel = { package: '5 packages', fixed: 'Fixed price', starting: 'Starting price' }[p.type] || '';
 
     // 1. Status badge & class
@@ -60,14 +40,21 @@ export function applyLivePricingToCard(code: string, p: Pricing) {
     }
 
     const priceAmt = card.querySelector<HTMLElement>('[data-price-amt]');
-    if (priceAmt) priceAmt.textContent = price.amount;
+    if (priceAmt) {
+      // Keep the base amount on the element so a later currency switch re-renders it.
+      if (price.base === null) delete priceAmt.dataset.money;
+      else priceAmt.dataset.money = String(price.base);
+      priceAmt.textContent = price.amount;
+    }
 
     const priceUnit = card.querySelector<HTMLElement>('[data-price-unit]');
     if (priceUnit) priceUnit.textContent = price.unit;
 
     const priceMarket = card.querySelector<HTMLElement>('[data-price-market]');
     if (priceMarket) {
-      priceMarket.textContent = p.market ? `Market: ${p.market}` : '';
+      const market = p.market ? `Market: ${p.market}` : '';
+      priceMarket.dataset.moneyText = market;
+      priceMarket.textContent = convertPriceText(market);
       priceMarket.hidden = !p.market;
     }
 
@@ -106,7 +93,8 @@ export function applyLivePricingToCard(code: string, p: Pricing) {
   const exploreCards = document.querySelectorAll<HTMLElement>(`.explore-card[data-code="${code}"]`);
   for (const card of exploreCards) {
     const isOpen = p.status === 'open';
-    const price = getCardPrice(p);
+    // The client portal has no navbar currency selector and shows base-currency prices.
+    const price = cardPrice(p, BASE_CURRENCY);
     const badge = card.querySelector('.card-badge-soft');
     if (badge) badge.textContent = isOpen ? 'Live' : 'Coming Soon';
 

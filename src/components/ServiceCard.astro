@@ -1,6 +1,7 @@
 ---
 import type { Service, Layer } from '../data/catalog';
 import { getPricing, cardPrice } from '../lib/pricing';
+import { DEFAULT_CURRENCY, convertPriceText } from '../lib/currency';
 
 interface Props {
   service: Service;
@@ -10,7 +11,9 @@ interface Props {
 const { service: s, layer, shared = false } = Astro.props;
 const search = `${s.name} ${s.description} ${s.category} ${s.subcategory} ${s.id}`.toLowerCase();
 const p = getPricing(s.id);
-const price = p ? cardPrice(p) : null;
+// Printed in the default currency; the navbar currency script re-renders tagged prices.
+const price = p ? cardPrice(p, DEFAULT_CURRENCY) : null;
+const market = p?.market ? `Market: ${p.market}` : '';
 const open = p ? p.status === 'open' : s.priority === 'core';
 const typeLabel = p ? { package: '5 packages', fixed: 'Fixed price', starting: 'Starting price' }[p.type] : '';
 ---
@@ -32,10 +35,10 @@ const typeLabel = p ? { package: '5 packages', fixed: 'Fixed price', starting: '
     <span class="mono card-price-type" data-price-type>{typeLabel}</span>
     <span class="card-price-row">
       <span class="card-price-from" data-price-from hidden={!price?.prefix}>{price?.prefix || ''}</span>
-      <strong class="card-price-amt" data-price-amt>{price?.amount || 'On quote'}</strong>
+      <strong class="card-price-amt" data-price-amt data-money={price?.base ?? undefined}>{price?.amount || 'On quote'}</strong>
       <span class="card-price-unit" data-price-unit>{price?.unit || ''}</span>
     </span>
-    <span class="card-market" data-price-market title="India market rate, 2026">{p?.market ? `Market: ${p.market}` : ''}</span>
+    <span class="card-market" data-price-market data-money-text={market} title="India market rate, 2026">{convertPriceText(market, DEFAULT_CURRENCY)}</span>
   </div>
   <div class="card-actions" data-card-actions>
     {

@@ -130,7 +130,8 @@
 
 <script>
   import { addItem, onCart, getCart } from '../lib/cart';
-  import { getPricing, formatINR } from '../lib/pricing';
+  import { getPricing } from '../lib/pricing';
+  import { convertPriceText, formatMoney, onCurrency } from '../lib/currency';
   import raw from '../data/services.json';
   import '../scripts/realtime-pricing';
 
@@ -154,14 +155,14 @@
     if (!p?.packages) return;
     const cart = getCart();
     dialog.querySelector('[data-pkg-name]')!.textContent = names[id] ?? id;
-    dialog.querySelector('[data-pkg-sub]')!.textContent = `${id} · Market rate: ${p.market}`;
-    dialog.querySelector('[data-pkg-notes]')!.textContent = p.notes;
+    dialog.querySelector('[data-pkg-sub]')!.textContent = `${id} · Market rate: ${convertPriceText(p.market)}`;
+    dialog.querySelector('[data-pkg-notes]')!.textContent = convertPriceText(p.notes);
     list.innerHTML = p.packages
       .map((k, i) => {
         const isIn = cart.items.some((c) => c.id === id && c.pkg === k.key);
         return `<button type="button" class="pkg-opt${isIn ? ' is-in' : ''}" data-pick="${esc(k.key)}">
           <span class="pkg-opt-name">${k.key === 'custom' ? '' : `<span class="mono">0${i + 1}</span>`}${esc(k.name)}<span class="mono">${esc(k.delivery)}</span></span>
-          <span class="pkg-opt-price">${k.price === null ? 'On quote' : formatINR(k.price)}</span>
+          <span class="pkg-opt-price">${k.price === null ? 'On quote' : formatMoney(k.price)}</span>
           <span class="pkg-opt-inc">${esc(k.includes)}</span>
           <span class="pkg-opt-cta">${isIn ? '✓ In your estimate — add another' : k.price === null ? 'Add for a custom quote →' : 'Add to estimate →'}</span>
         </button>`;
@@ -175,8 +176,12 @@
         showToast(`${names[id]} · ${pkg.name} added`);
       }),
     );
-    dialog.showModal();
+    pickerId = id;
+    if (!dialog.open) dialog.showModal();
   }
+  let pickerId = '';
+  // Re-price an open picker if the currency changes (e.g. from another tab).
+  onCurrency(() => dialog.open && pickerId && openPicker(pickerId));
 
   document.addEventListener('click', (e) => {
     const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-add]');

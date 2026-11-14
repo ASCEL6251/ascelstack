@@ -308,7 +308,8 @@ const serverUser = authData
 <script>
   import { onCart, getCart, setQty, removeItem, setPackage, clearCart } from '../lib/cart';
   import { buildEstimate } from '../lib/estimate';
-  import { formatINR, RECURRENCE_LABEL, RECURRENCE_SUFFIX } from '../lib/pricing';
+  import { RECURRENCE_LABEL, RECURRENCE_SUFFIX } from '../lib/pricing';
+  import { convertPriceText, formatMoney, getCurrency, onCurrency } from '../lib/currency';
   import { getUser, onAuth, setCachedUser } from '../lib/mock-auth';
   import { submitEstimate } from '../lib/api';
   import '../scripts/realtime-pricing';
@@ -350,7 +351,9 @@ const serverUser = authData
   let note = '';
   let busy = false;
 
+  let shownCurrency = '';
   function render() {
+    shownCurrency = getCurrency();
     const cart = getCart();
     const est = buildEstimate(cart);
 
@@ -366,10 +369,10 @@ const serverUser = authData
           const q = l.quote;
           const p = l.pricing;
           const suffix = RECURRENCE_SUFFIX[q.recurrence];
-          const unitPrice = q.price === null ? esc(q.text || 'On quote') : `${q.isStarting ? 'From ' : ''}${formatINR(q.price)}${suffix}${q.per ? ` per ${esc(q.per)}` : ''}`;
+          const unitPrice = q.price === null ? esc(convertPriceText(q.text || 'On quote')) : `${q.isStarting ? 'From ' : ''}${formatMoney(q.price)}${suffix}${q.per ? ` per ${esc(q.per)}` : ''}`;
           const pkgSelect = p.packages
             ? `<select data-pkg aria-label="Package">${p.packages
-                .map((k) => `<option value="${esc(k.key)}"${k.key === l.pkg ? ' selected' : ''}>${esc(k.name)} — ${k.price === null ? 'On quote' : formatINR(k.price)}</option>`)
+                .map((k) => `<option value="${esc(k.key)}"${k.key === l.pkg ? ' selected' : ''}>${esc(k.name)} — ${k.price === null ? 'On quote' : formatMoney(k.price)}</option>`)
                 .join('')}</select>`
             : '';
           const pkg = p.packages?.find((k) => k.key === l.pkg);
@@ -379,13 +382,13 @@ const serverUser = authData
               <span class="mono line-meta">${l.id} · ${esc(l.category)}</span>
               <h3 class="line-name">${esc(l.name)}</h3>
               <span class="line-unit">${esc(q.label)} · ${unitPrice}</span>
-              ${pkg ? `<span class="line-unit">${esc(pkg.includes)} · ${esc(pkg.delivery)}</span>` : detail ? `<span class="line-unit">${esc(detail)}</span>` : ''}
-              ${p.market ? `<span class="line-market">India market rate: ${esc(p.market)}</span>` : ''}
-              ${p.notes ? `<span class="line-note">${esc(p.notes)}</span>` : ''}
+              ${pkg ? `<span class="line-unit">${esc(convertPriceText(pkg.includes))} · ${esc(pkg.delivery)}</span>` : detail ? `<span class="line-unit">${esc(convertPriceText(detail))}</span>` : ''}
+              ${p.market ? `<span class="line-market">India market rate: ${esc(convertPriceText(p.market))}</span>` : ''}
+              ${p.notes ? `<span class="line-note">${esc(convertPriceText(p.notes))}</span>` : ''}
             </div>
             <div class="line-total">
-              <strong>${l.total === null ? 'On quote' : formatINR(l.total) + suffix}</strong>
-              <span class="mono">${RECURRENCE_LABEL[q.recurrence]}${l.qty > 1 && q.price !== null ? ` · ${l.qty} × ${formatINR(q.price)}` : ''}</span>
+              <strong>${l.total === null ? 'On quote' : formatMoney(l.total) + suffix}</strong>
+              <span class="mono">${RECURRENCE_LABEL[q.recurrence]}${l.qty > 1 && q.price !== null ? ` · ${l.qty} × ${formatMoney(q.price)}` : ''}</span>
             </div>
             <div class="line-ctrl">
               ${pkgSelect}
@@ -407,9 +410,9 @@ const serverUser = authData
           .map(
             (g) => `<div class="grp">
               <span class="grp-head">${RECURRENCE_LABEL[g.recurrence]}</span>
-              <div class="grp-row"><span>Subtotal</span><span>${formatINR(g.subtotal)}</span></div>
-              <div class="grp-row"><span>GST 18%</span><span>${formatINR(g.gst)}</span></div>
-              <div class="grp-row grp-total"><span>Total${RECURRENCE_SUFFIX[g.recurrence] ? ` ${RECURRENCE_SUFFIX[g.recurrence]}` : ''}</span><span>${est.hasStarting ? '<small>from </small>' : ''}${formatINR(g.total)}</span></div>
+              <div class="grp-row"><span>Subtotal</span><span>${formatMoney(g.subtotal)}</span></div>
+              <div class="grp-row"><span>GST 18%</span><span>${formatMoney(g.gst)}</span></div>
+              <div class="grp-row grp-total"><span>Total${RECURRENCE_SUFFIX[g.recurrence] ? ` ${RECURRENCE_SUFFIX[g.recurrence]}` : ''}</span><span>${est.hasStarting ? '<small>from </small>' : ''}${formatMoney(g.total)}</span></div>
             </div>`,
           )
           .join('')
@@ -417,7 +420,7 @@ const serverUser = authData
 
     onQuoteEl.innerHTML = est.onQuote.length
       ? `<div class="oq"><strong>+ ${est.onQuote.length} item${est.onQuote.length > 1 ? 's' : ''} priced on quote</strong>${est.onQuote
-          .map((l) => `<span>${esc(l.name)} — ${esc(l.quote.text || 'custom quote')}</span>`)
+          .map((l) => `<span>${esc(l.name)} — ${esc(convertPriceText(l.quote.text || 'custom quote'))}</span>`)
           .join('')}</div>`
       : '';
     startingNote.hidden = !est.hasStarting;
@@ -497,6 +500,10 @@ const serverUser = authData
   });
 
   onCart(render);
+  // Totals are summed in the base currency, then converted once for display.
+  onCurrency((c) => {
+    if (c !== shownCurrency) render();
+  });
   onAuth(() => renderActions(getCart().items.length > 0));
   window.addEventListener('ascel:pricing-update', () => render());
 </script>

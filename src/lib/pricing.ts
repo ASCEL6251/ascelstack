@@ -2,6 +2,7 @@
 // with static fallback from src/data/pricing.json. All prices exclude 18% GST.
 
 import raw from '../data/pricing.json' with { type: 'json' };
+import { BASE_CURRENCY, formatMoney, type CurrencyCode } from './currency.ts';
 
 export type BizSize = 'small' | 'mid';
 export type Recurrence = 'once' | 'month' | 'quarter' | 'year';
@@ -123,8 +124,8 @@ export function dbRowToPricing(row: any): Pricing {
   };
 }
 
-const inr = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
-export const formatINR = (n: number) => inr.format(Math.round(n));
+/** Format an amount in the base currency (INR). Admin screens use this; the public site uses formatMoney. */
+export const formatINR = (n: number) => formatMoney(n, BASE_CURRENCY);
 
 /** Turns a unit label ("per month", "per SKU", "one-time setup") into how it bills. */
 export function parseUnit(unit: string): { recurrence: Recurrence; per: string | null } {
@@ -183,19 +184,27 @@ export function quote(p: Pricing, size: BizSize, pkgKey?: string): Quote {
   };
 }
 
-/** Short "From ₹2,999" style label for cards. */
-export function cardPrice(p: Pricing): { amount: string; unit: string; prefix: string } {
-  const t = p.small.price !== null ? p.small : p.mid;
-  if (t.price === null) return { amount: 'On quote', unit: t.text, prefix: '' };
+/**
+ * Short "From ₹2,999" style label for cards.
+ * `amount` is formatted in `currency` (base currency by default); `base` is the raw
+ * amount in the base currency so the browser can re-render it in another currency.
+ */
+export function cardPrice(
+  p: Pricing,
+  currency: CurrencyCode = BASE_CURRENCY,
+): { amount: string; unit: string; prefix: string; base: number | null } {
+  const t = p.small?.price !== null && p.small?.price !== undefined ? p.small : p.mid;
+  if (!t || t.price === null || t.price === undefined) return { amount: 'On quote', unit: t?.text || '', prefix: '', base: null };
   const { recurrence, per } = parseUnit(p.type === 'package' ? 'one-time' : t.unit);
   const unit = per
     ? `per ${per}`
     : recurrence !== 'once'
       ? `per ${recurrence}`
-      : t.unit.includes('govt') ? 'one-time + govt fee' : 'one-time';
+      : t.unit?.includes('govt') ? 'one-time + govt fee' : 'one-time';
   return {
-    amount: formatINR(t.price),
+    amount: formatMoney(t.price, currency),
     unit,
     prefix: p.type === 'fixed' ? '' : 'From',
+    base: t.price,
   };
 }
