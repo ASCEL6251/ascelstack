@@ -126,8 +126,8 @@ const features = [
 
     <!-- ─────────────── Featured showcase ─────────────── -->
     <section class="pj-show" aria-label={`Featured project: ${featured.name}`}>
-      <div class="pj-strip">
-        <div class="pj-strip-track">
+      <div class="pj-strip" data-strip>
+        <div class="pj-strip-track" data-strip-track>
           {strip.map((p, i) => {
             // Second half only exists to make the loop seamless: hide it from AT and tab order.
             const clone = i >= projects.length;
@@ -140,8 +140,9 @@ const features = [
                 aria-label={clone ? undefined : `${p.name} — ${p.category}`}
                 aria-hidden={clone ? 'true' : undefined}
                 tabindex={clone ? -1 : undefined}
+                draggable="false"
               >
-                <img src={p.image} alt="" loading="lazy" width="1440" height="900" />
+                <img src={p.image} alt="" loading="lazy" width="1440" height="900" draggable="false" />
                 <span class="pj-thumb-tag">
                   {p.name} <span aria-hidden="true">{p.url ? '↗' : '↓'}</span>
                 </span>
@@ -173,6 +174,7 @@ const features = [
                 loading={i === 0 ? 'eager' : 'lazy'}
                 class={i === 0 ? 'is-on' : undefined}
                 data-slide={i}
+                draggable="false"
               />
             ))}
           </div>
@@ -224,25 +226,53 @@ const features = [
         <div class="pj-list">
           {rest.map((p, i) => (
             <article class="pj-item" id={p.slug} data-item>
-              <div class="pj-shot" data-shot>
-                <div class="pj-shot-inner" data-shot-inner>
-                  <img src={p.image} alt={`${p.name} screen`} loading="lazy" width="1440" height="900" />
+              {p.url ? (
+                <a
+                  class="pj-shot is-link"
+                  data-shot
+                  href={p.url}
+                  target="_blank"
+                  rel="noopener"
+                  aria-label={`Open ${p.name} live (${host(p.url)})`}
+                >
+                  <div class="pj-shot-inner" data-shot-inner>
+                    <img src={p.image} alt={`${p.name} home page`} loading="lazy" width="1440" height="900" />
+                  </div>
+                  {p.demo && <span class="pj-badge mono">Live demo</span>}
+                  <span class="pj-shot-cta mono" aria-hidden="true">{host(p.url)} ↗</span>
+                </a>
+              ) : (
+                <div class="pj-shot" data-shot>
+                  <div class="pj-shot-inner" data-shot-inner>
+                    <img src={p.image} alt={`${p.name} screen`} loading="lazy" width="1440" height="900" />
+                  </div>
+                  {p.demo && <span class="pj-badge mono">Concept</span>}
                 </div>
-                {p.demo && <span class="pj-badge mono">Concept</span>}
-              </div>
+              )}
               <div class="pj-info">
                 <span class="mono pj-idx">{String(i + 2).padStart(2, '0')}</span>
                 <div class="pj-info-body">
                   <span class="mono pj-cat" data-reveal>{p.category} · {p.year}</span>
-                  <h3 class="pj-iname" data-reveal>{p.name}</h3>
+                  <h3 class="pj-iname" data-reveal>
+                    {p.url ? (
+                      <a href={p.url} target="_blank" rel="noopener">{p.name}</a>
+                    ) : (
+                      p.name
+                    )}
+                  </h3>
                   <p class="pj-sum" data-reveal>{p.summary}</p>
+                  {p.result && (
+                    <p class="pj-result" data-reveal>
+                      <strong>{p.result.value}</strong> {p.result.label}
+                    </p>
+                  )}
                   <ul class="pj-chips" data-reveal>
                     {p.services.map((s) => <li>{s}</li>)}
                   </ul>
                   <p class="mono pj-stack" data-reveal>{p.stack.join(' · ')}</p>
                   {p.url && (
                     <a href={p.url} target="_blank" rel="noopener" class="pj-link" data-reveal>
-                      Visit site <span aria-hidden="true">↗</span>
+                      {p.demo ? 'Open live demo' : 'Visit site'} <span aria-hidden="true">↗</span>
                     </a>
                   )}
                 </div>
@@ -520,15 +550,24 @@ const features = [
     border-block: 2px dotted var(--pj-dot);
     overflow: hidden;
   }
-  /* Pause the loop while someone is pointing at or tabbing through it. */
-  .pj-strip:hover .pj-strip-track,
-  .pj-strip:focus-within .pj-strip-track { animation-play-state: paused; }
+  /* Auto-scrolls from JS; can also be dragged, swiped or trackpad-scrolled sideways. */
+  .pj-strip {
+    cursor: grab;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .pj-strip.is-dragging { cursor: grabbing; }
+  .pj-strip.is-dragging .pj-thumb { pointer-events: none; }
   .pj-strip-track {
     display: flex;
     gap: 1.5rem;
     width: max-content;
-    animation: pj-marquee 60s linear infinite;
+    will-change: transform;
   }
+  /* No JS: fall back to the plain CSS loop. */
+  :global(html:not(.js)) .pj-strip-track { animation: pj-marquee 60s linear infinite; }
+  .pj-thumb img { -webkit-user-drag: none; }
   .pj-thumb {
     position: relative;
     display: block;
@@ -588,6 +627,9 @@ const features = [
   }
   .pj-feature {
     display: block;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
     border-radius: 18px;
     overflow: hidden;
     background: var(--pj-card);
@@ -620,6 +662,7 @@ const features = [
     white-space: nowrap;
   }
   .pj-screens { position: relative; aspect-ratio: 16 / 10; overflow: hidden; background: var(--paper-sunk); }
+  .pj-screens img { -webkit-user-drag: none; }
   .pj-screens img {
     position: absolute;
     inset: 0;
@@ -717,8 +760,37 @@ const features = [
     aspect-ratio: 16 / 10;
     clip-path: inset(0 round 16px);
   }
+  .pj-shot { display: block; }
   .pj-shot-inner { width: 100%; height: 100%; }
-  .pj-shot-inner img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .pj-shot-inner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+    transition: transform 0.9s var(--ease-out);
+  }
+  .pj-shot.is-link:hover .pj-shot-inner img,
+  .pj-shot.is-link:focus-visible .pj-shot-inner img { transform: scale(1.025); }
+  .pj-shot-cta {
+    position: absolute;
+    right: 0.9rem;
+    bottom: 0.9rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(29, 45, 61, 0.82);
+    color: var(--paper);
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    backdrop-filter: blur(6px);
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.35s, transform 0.45s var(--ease-out);
+  }
+  .pj-shot.is-link:hover .pj-shot-cta,
+  .pj-shot.is-link:focus-visible .pj-shot-cta { opacity: 1; transform: none; }
+  @media (hover: none) {
+    .pj-shot-cta { opacity: 1; transform: none; }
+  }
   .pj-badge {
     position: absolute;
     top: 0.9rem;
@@ -745,6 +817,11 @@ const features = [
     color: var(--ink);
   }
   .pj-sum { color: var(--text-muted); max-width: 46ch; }
+  .pj-iname a { color: inherit; text-decoration: none; background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat; transition: background-size 0.45s var(--ease-out); }
+  .pj-iname a:hover,
+  .pj-iname a:focus-visible { background-size: 100% 1px; }
+  .pj-result { color: var(--text-muted); font-size: 0.92rem; }
+  .pj-result strong { color: var(--ink); font-weight: 600; margin-right: 0.15rem; }
   .pj-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
   .pj-chips li {
     font-size: 0.8rem;
@@ -755,6 +832,7 @@ const features = [
   }
   .pj-stack { color: var(--text-muted); }
   .pj-link {
+    white-space: nowrap;
     display: inline-flex;
     gap: 0.4rem;
     font-weight: 500;
@@ -881,7 +959,7 @@ const features = [
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .pj-strip-track { animation: none; }
+    :global(html:not(.js)) .pj-strip-track { animation: none; }
   }
 </style>
 
@@ -1116,6 +1194,62 @@ const features = [
 
     dots.forEach((d) => d.addEventListener('click', () => show(Number(d.dataset.goto))));
 
+    // Swipe (finger, pen or mouse drag) left/right on the big card to change project.
+    // touch-action: pan-y keeps vertical page scrolling native.
+    const screens = card.querySelector<HTMLElement>('.pj-screens');
+    let sx = 0;
+    let sy = 0;
+    let sdx = 0;
+    let swiping = false;
+    let swiped = false;
+    card.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      swiping = true;
+      swiped = false;
+      sx = e.clientX;
+      sy = e.clientY;
+      sdx = 0;
+    });
+    window.addEventListener('pointermove', (e) => {
+      if (!swiping) return;
+      sdx = e.clientX - sx;
+      const dy = e.clientY - sy;
+      if (Math.abs(sdx) > 8 && Math.abs(sdx) > Math.abs(dy)) {
+        pause();
+        if (screens) screens.style.transform = `translateX(${sdx * 0.25}px)`;
+      }
+    });
+    const endSwipe = () => {
+      if (!swiping) return;
+      swiping = false;
+      if (screens) {
+        screens.style.transition = 'transform 0.45s cubic-bezier(.2,.8,.2,1)';
+        screens.style.transform = '';
+        window.setTimeout(() => (screens.style.transition = ''), 460);
+      }
+      if (Math.abs(sdx) > 45) {
+        swiped = true;
+        show(index + (sdx < 0 ? 1 : -1));
+      }
+      if (!card.matches(':hover')) resume();
+    };
+    window.addEventListener('pointerup', endSwipe);
+    window.addEventListener('pointercancel', endSwipe);
+    // A swipe is not a click: don't open the site at the end of one.
+    card.addEventListener(
+      'click',
+      (e) => {
+        if (swiped || Math.abs(sdx) > 8) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          swiped = false;
+          sdx = 0;
+        }
+      },
+      true,
+    );
+    card.addEventListener('dragstart', (e) => e.preventDefault());
+
     // Hovering a strip card previews it in the big card.
     thumbs.forEach((t) => {
       t.addEventListener('mouseenter', () => {
@@ -1140,6 +1274,141 @@ const features = [
         else target.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth' });
       }),
     );
+  })();
+
+  // ── Strip: endless auto-scroll that can also be dragged, swiped or trackpad-scrolled.
+  (() => {
+    const strip = document.querySelector<HTMLElement>('[data-strip]');
+    const track = document.querySelector<HTMLElement>('[data-strip-track]');
+    if (!strip || !track) return;
+
+    const AUTO = reducedMotion ? 0 : 38; // px per second, leftwards
+    let half = track.scrollWidth / 2; // one full copy of the list
+    let x = 0;
+    let vel = -AUTO; // current px/s
+    let target = -AUTO; // what vel eases towards
+    let dragging = false;
+    let moved = 0;
+    let lastX = 0;
+    let lastT = 0;
+    let dragVel = 0;
+    let hovering = false;
+    let resumeTimer = 0;
+
+    const wrap = () => {
+      if (half <= 0) return;
+      x = ((x % half) + half) % half - half; // keep x in (-half, 0]
+    };
+    const render = () => {
+      track.style.transform = `translate3d(${x}px,0,0)`;
+    };
+    const holdThenResume = (ms: number) => {
+      clearTimeout(resumeTimer);
+      target = 0;
+      resumeTimer = window.setTimeout(() => {
+        if (!hovering && !dragging) target = -AUTO;
+      }, ms);
+    };
+
+    new ResizeObserver(() => {
+      half = track.scrollWidth / 2;
+      wrap();
+      render();
+    }).observe(track);
+
+    let prev = performance.now();
+    let visible = true;
+    new IntersectionObserver(([e]) => (visible = e.isIntersecting)).observe(strip);
+    const tick = (now: number) => {
+      const dt = Math.min(0.05, (now - prev) / 1000);
+      prev = now;
+      if (!dragging && visible) {
+        // Ease toward the target speed: throws slow down, auto-scroll picks back up.
+        vel += (target - vel) * Math.min(1, dt * 2.2);
+        x += vel * dt;
+        wrap();
+        render();
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+
+    strip.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      dragging = true;
+      moved = 0;
+      lastX = e.clientX;
+      lastT = performance.now();
+      dragVel = 0;
+      clearTimeout(resumeTimer);
+    });
+    window.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - lastX;
+      const now = performance.now();
+      const dt = Math.max(1, now - lastT) / 1000;
+      lastX = e.clientX;
+      lastT = now;
+      moved += Math.abs(dx);
+      if (moved > 6) strip.classList.add('is-dragging');
+      dragVel = dragVel * 0.6 + (dx / dt) * 0.4;
+      x += dx;
+      wrap();
+      render();
+    });
+    const endDrag = () => {
+      if (!dragging) return;
+      dragging = false;
+      strip.classList.remove('is-dragging');
+      vel = Math.max(-2400, Math.min(2400, dragVel)); // fling
+      holdThenResume(1400);
+    };
+    window.addEventListener('pointerup', endDrag);
+    window.addEventListener('pointercancel', endDrag);
+    // A drag is not a click on whichever card it ended over.
+    strip.addEventListener(
+      'click',
+      (e) => {
+        if (moved > 6) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          moved = 0;
+        }
+      },
+      true,
+    );
+    strip.addEventListener('dragstart', (e) => e.preventDefault());
+
+    // Sideways trackpad / shift+wheel scrolls the strip; vertical wheel still scrolls the page.
+    strip.addEventListener(
+      'wheel',
+      (e) => {
+        const dx = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.shiftKey ? e.deltaY : 0;
+        if (!dx) return;
+        e.preventDefault();
+        x -= dx;
+        vel = 0;
+        wrap();
+        render();
+        holdThenResume(1400);
+      },
+      { passive: false },
+    );
+
+    // Slow to a stop while pointing at (or tabbing through) a card, like before.
+    strip.addEventListener('pointerenter', (e) => {
+      if (e.pointerType !== 'mouse') return;
+      hovering = true;
+      clearTimeout(resumeTimer);
+      target = 0;
+    });
+    strip.addEventListener('pointerleave', (e) => {
+      if (e.pointerType !== 'mouse') return;
+      hovering = false;
+      if (!dragging) target = -AUTO;
+    });
+    strip.addEventListener('focusin', () => (target = 0));
+    strip.addEventListener('focusout', () => (target = -AUTO));
   })();
 
   // Strip thumbnails that point at a project on this page glide to it.
