@@ -1,0 +1,46 @@
+---
+/**
+ * Google Tag Manager container (GTM-P9NGXXT6).
+ *
+ * Render this as the FIRST child of <head> on every page — exactly once.
+ * Both scripts are `is:inline` so Astro emits them verbatim instead of
+ * bundling/hoisting them.
+ *
+ * Consent Mode v2: analytics/ads storage default to "denied" and are only
+ * granted from the visitor's saved choice in the cookie banner
+ * (localStorage `ascelstack_cookie_consent_v1`). Changes made in the banner
+ * arrive via the `ascelstack:consent-updated` event and are forwarded to GTM.
+ */
+---
+
+<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-P9NGXXT6" is:inline></script>
+<script is:inline>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+
+  (function () {
+    function toConsent(c) {
+      var analytics = !!(c && c.analytics) ? 'granted' : 'denied';
+      var personal = !!(c && c.personalization) ? 'granted' : 'denied';
+      return {
+        analytics_storage: analytics,
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        personalization_storage: personal,
+        functionality_storage: 'granted',
+        security_storage: 'granted',
+      };
+    }
+    var saved = null;
+    try {
+      saved = JSON.parse(localStorage.getItem('ascelstack_cookie_consent_v1') || 'null');
+    } catch (e) {}
+    gtag('consent', 'default', Object.assign(toConsent(saved), { wait_for_update: 500 }));
+    window.addEventListener('ascelstack:consent-updated', function (e) {
+      gtag('consent', 'update', toConsent(e.detail));
+    });
+  })();
+
+  gtag('js', new Date());
+</script>

@@ -9,6 +9,9 @@ Disallow: /login
 Disallow: /sign-in
 Disallow: /sign-up
 Disallow: /api/
+Disallow: /admin
+Disallow: /cart
+Disallow: /agreements
 
 # Sitemap
 Sitemap: https://ascelstack.com/sitemap.xml
