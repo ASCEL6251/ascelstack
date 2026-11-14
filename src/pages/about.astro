@@ -82,132 +82,6 @@ const comparison = [
     ascelstack: 'Transparent pricing, predictable monthly retainers, and modular services that scale as you grow.',
   },
 ];
-
-interface Contributor {
-  login: string;
-  name: string;
-  role: string;
-  bio: string;
-  avatar_url: string;
-  html_url: string;
-  contributions: number;
-}
-
-const knownTeamMeta: Record<string, { name: string; role: string; bio: string }> = {
-  Sujoymoulick: {
-    name: 'Sujoy Moulick',
-    role: 'Founder & Lead Architect',
-    bio: 'Full-stack systems architecture, blockchain engineering, and core infrastructure.',
-  },
-  arnabbasak01: {
-    name: 'Arnab Basak',
-    role: 'Full-Stack & Systems Engineer',
-    bio: 'Database synchronization, admin portal engineering, and cloud workflows.',
-  },
-  Souvik444411: {
-    name: 'Souvik Chowdhury',
-    role: 'AI & Software Engineer',
-    bio: 'B.Tech CSE AIML specialist, prompt pipelines, and intelligent automations.',
-  },
-  ASCEL6251: {
-    name: 'ASCELSTACK Core',
-    role: 'Platform & Organization',
-    bio: 'Official central maintainer, release management, and repository core.',
-  },
-};
-
-const defaultContributors: Contributor[] = [
-  {
-    login: 'Sujoymoulick',
-    name: 'Sujoy Moulick',
-    role: 'Founder & Lead Architect',
-    bio: 'Full-stack systems architecture, blockchain engineering, and core infrastructure.',
-    avatar_url: 'https://avatars.githubusercontent.com/u/177207941?v=4',
-    html_url: 'https://github.com/Sujoymoulick',
-    contributions: 20,
-  },
-  {
-    login: 'arnabbasak01',
-    name: 'Arnab Basak',
-    role: 'Full-Stack & Systems Engineer',
-    bio: 'Database synchronization, admin portal engineering, and cloud workflows.',
-    avatar_url: 'https://avatars.githubusercontent.com/u/177306006?v=4',
-    html_url: 'https://github.com/arnabbasak01',
-    contributions: 13,
-  },
-  {
-    login: 'Souvik444411',
-    name: 'Souvik Chowdhury',
-    role: 'AI & Software Engineer',
-    bio: 'B.Tech CSE AIML specialist, prompt pipelines, and intelligent automations.',
-    avatar_url: 'https://avatars.githubusercontent.com/u/141899070?v=4',
-    html_url: 'https://github.com/Souvik444411',
-    contributions: 1,
-  },
-  {
-    login: 'ASCEL6251',
-    name: 'ASCELSTACK Core',
-    role: 'Platform & Organization',
-    bio: 'Official central maintainer, release management, and repository core.',
-    avatar_url: 'https://avatars.githubusercontent.com/u/354181175?v=4',
-    html_url: 'https://github.com/ASCEL6251',
-    contributions: 1,
-  },
-];
-
-let teamMembers: Contributor[] = [...defaultContributors];
-
-try {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 3000);
-
-  const res = await fetch('https://api.github.com/repos/ASCEL6251/ascelstack/contributors?per_page=100', {
-    headers: {
-      'User-Agent': 'Ascelstack-Team-Directory',
-      Accept: 'application/vnd.github.v3+json',
-    },
-    signal: controller.signal,
-  });
-  clearTimeout(timeoutId);
-
-  if (res.ok) {
-    const data = await res.json();
-    if (Array.isArray(data) && data.length > 0) {
-      // Exclude Claude, bots, and CI accounts
-      const filtered = data.filter((c: any) => {
-        const login = (c.login || '').toLowerCase();
-        return (
-          !login.includes('claude') &&
-          !login.includes('anthropic') &&
-          !login.includes('actions-user') &&
-          !login.includes('[bot]')
-        );
-      });
-
-      if (filtered.length > 0) {
-        teamMembers = filtered.map((c: any) => {
-          const meta = knownTeamMeta[c.login] || {
-            name: c.login,
-            role: 'Core Contributor',
-            bio: 'Active contributor to the Ascelstack repository ecosystem.',
-          };
-          return {
-            login: c.login,
-            name: meta.name,
-            role: meta.role,
-            bio: meta.bio,
-            avatar_url: c.avatar_url || `https://github.com/${c.login}.png`,
-            html_url: c.html_url || `https://github.com/${c.login}`,
-            contributions: typeof c.contributions === 'number' ? c.contributions : 1,
-          };
-        });
-      }
-    }
-  }
-} catch {
-  // Graceful fallback to verified repository contributors if network or rate-limited
-  teamMembers = defaultContributors;
-}
 ---
 
 <Base
@@ -452,99 +326,14 @@ try {
           <p class="pod-desc">Workflow engineers and prompt architects who build durable background workers, automated reconciliation pipelines, and intelligent WhatsApp bots with human checkpoints.</p>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- Meet Our Team -->
-  <section class="section team-section" id="team">
-    <div class="wrap">
-      <div class="team-head">
-        <div class="team-head-text">
-          <p class="eyebrow" data-reveal>The Builders</p>
-          <h2 class="display h2 team-title" data-reveal>Meet Our <em>Team.</em></h2>
-        </div>
-        <p class="lead team-lead" data-reveal>
-          The architects, core engineers, and open-source contributors actively building, scaling,
-          and maintaining the Ascelstack platform.
-        </p>
-      </div>
-
-      <div class="team-grid">
-        {
-          teamMembers.map((member, index) => (
-            <div class="team-card" data-reveal data-reveal-delay={(index * 0.08).toFixed(2)}>
-              <div class="team-card-inner">
-                <div class="team-card-top">
-                  <div class="team-avatar-container">
-                    <div class="team-avatar-glow" aria-hidden="true" />
-                    <img
-                      src={member.avatar_url}
-                      alt={`Avatar of ${member.name} (@${member.login})`}
-                      class="team-avatar-img"
-                      width="88"
-                      height="88"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                    <a
-                      href={member.html_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="team-gh-badge"
-                      title="GitHub Profile"
-                      aria-label={`${member.name} on GitHub`}
-                    >
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
-                      </svg>
-                    </a>
-                  </div>
-
-                  <span class="mono team-role-tag">{member.role}</span>
-                </div>
-
-                <div class="team-card-content">
-                  <div class="team-name-group">
-                    <h3 class="display team-member-name">{member.name}</h3>
-                    <a
-                      href={member.html_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="team-gh-link mono"
-                      title={`Visit ${member.login} on GitHub`}
-                    >
-                      <span>@{member.login}</span>
-                      <svg class="team-link-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <line x1="7" y1="17" x2="17" y2="7"></line>
-                        <polyline points="7 7 17 7 17 17"></polyline>
-                      </svg>
-                    </a>
-                  </div>
-
-                  <p class="team-member-bio">{member.bio}</p>
-                </div>
-
-                <div class="team-card-footer">
-                  <div class="team-commits-count mono">
-                    <span class="team-commit-dot" aria-hidden="true"></span>
-                    <span>{member.contributions} {member.contributions === 1 ? 'commit' : 'commits'}</span>
-                  </div>
-
-                  <a
-                    href={member.html_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="team-view-btn mono"
-                  >
-                    <span>View Profile</span>
-                    <span class="btn-arrow" aria-hidden="true">→</span>
-                  </a>
-                </div>
-              </div>
-            </div>
-          ))
-        }
-      </div>
+      <a class="pods-team" href="https://team.ascelstack.com/" target="_blank" rel="noopener" data-reveal>
+        <span class="pods-team-text">
+          <span class="mono pods-tag">The people behind the pods</span>
+          <span class="display pods-team-title">Meet the Ascelstack team</span>
+        </span>
+        <span class="pods-team-cta mono">team.ascelstack.com <span aria-hidden="true">↗</span></span>
+      </a>
     </div>
   </section>
 
@@ -907,6 +696,39 @@ try {
     letter-spacing: 0.12em;
     text-transform: uppercase;
   }
+  .pods-team {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem 2rem;
+    flex-wrap: wrap;
+    margin-top: clamp(2.5rem, 4vw, 3.5rem);
+    padding: 1.5rem clamp(1.25rem, 3vw, 2rem);
+    border: 1px solid var(--line-on-ink);
+    border-radius: var(--radius);
+    color: inherit;
+    text-decoration: none;
+    transition: border-color 0.3s, background 0.4s var(--ease-out);
+  }
+  .pods-team:hover,
+  .pods-team:focus-visible {
+    border-color: var(--tint);
+    background: color-mix(in srgb, var(--tint) 8%, transparent);
+  }
+  .pods-team-text { display: grid; gap: 0.4rem; }
+  .pods-team-title { font-size: clamp(1.4rem, 1.1rem + 1vw, 1.9rem); line-height: 1.1; }
+  .pods-team-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.1rem;
+    border-radius: 999px;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 0.85rem;
+    transition: transform 0.4s var(--ease-out);
+  }
+  .pods-team:hover .pods-team-cta { transform: translateX(4px); }
   .pods-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -942,240 +764,6 @@ try {
     font-size: 0.88rem;
     line-height: 1.65;
     color: var(--text-on-ink-muted);
-  }
-
-  /* ------------------------------------------------------------- Meet Our Team */
-  .team-section {
-    padding-block: clamp(5rem, 8vw, 9rem);
-    background:
-      radial-gradient(75% 55% at 50% 0%, rgba(148, 188, 227, 0.16), transparent 70%),
-      var(--paper);
-    border-bottom: 1px solid var(--line);
-    position: relative;
-  }
-  .team-head {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2.5rem;
-    align-items: end;
-    margin-bottom: clamp(3rem, 5vw, 4.5rem);
-    padding-bottom: 2rem;
-    border-bottom: 1px solid var(--line);
-  }
-  .team-head-text {
-    display: grid;
-    gap: 0.75rem;
-  }
-  .team-title {
-    font-size: clamp(2.2rem, 1.4rem + 2.5vw, 3.8rem);
-  }
-  .team-lead {
-    font-size: clamp(1rem, 0.9rem + 0.4vw, 1.2rem);
-    color: var(--text-muted);
-  }
-  .team-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.5rem;
-  }
-  .team-card {
-    position: relative;
-    background: var(--paper-raised);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    padding: clamp(1.5rem, 2.5vw, 2rem);
-    display: flex;
-    flex-direction: column;
-    transition: transform 0.4s var(--ease-out), box-shadow 0.4s var(--ease-out), border-color 0.3s;
-    overflow: hidden;
-  }
-  .team-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, var(--tint), var(--accent), transparent);
-    opacity: 0;
-    transition: opacity 0.4s var(--ease-out);
-  }
-  .team-card:hover {
-    transform: translateY(-8px);
-    border-color: rgba(89, 128, 166, 0.4);
-    box-shadow: 0 24px 44px -18px rgba(29, 45, 61, 0.15), 0 0 0 1px rgba(148, 188, 227, 0.25);
-  }
-  .team-card:hover::before {
-    opacity: 1;
-  }
-  .team-card-inner {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
-  .team-card-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 1.25rem;
-  }
-  .team-avatar-container {
-    position: relative;
-    width: 80px;
-    height: 80px;
-    display: grid;
-    place-items: center;
-  }
-  .team-avatar-glow {
-    position: absolute;
-    inset: -3px;
-    border-radius: 50%;
-    background: conic-gradient(from 180deg at 50% 50%, var(--tint), var(--accent), var(--ink), var(--tint));
-    opacity: 0.25;
-    filter: blur(5px);
-    transition: opacity 0.4s, filter 0.4s, transform 0.4s;
-  }
-  .team-card:hover .team-avatar-glow {
-    opacity: 0.85;
-    filter: blur(8px);
-    transform: scale(1.08);
-  }
-  .team-avatar-img {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    object-fit: cover;
-    background: var(--paper-sunk);
-    border: 3px solid var(--paper-raised);
-    position: relative;
-    z-index: 2;
-    transition: transform 0.4s var(--ease-out);
-  }
-  .team-card:hover .team-avatar-img {
-    transform: scale(1.05);
-  }
-  .team-gh-badge {
-    position: absolute;
-    bottom: -2px;
-    right: -2px;
-    z-index: 3;
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    background: var(--ink);
-    color: var(--paper);
-    display: grid;
-    place-items: center;
-    border: 2px solid var(--paper-raised);
-    transition: transform 0.3s var(--ease-out), background 0.3s;
-    text-decoration: none;
-  }
-  .team-card:hover .team-gh-badge {
-    transform: scale(1.18) rotate(8deg);
-    background: var(--accent);
-  }
-  .team-role-tag {
-    display: inline-block;
-    padding: 0.25rem 0.65rem;
-    border-radius: 999px;
-    font-size: 0.68rem;
-    letter-spacing: 0.05em;
-    font-weight: 600;
-    text-transform: uppercase;
-    background: color-mix(in srgb, var(--accent) 12%, transparent);
-    color: var(--accent);
-    border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
-    max-width: 55%;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-  }
-  .team-card-content {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-  }
-  .team-name-group {
-    display: grid;
-    gap: 0.25rem;
-    margin-bottom: 0.75rem;
-  }
-  .team-member-name {
-    font-size: 1.35rem;
-    line-height: 1.15;
-    color: var(--ink);
-  }
-  .team-gh-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    text-decoration: none;
-    transition: color 0.2s;
-    width: fit-content;
-  }
-  .team-gh-link:hover {
-    color: var(--accent);
-  }
-  .team-link-arrow {
-    transition: transform 0.25s var(--ease-out);
-  }
-  .team-gh-link:hover .team-link-arrow {
-    transform: translate(2px, -2px);
-  }
-  .team-member-bio {
-    font-size: 0.88rem;
-    line-height: 1.6;
-    color: var(--text-muted);
-    margin-bottom: 1.5rem;
-    flex: 1;
-  }
-  .team-card-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 1rem;
-    border-top: 1px solid var(--line);
-    margin-top: auto;
-  }
-  .team-commits-count {
-    display: flex;
-    align-items: center;
-    gap: 0.45rem;
-    font-size: 0.75rem;
-    color: var(--text-muted);
-  }
-  .team-commit-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: #22c55e;
-    box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
-  }
-  .team-view-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--ink);
-    text-decoration: none;
-    padding: 0.35rem 0.65rem;
-    border-radius: var(--radius-s);
-    background: color-mix(in srgb, var(--ink) 6%, transparent);
-    transition: background 0.2s, color 0.2s, transform 0.2s;
-  }
-  .team-view-btn:hover {
-    background: var(--ink);
-    color: var(--paper);
-    transform: translateX(2px);
-  }
-  .btn-arrow {
-    transition: transform 0.25s var(--ease-out);
-  }
-  .team-view-btn:hover .btn-arrow {
-    transform: translateX(3px);
   }
 
   /* ------------------------------------------------------------- CTA */
@@ -1215,8 +803,6 @@ try {
     .layers-head { grid-template-columns: 1fr; }
     .principles-grid { grid-template-columns: repeat(2, 1fr); }
     .pods-grid { grid-template-columns: repeat(2, 1fr); }
-    .team-grid { grid-template-columns: repeat(2, 1fr); }
-    .team-head { grid-template-columns: 1fr; }
   }
 
   @media (max-width: 768px) {
@@ -1226,7 +812,6 @@ try {
     .pods-badge { align-items: flex-start; }
     .principles-grid { grid-template-columns: 1fr; }
     .pods-grid { grid-template-columns: 1fr; }
-    .team-grid { grid-template-columns: 1fr; }
     .stats-grid { grid-template-columns: 1fr 1fr; }
   }
 
