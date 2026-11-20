@@ -111,21 +111,37 @@ const PAYMENT_STATUS_OPTIONS = [
 >
   <div class="quotation-detail-view">
     <!-- Header Back Navigation & Actions -->
-    <div class="detail-header-bar">
+    <div class="detail-header-bar" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
       <a href="/admin/quotations" class="back-link">
         <span aria-hidden="true">←</span> Back to Quotations
       </a>
 
-      <div class="header-badges">
-        <span class={`status-tag status-${quotation.quotationStatus.toLowerCase().replace(/\s+/g, '-')}`} id="badge-quote-status">
-          {quotation.quotationStatus}
-        </span>
-        <span class={`payment-pill payment-${quotation.paymentStatus.toLowerCase().replace(/\s+/g, '-')}`} id="badge-payment-status">
-          {quotation.paymentStatus}
-        </span>
-        <span class="mono text-xs badge-pill" id="badge-progress">
-          {quotation.projectProgress}% Complete
-        </span>
+      <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+        <div class="header-badges">
+          <span class={`status-tag status-${quotation.quotationStatus.toLowerCase().replace(/\s+/g, '-')}`} id="badge-quote-status">
+            {quotation.quotationStatus}
+          </span>
+          <span class={`payment-pill payment-${quotation.paymentStatus.toLowerCase().replace(/\s+/g, '-')}`} id="badge-payment-status">
+            {quotation.paymentStatus}
+          </span>
+          <span class="mono text-xs badge-pill" id="badge-progress">
+            {quotation.projectProgress}% Complete
+          </span>
+        </div>
+
+        <button
+          type="button"
+          class="btn btn-ghost btn-sm"
+          id="btn-delete-quotation"
+          style="color: #ef4444; border-color: rgba(239, 68, 68, 0.35);"
+          title="Delete Quotation"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          <span>Delete Quotation</span>
+        </button>
       </div>
     </div>
 
@@ -373,34 +389,54 @@ const PAYMENT_STATUS_OPTIONS = [
           </div>
         </div>
 
-        <!-- 3. ORIGINAL PROJECT REQUIREMENTS & LINKED SERVICES -->
+        <!-- 3. PROJECT REQUIREMENTS & SCOPE (EDITABLE) -->
         <div class="card-panel">
           <div class="panel-header">
             <div>
-              <span class="eyebrow">Customer Submission</span>
-              <h3 class="display h3">Project Requirements & Scope</h3>
+              <span class="eyebrow">Scope Management</span>
+              <h3 class="display h3">Project Title, Requirements & Scope</h3>
+              <p class="panel-subtitle">Edit project title, customer specifications, and detailed requirements</p>
             </div>
+            <button type="button" class="btn btn-primary btn-sm" id="btn-save-scope">
+              <span>Save Scope Details</span>
+              <span class="arrow">→</span>
+            </button>
           </div>
 
-          <div class="requirements-box">
-            {quotation.projectDescription && (
-              <div class="req-section">
-                <span class="mono text-xs text-muted">Project Description:</span>
-                <p class="req-text">{quotation.projectDescription}</p>
-              </div>
-            )}
+          <div class="pricing-fields-grid" style="display: grid; gap: 1rem;">
+            <label class="field">
+              <span class="mono field-label">Project Title *</span>
+              <input
+                type="text"
+                class="admin-input"
+                id="input-project-title"
+                value={quotation.projectTitle}
+                required
+              />
+            </label>
 
-            {quotation.requirements && (
-              <div class="req-section">
-                <span class="mono text-xs text-muted">Customer Requirements:</span>
-                <div class="req-quote-box mono">
-                  {quotation.requirements}
-                </div>
-              </div>
-            )}
+            <label class="field">
+              <span class="mono field-label">Project Description</span>
+              <textarea
+                class="admin-textarea"
+                rows="3"
+                id="input-project-description"
+                placeholder="High-level project summary..."
+              >{quotation.projectDescription || ''}</textarea>
+            </label>
+
+            <label class="field">
+              <span class="mono field-label">Detailed Customer Requirements</span>
+              <textarea
+                class="admin-textarea"
+                rows="5"
+                id="input-requirements"
+                placeholder="Specific technical and functional requirements..."
+              >{quotation.requirements || ''}</textarea>
+            </label>
 
             {linkedRequests.length > 0 && (
-              <div class="req-section">
+              <div class="req-section" style="margin-top: 0.5rem;">
                 <span class="mono text-xs text-muted">Linked Catalog Services ({linkedRequests.length}):</span>
                 <div class="linked-services-list">
                   {linkedRequests.map((r) => (
@@ -1065,6 +1101,74 @@ const PAYMENT_STATUS_OPTIONS = [
         btnSavePricing.disabled = false;
         btnSavePricing.innerHTML = '<span>Save Pricing</span><span class="arrow">→</span>';
         window.showAdminToast?.('Connection error while saving pricing', 'error');
+      }
+    });
+
+    // Save Scope Details (Project Title, Description, Requirements)
+    const btnSaveScope = document.getElementById('btn-save-scope');
+    const inputProjectTitle = document.getElementById('input-project-title');
+    const inputProjectDesc = document.getElementById('input-project-description');
+    const inputReqs = document.getElementById('input-requirements');
+
+    btnSaveScope?.addEventListener('click', async () => {
+      try {
+        const title = inputProjectTitle?.value.trim();
+        if (!title) {
+          window.showAdminToast?.('Project title cannot be empty', 'error');
+          inputProjectTitle?.focus();
+          return;
+        }
+
+        btnSaveScope.disabled = true;
+        btnSaveScope.innerHTML = '<span>Saving Scope...</span>';
+
+        const res = await fetch(`/api/admin/quotations/${quoteId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            projectTitle: title,
+            projectDescription: inputProjectDesc?.value.trim() || null,
+            requirements: inputReqs?.value.trim() || null,
+          }),
+        });
+
+        const data = await res.json();
+        btnSaveScope.disabled = false;
+        btnSaveScope.innerHTML = '<span>Save Scope Details</span><span class="arrow">→</span>';
+
+        if (res.ok) {
+          window.showAdminToast?.('Project scope details saved successfully!', 'success');
+          const displayTitle = document.getElementById('display-project-title');
+          if (displayTitle) displayTitle.textContent = title;
+        } else {
+          window.showAdminToast?.(data.error || 'Failed to update scope details', 'error');
+        }
+      } catch (err) {
+        btnSaveScope.disabled = false;
+        btnSaveScope.innerHTML = '<span>Save Scope Details</span><span class="arrow">→</span>';
+        window.showAdminToast?.('Connection error while saving scope details', 'error');
+      }
+    });
+
+    // Delete Quotation
+    document.getElementById('btn-delete-quotation')?.addEventListener('click', async () => {
+      if (!confirm('Are you sure you want to permanently delete this quotation? This action cannot be undone.')) {
+        return;
+      }
+      try {
+        const res = await fetch(`/api/admin/quotations/${quoteId}`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to delete quotation');
+
+        window.showAdminToast?.('Quotation deleted successfully', 'success');
+        setTimeout(() => {
+          window.location.href = '/admin/quotations';
+        }, 500);
+      } catch (err) {
+        window.showAdminToast?.(err.message || 'Failed to delete quotation', 'error');
       }
     });
   </script>

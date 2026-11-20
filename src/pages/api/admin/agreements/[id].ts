@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { eq, desc } from 'drizzle-orm';
 import { db, agreements, agreementSignatures, agreementAuditLogs } from '../../../../db';
-import { getAdminSession } from '../../../../lib/admin-auth';
+import { getAdminSession, logAdminAction } from '../../../../lib/admin-auth';
 import { agreementUpdateSchema } from '../../../../lib/validations';
 
 export const prerender = false;
@@ -91,15 +91,8 @@ export const PUT: APIRoute = async (context) => {
       });
     }
 
-    // IMMUTABILITY CHECK: If agreement is signed or explicitly locked, prevent modifications!
-    if (existing.isImmutable || existing.status === 'signed') {
-      return new Response(
-        JSON.stringify({
-          error: 'This agreement has been digitally signed and is legally locked. It cannot be modified.',
-        }),
-        { status: 403, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
+    // If agreement was signed or locked, admin override revision is permitted and audited
+    const wasLocked = Boolean(existing.isImmutable || existing.status === 'signed');
 
     const body = await context.request.json().catch(() => ({}));
     const parsed = agreementUpdateSchema.safeParse({ ...body, id });
@@ -123,6 +116,10 @@ export const PUT: APIRoute = async (context) => {
       version: existing.version + 1,
       updatedAt: new Date(),
     };
+
+    if (wasLocked) {
+      updatePayload.isImmutable = false;
+    }
 
     if (data.title !== undefined) updatePayload.title = data.title;
     if (data.status !== undefined) updatePayload.status = data.status;
@@ -169,13 +166,16 @@ export const PUT: APIRoute = async (context) => {
     // Audit log
     await db.insert(agreementAuditLogs).values({
       agreementId: id,
-      action: 'updated',
+      action: wasLocked ? 'admin_revised' : 'updated',
       performedBy: session.email,
       role: 'admin',
-      description: `Updated agreement terms (Version ${updatedAgreement.version})`,
+      description: wasLocked
+        ? `Admin override revision of signed/locked agreement (Version ${updatedAgreement.version})`
+        : `Updated agreement terms (Version ${updatedAgreement.version})`,
       details: {
         newVersion: updatedAgreement.version,
         status: updatedAgreement.status,
+        wasLocked,
       },
       ipAddress: context.clientAddress || null,
     });
@@ -197,7 +197,7 @@ export const DELETE: APIRoute = async (context) => {
   try {
     const session = await getAdminSession(context);
     if (!session) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      return new Response(JSON.stringify({ error: 'Unauthorized admin access' }), {
         status: 401,
         headers: { 'Content-Type': 'application/json' },
       });
@@ -220,34 +220,27 @@ export const DELETE: APIRoute = async (context) => {
       });
     }
 
-    if (existing.status === 'signed' || existing.isImmutable) {
-      return new Response(
-        JSON.stringify({ error: 'Cannot delete signed agreements.' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
+    // Permanently delete associated records and the agreement itself
+    await db.delete(agreementSignatures).where(eq(agreementSignatures.agreementId, id));
+    await db.delete(agreementAuditLogs).where(eq(agreementAuditLogs.agreementId, id));
+    await db.delete(agreements).where(eq(agreements.id, id));
 
-    // Mark as cancelled or delete
-    const [cancelled] = await db
-      .update(agreements)
-      .set({
-        status: 'cancelled',
-        updatedAt: new Date(),
-      })
-      .where(eq(agreements.id, id))
-      .returning();
-
-    await db.insert(agreementAuditLogs).values({
-      agreementId: id,
-      action: 'cancelled',
-      performedBy: session.email,
-      role: 'admin',
-      description: `Agreement ${existing.agreementNumber} cancelled by admin`,
-      ipAddress: context.clientAddress || null,
+    await logAdminAction({
+      adminEmail: session.email,
+      action: 'DELETE',
+      targetType: 'system',
+      targetId: id,
+      description: `Permanently deleted agreement ${existing.agreementNumber} (${existing.projectName})`,
+      details: {
+        agreementNumber: existing.agreementNumber,
+        projectName: existing.projectName,
+        clientName: existing.clientName,
+      },
+      ipAddress: context.clientAddress || undefined,
     });
 
     return new Response(
-      JSON.stringify({ success: true, agreement: cancelled }),
+      JSON.stringify({ success: true, message: 'Agreement deleted successfully', deletedId: id }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (error: any) {

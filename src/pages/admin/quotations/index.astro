@@ -279,9 +279,22 @@ const PAYMENT_STATUS_OPTIONS = [
                   })}
                 </td>
                 <td>
-                  <a href={`/admin/quotations/${q.id}`} class="btn-table-action" title="View & Edit Quotation">
-                    Manage →
-                  </a>
+                  <div style="display: flex; align-items: center; gap: 0.35rem;">
+                    <a href={`/admin/quotations/${q.id}`} class="btn-table-action" title="View & Edit Quotation">
+                      Manage →
+                    </a>
+                    <button
+                      type="button"
+                      class="btn-table-action"
+                      data-action="delete-quotation"
+                      data-id={q.id}
+                      data-ref={q.quotationNumber}
+                      style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);"
+                      title="Delete Quotation"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -444,9 +457,22 @@ const PAYMENT_STATUS_OPTIONS = [
                   ${createdDate}
                 </td>
                 <td>
-                  <a href="/admin/quotations/${q.id}" class="btn-table-action" title="View & Edit Quotation">
-                    Manage →
-                  </a>
+                  <div style="display: flex; align-items: center; gap: 0.35rem;">
+                    <a href="/admin/quotations/${q.id}" class="btn-table-action" title="View & Edit Quotation">
+                      Manage →
+                    </a>
+                    <button
+                      type="button"
+                      class="btn-table-action"
+                      data-action="delete-quotation"
+                      data-id="${q.id}"
+                      data-ref="${escapeHtml(q.quotationNumber)}"
+                      style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);"
+                      title="Delete Quotation"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             `;
@@ -469,6 +495,30 @@ const PAYMENT_STATUS_OPTIONS = [
       div.textContent = str;
       return div.innerHTML;
     }
+
+    // Delegated delete listener
+    document.addEventListener('click', async (e) => {
+      const btn = (e.target as HTMLElement).closest('[data-action="delete-quotation"]');
+      if (!btn) return;
+      const id = btn.getAttribute('data-id');
+      const ref = btn.getAttribute('data-ref') || 'this quotation';
+      if (!id) return;
+      if (!confirm(`Are you sure you want to permanently delete quotation "${ref}"? This action cannot be undone.`)) {
+        return;
+      }
+      try {
+        const res = await fetch(`/api/admin/quotations/${id}`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to delete quotation');
+        (window as any).showAdminToast?.(`Quotation "${ref}" deleted successfully!`, 'success');
+        btn.closest('tr')?.remove();
+      } catch (err: any) {
+        (window as any).showAdminToast?.(err.message || 'Failed to delete quotation', 'error');
+      }
+    });
 
     window.addEventListener('asc:db-sync', () => refreshQuotations(true));
     window.addEventListener('pageshow', () => refreshQuotations(true));

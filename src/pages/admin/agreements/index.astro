@@ -359,6 +359,29 @@ const statusLabels: Record<string, string> = {
                           Manage
                         </a>
 
+                        <a
+                          href={`/admin/agreements/${agr.id}/edit`}
+                          class="btn btn-sm btn-ghost"
+                          title="Edit Agreement"
+                        >
+                          Edit
+                        </a>
+
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-ghost"
+                          data-action="delete-agreement"
+                          data-id={agr.id}
+                          data-code={agr.agreementNumber}
+                          title="Delete Agreement"
+                          style="color: #ef4444;"
+                        >
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                          </svg>
+                        </button>
+
                         <button
                           type="button"
                           class="btn btn-sm btn-ghost"
@@ -480,6 +503,30 @@ const statusLabels: Record<string, string> = {
         showToast('Secure signing link copied to clipboard!');
       } catch {
         prompt('Copy secure signing link:', fullUrl);
+      }
+    });
+  });
+
+  // Delete Agreement Handlers
+  document.querySelectorAll('[data-action="delete-agreement"]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const id = btn.getAttribute('data-id');
+      const code = btn.getAttribute('data-code');
+      if (!id) return;
+      if (!confirm(`Are you sure you want to permanently delete agreement "${code}"? This action cannot be undone.`)) {
+        return;
+      }
+      try {
+        const res = await fetch(`/api/admin/agreements/${id}`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to delete agreement');
+        showToast(`Agreement "${code}" deleted successfully!`);
+        btn.closest('tr')?.remove();
+      } catch (err: any) {
+        alert(err.message || 'Failed to delete agreement');
       }
     });
   });

@@ -73,7 +73,7 @@ async function runTests() {
   console.log('\nTest 2: Company Branding & GSTIN Isolation');
   // --------------------------------------------------------------------------
   const [company] = await sql`SELECT * FROM "company_settings" LIMIT 1`;
-  assert(company && company.company_legal_name.includes('Ascelstack Technologies Private Limited'), 'Company name is Ascelstack Technologies Private Limited');
+  assert(company && (company.company_legal_name.includes('ASCELSTACK TECHNOLOGIES') || company.company_legal_name.includes('Ascelstack Technologies')), 'Company name is ASCELSTACK TECHNOLOGIES');
   assert(company.logo_url === '/brand/mark.svg', 'Company logo correctly set to /brand/mark.svg');
   assert(company.gstin_enabled === false, 'GSTIN is disabled by default (not displayed unless explicitly enabled)');
 

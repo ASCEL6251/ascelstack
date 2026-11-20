@@ -38,14 +38,14 @@ export const serviceRequestCancelSchema = z.object({
 
 // Agreement Validation Schemas
 export const agreementClauseSchema = z.object({
-  id: z.string(),
-  sectionNumber: z.number().int().min(1).max(100),
+  id: z.string().optional().default(() => 'clause-' + Math.random().toString(36).substring(2, 9)),
+  sectionNumber: z.coerce.number().int().min(1).max(100),
   title: z.string().trim().min(1, 'Clause title is required').max(255),
-  category: z.string().optional(),
+  category: z.string().optional().nullable(),
   content: z.string().trim().min(1, 'Clause content cannot be empty'),
   customNotes: z.string().optional().nullable(),
-  isMandatory: z.boolean().default(false),
-  isCustomizable: z.boolean().default(true),
+  isMandatory: z.boolean().optional().default(false),
+  isCustomizable: z.boolean().optional().default(true),
 });
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

@@ -30,12 +30,12 @@ export interface AgreementTemplate {
 }
 
 export const DEFAULT_COMPANY_INFO = {
-  legalName: 'Ascelstack Technologies Private Limited',
+  legalName: 'ASCELSTACK TECHNOLOGIES',
   brandName: 'Ascelstack',
-  address: 'Sector V, Bidhannagar, Salt Lake, Kolkata, West Bengal 700091, India',
+  address: 'Barabazar More, Sarakpara, Ranaghat, Nadia, West Bengal 741201, India',
   email: 'legal@ascelstack.com',
   supportEmail: 'support@ascelstack.com',
-  phone: '+91 89428 41651',
+  phone: '+91 89428 41651 / +91 62947 13465',
   gstin: '',
   gstinEnabled: false,
   signatoryName: 'Authorized Signatory',
@@ -53,7 +53,7 @@ export const STANDARD_25_CLAUSES: AgreementClause[] = [
     isMandatory: true,
     isCustomizable: true,
     content:
-      'This Professional Service Agreement ("Agreement") is entered into by and between Ascelstack Technologies Private Limited ("Service Provider", "Ascelstack", "we", "us", or "our"), a company duly incorporated under the provisions of the Companies Act, 2013, having its registered and operational office at Sector V, Bidhannagar, Salt Lake, Kolkata, West Bengal 700091, India (Email: legal@ascelstack.com), and the Client named in Section 2 herein. Service Provider warrants that it holds full corporate power and requisite authorizations to enter into, execute, and deliver this Agreement and all Statements of Work ("SOW") governed hereby.',
+      'This Professional Service Agreement ("Agreement") is entered into by and between ASCELSTACK TECHNOLOGIES ("Service Provider", "Ascelstack", "we", "us", or "our"), having its registered and operational office at Barabazar More, Sarakpara, Ranaghat, Nadia, West Bengal 741201, India (Email: legal@ascelstack.com), and the Client named in Section 2 herein. Service Provider warrants that it holds full corporate power and requisite authorizations to enter into, execute, and deliver this Agreement and all Statements of Work ("SOW") governed hereby.',
   },
   {
     id: 'clause-2-client',
